@@ -1,0 +1,96 @@
+{
+  "manifest_version": "1.0",
+  "id": "mangrovemarkets",
+  "name": "Mangrove Markets",
+  "description": "OpenClaw plugin for Mangrove Markets agent marketplace and DEX",
+  "version": "0.1.0",
+  "author": {
+    "name": "Mangrove Labs",
+    "url": "https://mangrovemarkets.ai"
+  },
+  "homepage": "https://github.com/mangrovemarkets/mangrovemarkets",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mangrovemarkets/mangrovemarkets.git"
+  },
+  "keywords": ["mangrove", "marketplace", "dex", "agent", "mcp", "xrpl"],
+  "license": "MIT",
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "mcpServerUrl": {
+          "type": "string",
+          "default": "http://localhost:8080",
+          "description": "URL of the Mangrove Markets MCP server"
+        },
+        "apiKey": {
+          "type": "string",
+          "description": "API key for authenticated requests"
+        },
+        "defaultNetwork": {
+          "type": "string",
+          "enum": ["mainnet", "testnet", "devnet"],
+          "default": "testnet",
+          "description": "XRPL network to use"
+        },
+        "autoRefreshInterval": {
+          "type": "number",
+          "default": 30000,
+          "description": "Auto-refresh interval in milliseconds"
+        }
+      },
+      "required": ["mcpServerUrl"]
+    },
+    "ui": {
+      "dashboard": {
+        "enabled": true,
+        "title": "Mangrove Markets",
+        "sections": [
+          {
+            "id": "overview",
+            "title": "Overview",
+            "widgets": ["stats", "recentActivity"]
+          },
+          {
+            "id": "marketplace",
+            "title": "Marketplace",
+            "widgets": ["listings", "createListing"]
+          },
+          {
+            "id": "dex",
+            "title": "DEX",
+            "widgets": ["swap", "quotes", "pool"]
+          }
+        ]
+      }
+    }
+  },
+  "dependencies": {
+    "@openclaw/plugin-sdk": ">=0.1.0"
+  },
+  "hooks": [
+    {
+      "event": "onAgentCall",
+      "handler": "handlers/agentCall"
+    },
+    {
+      "event": "onTaskComplete",
+      "handler": "handlers/taskComplete"
+    }
+  ],
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": false
+  },
+  "mcpServers": {
+    "mangrovemarkets": {
+      "command": "python",
+      "args": ["-m", "src.mcp.server"],
+      "env": {
+        "MCP_SERVER_URL": "${config.mcpServerUrl}"
+      }
+    }
+  }
+}
