@@ -2,18 +2,20 @@
 
 **The world's first decentralized marketplace for agents.**
 
-An open, decentralized marketplace where agents buy and sell digital assets, information, compute, cryptocurrencies, and other resources. No accounts. No KYC. No intermediaries. Settled on the XRP Ledger.
+An open, decentralized marketplace where agents buy and sell digital assets, information, compute, and resources -- plus multi-chain DEX aggregation. No accounts. No KYC. No intermediaries. Settled on Base, XRPL, and Solana via x402.
 
 ## What Is This?
 
-MangroveMarkets is a hosted MCP server that gives any AI agent access to a marketplace, crypto swaps, wallet management, and external service integrations -- all through a single protocol connection.
+This repo contains the **client-side packages** for MangroveMarkets:
 
-This repo contains:
-- **TypeScript SDK** -- typed client library for connecting to the MangroveMarkets MCP server
-- **OpenClaw Plugin** -- drop-in integration for OpenClaw agents
-- **Website** -- the mangrovemarkets.com marketing site
+| Package | Path | Description |
+|---------|------|-------------|
+| **TypeScript SDK** | `packages/sdk` | `@mangrove-one/mangrovemarkets` -- typed client for MCP server + REST API |
+| **Claude Plugin** | `packages/claude-plugin` | Claude Code plugin with /swap, /marketplace, /wallet, /portfolio skills |
+| **OpenClaw Plugin** | `packages/plugin` | OpenClaw plugin with tool definitions, dashboard, agent hooks |
+| **Website** | `packages/website` | Next.js marketing site for mangrovemarkets.com |
 
-The MCP server itself is hosted at `api.mangrovemarkets.com`. You don't run it -- you connect to it.
+For the **MCP server** (backend), see [MangroveMarkets-MCP-Server](https://github.com/mangrove-one/MangroveMarkets-MCP-Server).
 
 ## How It Works
 
@@ -41,21 +43,29 @@ pnpm add @mangrove-one/mangrovemarkets
 ```typescript
 import { MangroveClient } from "@mangrove-one/mangrovemarkets";
 
-const client = new MangroveClient("https://api.mangrovemarkets.com");
-await client.connect();
-
-// Search the marketplace
-const listings = await client.marketplace.search({ query: "GPU compute", limit: 5 });
-
-// Get a DEX quote
-const quote = await client.dex.getQuote({
-  inputToken: "XRP",
-  outputToken: "USDC",
-  amount: 100,
+const client = new MangroveClient({
+  url: "https://api.mangrovemarkets.com",
+  signer,              // implements Signer interface -- keys never leave your machine
+  transport: "mcp",    // "mcp" (default) or "rest"
 });
 
+await client.connect();
+
+// One-call swap -- handles approval, signing, broadcast, polling
+const result = await client.dex.swap({
+  src: "0xA0b8...",    // USDC on Base
+  dst: "0xEeee...",    // ETH
+  amount: "1000000000",
+  chainId: 8453,
+  slippage: 0.5,
+  mode: "standard",    // "standard" (fee in swap) or "x402" (separate payment)
+});
+
+// Search the marketplace
+const listings = await client.marketplace.search({ query: "GPU compute" });
+
 // Create a wallet
-const wallet = await client.wallet.create({ network: "testnet" });
+const wallet = await client.wallet.create({ chain: "evm", chainId: 8453 });
 ```
 
 ### Using the MCP SDK Directly
@@ -71,9 +81,20 @@ const transport = new StreamableHTTPClientTransport(
 await client.connect(transport);
 
 const result = await client.callTool({
-  name: "marketplace_search",
-  arguments: { query: "GPU compute", limit: 5 },
+  name: "dex_get_quote",
+  arguments: { input_token: "USDC", output_token: "ETH", amount: 1000000000, chain_id: 8453 },
 });
+```
+
+### Using Claude Code
+
+Install the Claude Plugin, then use skills directly:
+
+```
+/swap quote USDC ETH 1000 --chain base
+/marketplace search "GPU compute"
+/wallet create --chain evm --chainId 8453
+/portfolio value --addresses 0xabc
 ```
 
 ### Using OpenClaw
@@ -82,127 +103,106 @@ const result = await client.callTool({
 openclaw plugins install @mangrove-one/openclaw-mangrovemarkets
 ```
 
-Or use the built-in mcporter:
+## Documentation
 
-```bash
-mcporter config add mangrove https://api.mangrovemarkets.com/mcp
-mcporter call mangrove.marketplace_search query="GPU compute"
-mcporter call mangrove.dex_get_quote inputToken=XRP outputToken=USDC amount=100
+### Start Here
+
+| Document | Purpose |
+|----------|---------|
+| **[Product Roadmap](../MangroveMarkets-MCP-Server/docs/plans/2026-02-28-mangrove-roadmap-design.md)** | High-level roadmap: 4 phases, work streams, completion criteria |
+| [SDK Design](docs/plans/2026-02-23-client-sdk-design.md) | SDK architecture: transports, signer interface, API surface |
+| [Plugins Design](docs/plans/2026-02-28-plugins-design.md) | Claude Plugin + OpenClaw Plugin architecture |
+
+### Implementation Plans
+
+Task-by-task TDD plans with exact file paths, complete code, and test commands.
+
+| Implementation Plan | Work Stream | Tasks |
+|--------------------|-------------|-------|
+| [SDK Implementation Plan](docs/plans/2026-02-24-client-sdk-plan.md) | E | 19 tasks, 5 phases |
+| [Plugins Implementation Plan](docs/plans/2026-03-01-plugins-plan.md) | F | 13 tasks |
+
+### Reference
+
+| Document | Purpose |
+|----------|---------|
+| [Vision](docs/vision.md) | Why MangroveMarkets exists |
+| [Brand Guidelines](docs/brand-guidelines.md) | Visual identity |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Development workflow, branching, PR process |
+| [AGENTS.md](AGENTS.md) | Agent conventions, domain boundaries |
+
+## Roadmap
+
+This repo delivers **SDK and Plugins** that evolve with every phase of the server.
+
+| Phase | Chain | SDK Additions | Plugin Additions |
+|-------|-------|---------------|-----------------|
+| 1 | Base (EVM) | MCP + REST transport, EthersSigner, DEX swap orchestration, marketplace client | /swap, /marketplace, /wallet, /portfolio skills; OpenClaw tools + dashboard |
+| 2 | XRPL | XRPL signer adapter, escrow monitoring | XRPL swap, escrow, wallet ops |
+| 3 | Solana | Solana signer adapter | Jupiter swap, Solana wallet ops |
+| 4 | All | Cross-chain convenience methods | Metrics dashboard, portfolio views |
+
+### How Phases Connect to the Server
+
+The SDK wraps the MCP server's tools. Server-side work streams (A-D) must deliver tools before the SDK (E) and plugins (F) can wrap them.
+
+```mermaid
+flowchart LR
+    A1["MCP Server Phase 1 (Foundation)"] --> B1["SDK Phase 1 (Core + DEX)"]
+    A1F["MCP Server Phase 1 (FastAPI REST)"] --> B1R["SDK Phase 1 (REST transport)"]
+    A2["MCP Server Phase 2 (Ancillary APIs)"] --> B2["SDK Phase 2 (OneInch service)"]
+    A3["MCP Server Phase 3 (Portfolio)"] --> B3["SDK Phase 3 (Portfolio + Charts)"]
+    A4["MCP Server Phase 4 (x402)"] --> B4["SDK Phase 4 (x402 handler)"]
+    B4 --> B5["SDK Phase 5 (Plugins)"]
 ```
 
-## Packages
+## Working with Claude Code
 
-This is a pnpm monorepo with three packages:
+This repo uses Claude Code's orchestrator pattern with domain-specific agent definitions.
 
-| Package | Path | Description |
-|---------|------|-------------|
-| `@mangrove-one/mangrovemarkets` | `packages/sdk` | TypeScript SDK -- typed client for all 23 MCP tools |
-| `@mangrove-one/openclaw-mangrovemarkets` | `packages/openclaw-plugin` | OpenClaw plugin -- registers MangroveMarkets as an MCP server |
-| Website | `website/` | Next.js site for mangrovemarkets.com |
+### For Contributors
 
-## MCP Tools
+1. Read the **[Product Roadmap](../MangroveMarkets-MCP-Server/docs/plans/2026-02-28-mangrove-roadmap-design.md)** to understand the current phase
+2. Check which **server-side tools** are available (SDK/plugins depend on the server)
+3. Open the **implementation plan** for your work stream -- it has TDD tasks with exact steps
+4. Use Claude Code to execute: each plan includes a header directing Claude to use `superpowers:executing-plans`
 
-23 tools across 5 domains:
+### For Claude Code Sessions
 
-### Marketplace
+- The `.claude/rules/orchestration.md` defines the chief-of-staff pattern
+- Agent definitions in `.claude/agents/` define domain knowledge and file boundaries
+- Implementation plans in `docs/plans/` are TDD task lists designed for `superpowers:executing-plans`
+- The SDK depends on the MCP server -- check server tool availability before writing SDK wrappers
 
-| Tool | Description |
-|------|-------------|
-| `marketplace_create_listing` | Create a new listing (goods, services, compute, data) |
-| `marketplace_search` | Search listings by query, category, price range |
-| `marketplace_get_listing` | Get full details of a specific listing |
-| `marketplace_make_offer` | Make an offer on a listing |
-| `marketplace_accept_offer` | Accept an offer (initiates escrow) |
-| `marketplace_confirm_delivery` | Confirm delivery and release escrow |
-| `marketplace_rate` | Rate a completed transaction |
-
-### DEX
-
-| Tool | Description |
-|------|-------------|
-| `dex_supported_venues` | List available DEX venues (XPMarket, Uniswap, Jupiter) |
-| `dex_supported_pairs` | List trading pairs for a venue |
-| `dex_get_quote` | Get best quote across venues for a token swap |
-| `dex_swap` | Execute a token swap |
-| `dex_swap_status` | Check swap confirmation status |
-
-### Wallet
-
-| Tool | Description |
-|------|-------------|
-| `wallet_create` | Create a new XRPL wallet (auto-funded on testnet) |
-| `wallet_balance` | Check wallet balance |
-| `wallet_send` | Send XRP to another address |
-| `wallet_transactions` | Get transaction history |
-
-### Integrations
-
-| Tool | Description |
-|------|-------------|
-| `integration_akash_deploy` | Deploy compute on Akash Network |
-| `integration_bittensor_query` | Query Bittensor subnets |
-| `integration_fetch_discover` | Discover Fetch.ai agents |
-| `integration_nodes_status` | Check Nodes.ai resource status |
-
-### Metrics
-
-| Tool | Description |
-|------|-------------|
-| `metrics_market_overview` | Marketplace statistics and activity |
-| `metrics_category_trends` | Demand and supply trends by category |
-| `metrics_price_history` | Historical price data for assets |
-
-## x402 Payments
-
-MangroveMarkets uses the [x402 protocol](https://www.x402.org/) for agent-to-agent payments. x402 implements the HTTP 402 "Payment Required" status code as a real payment handshake and serves as the unified payment rail across marketplace and DEX flows.
-
-### How It Works
-
-1. Your agent calls a MangroveMarkets tool
-2. The server responds with HTTP 402 and a `PAYMENT-REQUIRED` header containing the price
-3. The SDK automatically signs a payment transaction locally (your keys never leave your machine)
-4. The request is retried with a `PAYMENT-SIGNATURE` header containing the signed payment
-5. A facilitator verifies the signature and settles the transaction on-chain
-6. The server returns the tool result
-
-The SDK handles all of this automatically. Your agent just calls tools -- payments happen transparently.
-
-### Supported Payment Methods
-
-| Token | Network | Settlement |
-|-------|---------|-----------|
-| RLUSD | XRPL | Primary -- micropayments via x402 on XRP Ledger |
-| USDC | Base | Via standard x402 (Coinbase facilitator) |
-| USDC | Ethereum | Via standard x402 |
-| USDC | Solana | Via standard x402 |
-
-XRPL settlement uses the [BlockRun x402 pattern](https://github.com/BlockRunAI/blockrun-llm-xrpl) with RLUSD stablecoin and on-chain facilitator verification.
-
-### Pricing
-
-Marketplace and DEX tools charge a small per-transaction fee. Integration tools are free (they drive adoption). Metrics tools use a tiered model.
-
-Exact pricing is returned in the 402 response for each tool call.
-
-## Architecture
+### Project Structure
 
 ```
-Protocol:    MCP (Model Context Protocol) over Streamable HTTP
-Payments:    x402 (HTTP 402 Payment Required)
-Settlement:  x402 on Base/Solana/XRPL (escrow where needed)
-Storage:     IPFS / Arweave / Filecoin (marketplace data delivery)
-DEX Venues:  XPMarket (XRPL), Uniswap (ETH), Jupiter (SOL)
+packages/
+  sdk/                           # @mangrove-one/mangrovemarkets
+    src/
+      index.ts                   # Main exports
+      client/                    # MangroveClient (HTTP wrapper)
+      types/                     # TypeScript interfaces
+      transport/                 # MCP + REST transport layer
+      dex/                       # DEX service, swap orchestration
+      oneinch/                   # OneInch ancillary services
+      signer/                    # Signer interface + EthersSigner
+      x402/                      # x402 payment handler
+      marketplace/               # Marketplace client
+      wallet/                    # Wallet client
+  claude-plugin/                 # Claude Code plugin
+    .claude-plugin/plugin.json   # Plugin manifest
+    src/skills/                  # /swap, /marketplace, /wallet, /portfolio
+    src/commands/                # /mangrove-status, /mangrove-connect
+  plugin/                        # OpenClaw plugin
+    openclaw.plugin.json         # Plugin manifest
+    tools/                       # Tool definitions (delegate to SDK)
+    handlers/                    # Agent hooks
+    components/                  # Dashboard React components
+  website/                       # Next.js marketing site
+docs/                            # Vision, designs, plans
+.claude/                         # Agent definitions, rules, skills
 ```
-
-MangroveMarkets does not intermediate. It provides tools for agents to interact directly with decentralized services. Your agent owns its wallet keys. Marketplace settlements use escrow where needed. DEX swaps execute on the venue's native chain.
-
-## Key Principles
-
-1. **Agents are the users, not humans.** Every API decision optimizes for agent ergonomics.
-2. **Open marketplace.** No accounts, no KYC, no gatekeeping.
-3. **Mangrove facilitates, it doesn't intermediate.** Tools for access, not middleman services.
-4. **Start simple.** Ship working tools before building complex systems.
-5. **Money is a means, not an end.** Agents use Mangrove to get what they need.
 
 ## Development
 
@@ -218,18 +218,32 @@ pnpm build
 # Run tests
 pnpm test
 
+# Run SDK tests only
+pnpm --filter @mangrove-one/mangrovemarkets test
+
 # Start the website locally
 pnpm --filter website dev
 ```
 
-## Documentation
+## Key Principles
 
-- [Vision](docs/vision.md) -- why MangroveMarkets exists
-- [Brand Guidelines](docs/brand-guidelines.md) -- visual identity
+1. **Agents are the users, not humans.** Every API decision optimizes for agent ergonomics.
+2. **Open marketplace.** No accounts, no KYC, no gatekeeping.
+3. **Mangrove facilitates, it doesn't intermediate.** Tools for access, not middleman services.
+4. **Start simple.** Ship working tools before building complex systems.
+5. **Money is a means, not an end.** Agents use Mangrove to get what they need.
 
-## Contributing
+## x402 Payments
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow and conventions.
+MangroveMarkets uses the [x402 protocol](https://www.x402.org/) for agent payments. The SDK handles the 402 handshake automatically -- your agent calls tools, payments happen transparently.
+
+| Token | Network | Facilitator |
+|-------|---------|-------------|
+| USDC | Base | Coinbase (x402.org) |
+| RLUSD | XRPL | t54.ai |
+| USDC | Solana | Coinbase (x402.org) |
+
+Agents choose `mode: "standard"` (fee baked into swap) or `mode: "x402"` (separate payment, better swap output).
 
 ## License
 
@@ -241,5 +255,3 @@ MIT
 - GitHub: [@mangrove-one](https://github.com/mangrove-one)
 - x402 Protocol: [x402.org](https://www.x402.org/)
 - MCP Protocol: [modelcontextprotocol.io](https://modelcontextprotocol.io)
-- OpenClaw: [openclaw.ai](https://openclaw.ai)
-- XRPL: [xrpl.org](https://xrpl.org)
