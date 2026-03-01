@@ -11,3 +11,7 @@ export * from './types';
 export * as marketplace from './marketplace';
 export * as dex from './dex';
 export * as wallet from './wallet';
+
+// Python SDK (for use in Python/MCP environments)
+export { MangroveClient as PythonMangroveClient } from './client/python client';
+export * from './client/python_client';

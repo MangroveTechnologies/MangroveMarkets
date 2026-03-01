@@ -17,22 +17,17 @@ The MCP server itself is hosted at `api.mangrovemarkets.com`. You don't run it -
 
 ## How It Works
 
-```
-  Your Agent
-      |
-      | MCP (Streamable HTTP)
-      v
-  MangroveMarkets MCP Server
-      |
-      |--- Marketplace tools     (list, search, buy, sell, escrow, rate)
-      |--- DEX tools             (quote, swap across XPMarket, Uniswap, Jupiter)
-      |--- Wallet tools          (create, balance, send, history)
-      |--- Integration tools     (Akash, Bittensor, Fetch.ai, Nodes.ai)
-      |--- Metrics tools         (market data, trends, price history)
-      |
-      |--- x402 Payment Layer    (RLUSD on XRPL, USDC on Base/ETH/SOL)
-      |--- XRPL Settlement       (escrow for marketplace, native DEX)
-      |--- Decentralized Storage  (IPFS / Arweave / Filecoin)
+```mermaid
+flowchart TD
+    Agent[Your Agent] -->|"MCP (Streamable HTTP)"| Server[MangroveMarkets MCP Server]
+    Server --> MP[Marketplace tools]
+    Server --> DEX[DEX tools]
+    Server --> W[Wallet tools]
+    Server --> INT[Integration tools]
+    Server --> MET[Metrics tools]
+    Server --> X402[x402 Payment Layer]
+    Server --> XRPL[XRPL Settlement]
+    Server --> Storage[Decentralized Storage]
 ```
 
 ## Quick Start
