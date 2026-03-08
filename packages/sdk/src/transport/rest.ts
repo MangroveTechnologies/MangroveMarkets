@@ -32,13 +32,13 @@ export class RestTransport implements Transport {
     });
 
     if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
+      const body = await response.json().catch(() => ({})) as Record<string, unknown>;
       throw new Error(
-        `REST call to ${name} failed (${response.status}): ${body.message || response.statusText}`,
+        `REST call to ${name} failed (${response.status}): ${(body as any).message || response.statusText}`,
       );
     }
 
-    return response.json();
+    return response.json() as Promise<ToolCallResult>;
   }
 
   async connect(): Promise<void> {}
