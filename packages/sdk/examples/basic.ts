@@ -1,46 +1,28 @@
-/**
- * Mangrove Markets SDK - Usage Examples
- * 
- * This file demonstrates how to use the TypeScript SDK to interact
- * with the Mangrove Markets marketplace and DEX.
- */
-import { MangroveClient } from './client/MangroveClient';
+import { MangroveClient, EthersSigner } from '@mangrovemarkets/sdk';
+// import { Wallet } from 'ethers'; // uncomment with real wallet
 
 async function main() {
-  // Initialize the client
+  // const wallet = new Wallet(process.env.PRIVATE_KEY!);
+  // const signer = new EthersSigner(wallet, [1, 8453, 42161]);
+
   const client = new MangroveClient({
-    baseUrl: process.env.MANGROVE_API_URL || 'http://localhost:8080',
-    apiKey: process.env.MANGROVE_API_KEY,
-    timeout: 30000,
+    url: process.env.MANGROVE_URL || 'https://api.mangrovemarkets.com',
+    // signer,
+    transport: 'mcp',
   });
 
-  try {
-    // Health check
-    const health = await client.health(true);
-    console.log('Health:', health);
+  await client.connect();
 
-    // List marketplace listings
-    const listings = await client.listListings({ limit: 10 });
-    console.log('Listings:', listings);
+  // Get a quote
+  const quote = await client.dex.getQuote({
+    src: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+    dst: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // ETH
+    amount: '1000000000', // 1000 USDC
+    chainId: 8453,
+  });
 
-    // Get a DEX quote
-    const quote = await client.getDexQuote({
-      fromToken: 'XRP',
-      toToken: 'MGVI',
-      amount: '100',
-      side: 'buy',
-    });
-    console.log('Quote:', quote);
-
-    // Get wallet balances
-    const balances = await client.getBalances('rABC123...');
-    console.log('Balances:', balances);
-
-  } catch (error) {
-    console.error('Error:', error);
-  } finally {
-    await client.close();
-  }
+  console.log('Quote:', quote);
+  await client.disconnect();
 }
 
-main();
+main().catch(console.error);

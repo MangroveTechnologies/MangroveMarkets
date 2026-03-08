@@ -1,122 +1,93 @@
 # Contributing to MangroveMarkets
 
-MangroveMarkets is an open, decentralized marketplace for AI agents. It consists of two products:
-
-1. **Mangrove Marketplace** -- an agent-to-agent marketplace for buying and selling information, compute, and digital resources, settled in XRP on the XRPL.
-2. **Mangrove DEX Aggregator** -- a unified interface for agents to swap crypto across multiple decentralized exchanges (XPMarket, Uniswap, Jupiter, and others).
-
-Both are delivered as an MCP server with tools and skills. Agents are the first-class users, not humans.
+TypeScript SDK, Claude Plugin, and OpenClaw Plugin for MangroveMarkets -- the open, decentralized marketplace and DEX aggregator for AI agents.
 
 ## Prerequisites
 
-- **Python 3.11+**
-- **Docker** and **Docker Compose**
+- **Node.js 18+**
+- **pnpm 8+** (`npm install -g pnpm`)
 - **Git**
 
-## Getting started
+## Getting Started
 
 1. **Clone the repository:**
-
    ```bash
-   git clone https://github.com/mangrove-one/MangroveMarkets.git
+   git clone https://github.com/MangroveTechnologies/MangroveMarkets.git
    cd MangroveMarkets
    ```
 
-2. **Create a virtual environment and install dependencies:**
-
+2. **Install dependencies:**
    ```bash
-   python -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
+   pnpm install
    ```
 
-3. **Configure your environment:**
-
-   The project uses JSON config files in `src/shared/config/` -- one per environment (`local-config.json`, `dev-config.json`, `test-config.json`, `prod-config.json`). Set the `ENVIRONMENT` env var to select which config file is loaded. It defaults to `"local"` if unset.
-
+3. **Run tests:**
    ```bash
-   export ENVIRONMENT=local
+   pnpm test
    ```
 
-   Edit `src/shared/config/local-config.json` to fill in any required values (wallet seeds, API keys). Never commit secrets.
-
-4. **Run the MCP server locally:**
-
+4. **Build all packages:**
    ```bash
-   python -m src.app
+   pnpm build
    ```
 
-5. **Run the test suite:**
+## Monorepo Structure
 
-   ```bash
-   pytest
-   ```
+```
+packages/
+  sdk/              # @mangrovemarkets/sdk -- TypeScript client library
+  claude-plugin/    # Claude Code plugin (planned)
+  openclaw-plugin/  # OpenClaw plugin (planned)
+  website/          # mangrovemarkets.com marketing site
+```
 
-## Branch naming convention
+## Branch Naming
 
-Use the format `<type>/<short-description>`:
+Use `<type>/<short-description>`:
 
-| Type       | Purpose                                    |
-|------------|--------------------------------------------|
-| `feat`     | New feature                                |
-| `fix`      | Bug fix                                    |
-| `docs`     | Documentation changes                      |
+| Type | Purpose |
+|------|---------|
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation changes |
 | `refactor` | Code restructuring without behavior change |
-| `test`     | Adding or updating tests                   |
-| `chore`    | Maintenance, tooling, CI, dependencies     |
+| `test` | Adding or updating tests |
+| `chore` | Maintenance, tooling, CI, dependencies |
 
-Examples:
-- `feat/marketplace-search`
-- `fix/escrow-timeout-handling`
-- `docs/update-vision`
-- `refactor/dex-adapter-interface`
+Examples: `feat/sdk-marketplace-client`, `fix/transport-timeout`, `docs/sdk-readme`
 
-## Commit message format
+## Commit Messages
 
-Follow [Conventional Commits](https://www.conventionalcommits.org/). The format is:
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 <type>(<optional scope>): <description>
 ```
 
-The type must be one of: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`.
-
-The scope is optional and identifies the affected domain: `marketplace`, `dex`, `wallet`, `mcp`, `metrics`, `integrations`, `shared`, `infra`.
+Scopes: `sdk`, `plugin`, `website`, `docs`
 
 Examples:
-- `feat(marketplace): add listing search by category`
-- `fix(dex): handle timeout on Jupiter quote requests`
-- `docs: update contributing guide`
-- `test(wallet): add balance check edge cases`
-- `chore(infra): upgrade Docker base image`
+- `feat(sdk): add marketplace client service`
+- `fix(sdk): handle transport disconnect gracefully`
+- `test(sdk): add SwapOrchestrator approval flow tests`
 
-Write the description in imperative mood ("add feature" not "added feature").
+Imperative mood. Keep the first line under 72 characters.
 
-## Pull request process
+## Code Style
 
-1. **Create a branch** from `main` using the naming convention above.
-2. **Make your changes.** Keep PRs focused -- one logical change per PR.
-3. **Write tests** for new functionality and ensure existing tests pass.
-4. **Open a pull request** against `main`. Fill out the PR template completely.
-5. **Request review.** At least one approval is required before merging.
-6. **Address feedback** promptly. Resolve all comments before merging.
+- **TypeScript** with strict mode
+- **ESM modules** (type: "module" in package.json)
+- **vitest** for testing
+- **JSDoc** on all exported classes, interfaces, and public methods
+- **Google-style JSDoc** with @param and @returns tags
 
-## Code review expectations
+## Pull Request Process
 
-- **Correctness**: Does the code do what it claims?
-- **Error handling**: Are errors structured and actionable? No silent failures.
-- **Type safety**: Are type hints present on all function signatures?
-- **Tests**: Is the change adequately tested?
-- **Clarity**: Is the code readable without needing explanation?
-- **Scope**: Does the PR stay within its stated purpose?
-- **Secrets**: No wallet seeds, API keys, or credentials in the diff.
+1. Create a branch from `main`.
+2. Write tests for new functionality.
+3. Open a PR with a clear description.
+4. All tests must pass before merge.
 
-Reviewers should be constructive and specific. Authors should explain non-obvious decisions in PR descriptions or code comments.
+## AI Agent Contributors
 
-## Style and conventions
-
-See [docs/conventions.md](docs/conventions.md) for the full coding style guide, including Python conventions, naming rules, error handling patterns, and MCP tool design.
-
-## AI agent contributors
-
-If you are an AI agent contributing to this project, read [AGENTS.md](AGENTS.md) for agent-specific context, project principles, and architectural guidelines.
+Read [AGENTS.md](AGENTS.md) for agent-specific context and architectural guidelines.

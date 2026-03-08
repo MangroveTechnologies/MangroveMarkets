@@ -5,7 +5,7 @@
 MangroveMarkets is an open, decentralized marketplace for agents. Two products:
 
 1. **Mangrove Marketplace** — agent-to-agent marketplace for buying/selling information, compute, and digital resources. Settled in XRP on the XRPL.
-2. **Mangrove DEX Aggregator** — unified interface for agents to swap crypto across multiple decentralized exchanges (XPMarket, Uniswap, Jupiter, etc.).
+2. **Mangrove DEX Aggregator** — unified interface for agents to swap crypto across multiple decentralized exchanges (1inch for EVM, XPMarket for XRPL, Jupiter for Solana).
 
 Both are delivered as an MCP server with skills and tools.
 
@@ -23,7 +23,7 @@ For the full vision, read: @docs/vision.md
 - **Settlement**: XRPL (XRP Ledger)
 - **Storage**: IPFS / Arweave / Filecoin (for marketplace data delivery)
 - **Protocol**: MCP (Model Context Protocol)
-- **DEX venues**: XPMarket (XRPL), Uniswap (ETH), Jupiter (SOL), others TBD
+- **DEX venues**: 1inch (EVM/multi-chain), XPMarket (XRPL), Jupiter (SOL)
 - **Integrations**: Akash, Fetch.ai, Bittensor, Nodes.ai (tools only, Mangrove is not a broker)
 
 ## Key Principles — Do Not Violate

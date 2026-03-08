@@ -1,17 +1,31 @@
-/**
- * Mangrove Markets TypeScript SDK
- * 
- * Unified client for interacting with the Mangrove Markets agent marketplace
- * and DEX. Provides type-safe access to all MCP server tools.
- */
-export { MangroveClient } from './client/MangroveClient';
-export * from './types';
+// Main client
+export { MangroveClient } from './client';
 
-// Re-export domain modules
-export * as marketplace from './marketplace';
-export * as dex from './dex';
-export * as wallet from './wallet';
+// Types
+export type {
+  MangroveConfig,
+  Quote,
+  UnsignedTransaction,
+  BroadcastResult,
+  TransactionStatus,
+  SwapResult,
+  SwapParams,
+  QuoteParams,
+  ApproveParams,
+  BroadcastParams,
+  SwapStatusParams,
+  BillingMode,
+  Transport,
+  ToolCallResult,
+  Signer,
+} from './types';
 
-// Python SDK (for use in Python/MCP environments)
-export { MangroveClient as PythonMangroveClient } from './client/python client';
-export * from './client/python_client';
+// Services
+export { DexService } from './dex';
+
+// Signer
+export { EthersSigner } from './signer/ethers';
+
+// Transports
+export { McpTransport } from './transport/mcp';
+export { RestTransport } from './transport/rest';

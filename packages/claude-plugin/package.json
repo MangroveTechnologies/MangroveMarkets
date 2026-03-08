@@ -1,0 +1,7 @@
+{
+  "name": "@mangrovemarkets/claude-plugin",
+  "version": "0.1.0",
+  "description": "Claude plugin for Mangrove Markets",
+  "private": true,
+  "license": "MIT"
+}

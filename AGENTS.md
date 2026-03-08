@@ -8,10 +8,10 @@ MangroveMarkets is an open, decentralized marketplace built for AI agents — no
 
 ## File Conventions
 
-- No all-caps markdown filenames except `README.md` and this file (`AGENTS.md`)
+- No all-caps markdown filenames except `README.md` and `CLAUDE.md` and this file (`AGENTS.md`)
 - There is only ever one `AGENTS.md`, and it lives in the project root
 - Documentation lives in `docs/`
-- Python modules use `snake_case.py`; non-Python files use `lowercase-hyphens`
+- TypeScript files use `camelCase.ts`; non-code files use `lowercase-hyphens`
 - See `docs/conventions.md` for full coding conventions
 
 ## Architecture — Two Distinct Products
@@ -20,7 +20,7 @@ MangroveMarkets is an open, decentralized marketplace built for AI agents — no
 An agent-to-agent marketplace (like eBay for agents) where agents list, discover, and transact digital goods and services. Settlement is in XRP on the XRPL. Mangrove facilitates discovery, escrow, and delivery — not execution.
 
 ### 2. The Mangrove DEX Aggregator
-A unified interface for agents to trade crypto across multiple decentralized exchanges (XPMarket, Uniswap, Jupiter, etc.). Mangrove is not the execution venue — it routes to the right DEX and provides a single clean interface.
+A unified interface for agents to trade crypto across multiple decentralized exchanges -- 1inch (EVM), XPMarket (XRPL), Jupiter (Solana). Mangrove is not the execution venue -- it routes to the right DEX and provides a single clean interface.
 
 ## Delivery Mechanism
 
@@ -38,15 +38,15 @@ MangroveMarkets is delivered to agents as:
 
 ## Tech Stack
 
-- **Language**: Python 3.11+
-- **MCP server**: FastMCP (Python SDK)
-- **Web framework**: Flask (health checks, admin)
-- **XRPL client**: xrpl-py
-- **Data models**: Pydantic v2
-- **Settlement layer**: XRPL (XRP Ledger)
-- **Decentralized storage**: IPFS / Arweave / Filecoin
-- **Database**: PostgreSQL
-- **Deployment**: GCP Cloud Run, Terraform
+- **Language**: TypeScript (strict mode, ESM)
+- **Runtime**: Node.js 18+
+- **Package manager**: pnpm 8+ (monorepo with workspaces)
+- **Testing**: vitest
+- **Build**: tsup / tsc
+- **Server SDK consumed**: MangroveMarkets-MCP-Server (Python, FastAPI, FastMCP)
+- **Transports**: MCP over Streamable HTTP, REST (FastAPI)
+- **Settlement layer**: XRPL (XRP Ledger), x402 (EVM)
+- **DEX venues**: 1inch (EVM), XPMarket (XRPL), Jupiter (Solana)
 
 ## Revenue Model
 
@@ -58,18 +58,21 @@ MangroveMarkets is delivered to agents as:
 ## Project Structure
 
 ```
-src/
-  app.py              # Flask + MCP entrypoint
-  marketplace/         # Product 1: Marketplace
-  dex/                 # Product 2: DEX Aggregator
-  wallet/              # Wallet management
-  integrations/        # External service tools
-  metrics/             # Market intelligence
-  mcp/                 # Unified MCP server
-  shared/              # Shared utilities (config, db, auth, types)
-tests/                 # Mirrors src/ structure
-docs/                  # Vision, specification, implementation plan, conventions
-infra/                 # Terraform IaC
+packages/
+  sdk/                 # @mangrovemarkets/sdk -- TypeScript client library
+    src/
+      client/          # MangroveClient, transport layer (MCP + REST)
+      dex/             # DexService, SwapOrchestrator
+      oneinch/         # OneInchService (1inch API wrapper)
+      marketplace/     # MarketplaceService (listings, offers, escrow)
+      wallet/          # WalletService (chain-agnostic)
+      signer/          # Signer interface + EthersSigner
+      types/           # Shared TypeScript types
+    tests/             # vitest tests mirroring src/
+  claude-plugin/       # Claude Code plugin (planned)
+  openclaw-plugin/     # OpenClaw plugin (planned)
+  website/             # mangrovemarkets.com marketing site
+docs/                  # Vision, specification, SDK design
 .claude/agents/        # Subagent definitions
 ```
 

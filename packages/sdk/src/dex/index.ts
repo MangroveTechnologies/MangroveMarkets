@@ -1,3 +1,3 @@
-// DEX module - re-export types and helpers
-export * from '../types';
-export type { DexQuote, SwapRequest, SwapResponse } from '../types';
+export { DexService } from './service';
+export { SwapOrchestrator } from './swap';
+export * from './types';
