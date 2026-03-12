@@ -59,7 +59,8 @@ export class SwapOrchestrator {
     }
 
     // 3. Prepare swap
-    const unsignedTx = await this.dex.prepareSwap(quote.quoteId, slippage);
+    const walletAddress = await this.signer.getAddress();
+    const unsignedTx = await this.dex.prepareSwap({ quoteId: quote.quoteId, walletAddress, slippage });
 
     // 4. Sign
     const signedTx = await this.signer.signTransaction(unsignedTx);
@@ -104,7 +105,8 @@ export class SwapOrchestrator {
   }
 
   private async approveAndWait(tokenAddress: string, chainId: number): Promise<void> {
-    const approveTx = await this.dex.approveToken({ tokenAddress, chainId });
+    const walletAddress = await this.signer.getAddress();
+    const approveTx = await this.dex.approveToken({ tokenAddress, chainId, walletAddress });
     const signedApproval = await this.signer.signTransaction(approveTx);
     const approvalBroadcast = await this.dex.broadcast({
       chainId,

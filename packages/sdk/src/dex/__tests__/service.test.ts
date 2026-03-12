@@ -32,7 +32,7 @@ describe('DexService', () => {
 
     expect(result.quoteId).toBe('q-123');
     expect(transport.calls[0].name).toBe('dex_get_quote');
-    expect(transport.calls[0].params.src).toBe('0xA0b8...');
+    expect(transport.calls[0].params.input_token).toBe('0xA0b8...');
   });
 
   it('prepareSwap calls dex_prepare_swap and returns UnsignedTransaction', async () => {
@@ -45,7 +45,7 @@ describe('DexService', () => {
     };
     transport.addResponse('dex_prepare_swap', mockTx as any);
 
-    const result = await dex.prepareSwap('q-123', 0.5);
+    const result = await dex.prepareSwap({ quoteId: 'q-123', walletAddress: '0xWallet', slippage: 0.5 });
 
     expect(result.to).toBe('0x1111...');
     expect(transport.calls[0].params.quote_id).toBe('q-123');
@@ -62,7 +62,7 @@ describe('DexService', () => {
     };
     transport.addResponse('dex_approve_token', mockTx as any);
 
-    const result = await dex.approveToken({ tokenAddress: '0xA0b8...', chainId: 8453 });
+    const result = await dex.approveToken({ tokenAddress: '0xA0b8...', chainId: 8453, walletAddress: '0xWallet' });
 
     expect(result.data).toContain('0x095ea7b3');
     expect(transport.calls[0].params.token_address).toBe('0xA0b8...');
@@ -105,7 +105,7 @@ describe('DexService', () => {
 
   it('supportedPairs calls dex_supported_pairs', async () => {
     transport.addResponse('dex_supported_pairs', { pairs: [{ base: 'ETH', quote: 'USDC' }] });
-    const result = await dex.supportedPairs(8453);
-    expect(transport.calls[0].params.chain_id).toBe(8453);
+    const result = await dex.supportedPairs('1inch');
+    expect(transport.calls[0].params.venue_id).toBe('1inch');
   });
 });

@@ -147,6 +147,8 @@ export interface ApproveParams {
   tokenAddress: string;
   /** EVM chain ID. */
   chainId: number;
+  /** The agent's public wallet address. */
+  walletAddress: string;
   /** Specific approval amount (wei). Omit for unlimited approval. */
   amount?: string;
 }

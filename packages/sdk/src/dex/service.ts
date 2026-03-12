@@ -24,8 +24,8 @@ export class DexService {
    */
   async getQuote(params: QuoteParams): Promise<Quote> {
     const result = await this.transport.callTool('dex_get_quote', {
-      src: params.src,
-      dst: params.dst,
+      input_token: params.src,
+      output_token: params.dst,
       amount: params.amount,
       chain_id: params.chainId,
       mode: params.mode || 'standard',
@@ -39,10 +39,11 @@ export class DexService {
    * @param slippage - Maximum slippage percentage (default 0.5%).
    * @returns Unsigned transaction calldata for the swap.
    */
-  async prepareSwap(quoteId: string, slippage: number = 0.5): Promise<UnsignedTransaction> {
+  async prepareSwap(params: { quoteId: string; walletAddress: string; slippage?: number }): Promise<UnsignedTransaction> {
     const result = await this.transport.callTool('dex_prepare_swap', {
-      quote_id: quoteId,
-      slippage,
+      quote_id: params.quoteId,
+      wallet_address: params.walletAddress,
+      slippage: params.slippage ?? 0.5,
     });
     return result as unknown as UnsignedTransaction;
   }
@@ -56,6 +57,7 @@ export class DexService {
     const result = await this.transport.callTool('dex_approve_token', {
       token_address: params.tokenAddress,
       chain_id: params.chainId,
+      wallet_address: params.walletAddress,
       ...(params.amount ? { amount: params.amount } : {}),
     });
     return result as unknown as UnsignedTransaction;
@@ -102,10 +104,9 @@ export class DexService {
    * @param venue - Optional venue name filter (e.g. '1inch').
    * @returns Supported trading pair metadata.
    */
-  async supportedPairs(chainId?: number, venue?: string): Promise<ToolCallResult> {
+  async supportedPairs(venueId: string): Promise<ToolCallResult> {
     return this.transport.callTool('dex_supported_pairs', {
-      ...(chainId ? { chain_id: chainId } : {}),
-      ...(venue ? { venue } : {}),
+      venue_id: venueId,
     });
   }
 }
