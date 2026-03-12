@@ -266,7 +266,7 @@ async function testMcpTransport() {
   header('8. McpTransport -- connect and list tools');
   try {
     const { McpTransport } = await import('../src/transport/mcp.js');
-    const transport = new McpTransport(SERVER_URL);
+    const transport = new McpTransport(`${SERVER_URL}/mcp`);
     await transport.connect();
 
     // Try calling a simple tool through MCP
