@@ -38,7 +38,15 @@ export class RestTransport implements Transport {
       );
     }
 
-    return response.json() as Promise<ToolCallResult>;
+    const body = await response.json() as ToolCallResult;
+
+    // Server wraps errors as {error: true, code: "...", message: "..."}
+    if (body && (body as any).error === true) {
+      const msg = (body as any).message || (body as any).code || 'unknown error';
+      throw new Error(`Tool ${name} failed: ${msg}`);
+    }
+
+    return body;
   }
 
   async connect(): Promise<void> {}

@@ -9,6 +9,12 @@ import type {
   BroadcastParams,
   SwapStatusParams,
 } from '../types/dex';
+import {
+  normalizeQuote,
+  normalizeUnsignedTx,
+  normalizeBroadcastResult,
+  normalizeTransactionStatus,
+} from '../utils/normalize';
 
 /**
  * Low-level DEX service wrapping individual dex_* MCP tools.
@@ -30,7 +36,7 @@ export class DexService {
       chain_id: params.chainId,
       mode: params.mode || 'standard',
     });
-    return result as unknown as Quote;
+    return normalizeQuote(result as Record<string, unknown>);
   }
 
   /**
@@ -45,7 +51,7 @@ export class DexService {
       wallet_address: params.walletAddress,
       slippage: params.slippage ?? 0.5,
     });
-    return result as unknown as UnsignedTransaction;
+    return normalizeUnsignedTx(result as Record<string, unknown>);
   }
 
   /**
@@ -60,7 +66,7 @@ export class DexService {
       wallet_address: params.walletAddress,
       ...(params.amount ? { amount: params.amount } : {}),
     });
-    return result as unknown as UnsignedTransaction;
+    return normalizeUnsignedTx(result as Record<string, unknown>);
   }
 
   /**
@@ -74,7 +80,7 @@ export class DexService {
       signed_tx: params.signedTx,
       mev_protection: params.mevProtection || false,
     });
-    return result as unknown as BroadcastResult;
+    return normalizeBroadcastResult(result as Record<string, unknown>);
   }
 
   /**
@@ -87,7 +93,7 @@ export class DexService {
       tx_hash: params.txHash,
       chain_id: params.chainId,
     });
-    return result as unknown as TransactionStatus;
+    return normalizeTransactionStatus(result as Record<string, unknown>);
   }
 
   /**

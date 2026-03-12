@@ -59,7 +59,7 @@ async function main() {
   const { ethers } = await import('ethers');
 
   const wallet = new ethers.Wallet(walletSecret);
-  const signer = new EthersSigner(wallet);
+  const signer = new EthersSigner(wallet, [CHAIN_ID]);
   const client = new MangroveClient({
     url: SERVER_URL,
     transport: 'rest',
@@ -72,7 +72,7 @@ async function main() {
 
   // -- Step 2: Get quote --
   header('2. Get quote (USDC -> USDT on Base)');
-  let quote: any;
+  let quote: Awaited<ReturnType<typeof client.dex.getQuote>>;
   try {
     quote = await client.dex.getQuote({
       src: USDC,
@@ -81,21 +81,17 @@ async function main() {
       chainId: CHAIN_ID,
       mode: 'standard',
     });
-    console.log(`  [OK] Quote ID: ${quote.quote_id || quote.quoteId}`);
-    console.log(`  [OK] Venue: ${quote.venue_id || quote.venueId}`);
-    console.log(`  [OK] Input: ${quote.input_amount || quote.inputAmount}`);
-    console.log(`  [OK] Output: ${quote.output_amount || quote.outputAmount}`);
-    console.log(`  [OK] Rate: ~${(Number(quote.output_amount || quote.outputAmount) / Number(SWAP_AMOUNT)).toFixed(4)} USDT per USDC`);
+    console.log(`  [OK] Quote ID: ${quote.quoteId}`);
+    console.log(`  [OK] Venue: ${quote.venueId}`);
+    console.log(`  [OK] Input: ${quote.inputAmount}`);
+    console.log(`  [OK] Output: ${quote.outputAmount}`);
   } catch (e: any) {
     console.error(`  [FAIL] Quote failed: ${e.message}`);
-    console.log('\n  This likely means the 1inch API key is not configured on the server.');
-    console.log('  The quote endpoint requires a valid 1inch API key in server config.');
     process.exit(1);
   }
 
   // -- Step 3: Check approval --
   header('3. Check ERC-20 approval');
-  const quoteId = quote.quote_id || quote.quoteId;
   try {
     const approval = await client.dex.approveToken({
       tokenAddress: USDC,
@@ -103,8 +99,10 @@ async function main() {
       walletAddress,
       amount: SWAP_AMOUNT,
     });
-    if (approval && approval.payload) {
+    if (approval && approval.to && approval.data) {
       console.log('  [OK] Approval needed -- signing and broadcasting...');
+      console.log(`  [OK] Approve to: ${approval.to}`);
+      console.log(`  [OK] Approve data: ${approval.data.slice(0, 20)}...`);
 
       // Sign approval tx
       const signedApproval = await signer.signTransaction(approval);
@@ -115,11 +113,21 @@ async function main() {
         chainId: CHAIN_ID,
         signedTx: signedApproval,
       });
-      console.log(`  [OK] Approval broadcast: ${approvalResult.tx_hash || approvalResult.txHash}`);
+      console.log(`  [OK] Approval broadcast: ${approvalResult.txHash}`);
+      console.log(`  [OK] Explorer: https://basescan.org/tx/${approvalResult.txHash}`);
 
       // Wait for confirmation
       console.log('  [OK] Waiting for approval confirmation...');
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      for (let i = 0; i < 20; i++) {
+        try {
+          const status = await client.dex.txStatus({ txHash: approvalResult.txHash, chainId: CHAIN_ID });
+          if (status.status === 'confirmed') {
+            console.log('  [OK] Approval confirmed!');
+            break;
+          }
+        } catch { /* keep polling */ }
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
     } else {
       console.log('  [OK] No approval needed (already approved or native token)');
     }
@@ -130,20 +138,18 @@ async function main() {
 
   // -- Step 4: Prepare swap --
   header('4. Prepare swap (get unsigned calldata)');
-  let unsignedTx: any;
+  let unsignedTx: Awaited<ReturnType<typeof client.dex.prepareSwap>>;
   try {
     unsignedTx = await client.dex.prepareSwap({
-      quoteId,
+      quoteId: quote.quoteId,
       walletAddress,
       slippage: 1.0,
     });
-    console.log(`  [OK] Chain family: ${unsignedTx.chain_family || unsignedTx.chainFamily}`);
-    console.log(`  [OK] Has payload: ${!!unsignedTx.payload}`);
-    if (unsignedTx.payload) {
-      console.log(`  [OK] To: ${unsignedTx.payload.to}`);
-      console.log(`  [OK] Value: ${unsignedTx.payload.value}`);
-      console.log(`  [OK] Data: ${(unsignedTx.payload.data || '').slice(0, 30)}...`);
-    }
+    console.log(`  [OK] Chain ID: ${unsignedTx.chainId}`);
+    console.log(`  [OK] To: ${unsignedTx.to}`);
+    console.log(`  [OK] Value: ${unsignedTx.value}`);
+    console.log(`  [OK] Gas: ${unsignedTx.gas}`);
+    console.log(`  [OK] Data: ${unsignedTx.data.slice(0, 30)}...`);
   } catch (e: any) {
     console.error(`  [FAIL] Prepare swap failed: ${e.message}`);
     process.exit(1);
@@ -162,16 +168,15 @@ async function main() {
 
   // -- Step 6: Broadcast --
   header('6. Broadcast signed transaction');
-  let broadcastResult: any;
+  let broadcastResult: Awaited<ReturnType<typeof client.dex.broadcast>>;
   try {
     broadcastResult = await client.dex.broadcast({
       chainId: CHAIN_ID,
       signedTx,
       mevProtection: false,
     });
-    const txHash = broadcastResult.tx_hash || broadcastResult.txHash;
-    console.log(`  [OK] TX Hash: ${txHash}`);
-    console.log(`  [OK] Explorer: https://basescan.org/tx/${txHash}`);
+    console.log(`  [OK] TX Hash: ${broadcastResult.txHash}`);
+    console.log(`  [OK] Explorer: https://basescan.org/tx/${broadcastResult.txHash}`);
   } catch (e: any) {
     console.error(`  [FAIL] Broadcast failed: ${e.message}`);
     process.exit(1);
@@ -179,22 +184,21 @@ async function main() {
 
   // -- Step 7: Poll status --
   header('7. Poll transaction status');
-  const txHash = broadcastResult.tx_hash || broadcastResult.txHash;
   for (let i = 0; i < 30; i++) {
     try {
       const status = await client.dex.txStatus({
-        txHash,
+        txHash: broadcastResult.txHash,
         chainId: CHAIN_ID,
       });
-      const state = status.status || status.state;
-      console.log(`  [POLL ${i + 1}] Status: ${state}`);
-      if (state === 'confirmed' || state === 'success') {
+      console.log(`  [POLL ${i + 1}] Status: ${status.status}`);
+      if (status.status === 'confirmed') {
         console.log(`  [OK] Transaction confirmed!`);
-        console.log(`  [OK] Block: ${status.block_number || status.blockNumber}`);
+        console.log(`  [OK] Block: ${status.blockNumber}`);
+        console.log(`  [OK] Gas used: ${status.gasUsed}`);
         break;
       }
-      if (state === 'failed' || state === 'reverted') {
-        console.error(`  [FAIL] Transaction failed: ${status.error_message || status.errorMessage}`);
+      if (status.status === 'failed') {
+        console.error(`  [FAIL] Transaction failed on-chain`);
         break;
       }
     } catch (e: any) {
@@ -206,7 +210,7 @@ async function main() {
   // -- Done --
   header('RESULT');
   console.log(`  Swapped ${Number(SWAP_AMOUNT) / 1e6} USDC -> USDT on Base`);
-  console.log(`  TX: https://basescan.org/tx/${txHash}`);
+  console.log(`  TX: https://basescan.org/tx/${broadcastResult.txHash}`);
   console.log(`  This proves the FULL SDK flow: quote -> approve -> sign -> broadcast -> confirm`);
 
   await client.disconnect();
