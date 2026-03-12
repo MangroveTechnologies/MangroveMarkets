@@ -21,7 +21,7 @@ describe('RestTransport', () => {
     const result = await transport.callTool('dex_get_quote', { src: '0xa', dst: '0xb' });
 
     expect(mockFetch).toHaveBeenCalledWith(
-      'https://api.mangrovemarkets.com/api/tools/dex_get_quote',
+      'https://api.mangrovemarkets.com/api/v1/tools/dex_get_quote',
       {
         method: 'POST',
         headers: {

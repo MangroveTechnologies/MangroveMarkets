@@ -25,7 +25,7 @@ export class RestTransport implements Transport {
       headers['Authorization'] = `Bearer ${this.apiKey}`;
     }
 
-    const response = await fetch(`${this.baseUrl}/api/tools/${name}`, {
+    const response = await fetch(`${this.baseUrl}/api/v1/tools/${name}`, {
       method: 'POST',
       headers,
       body: JSON.stringify(params),

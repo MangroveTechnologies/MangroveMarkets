@@ -6,5 +6,11 @@
     "test": "pnpm -r test",
     "lint": "pnpm -r lint"
   },
-  "engines": { "node": ">=18", "pnpm": ">=8" }
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
 }
