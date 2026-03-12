@@ -32,11 +32,26 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Type check
+      - name: Type check (SDK)
         run: pnpm --filter @mangrovemarkets/sdk lint
 
-      - name: Run tests
+      - name: Type check (Claude Plugin)
+        run: pnpm --filter @mangrovemarkets/claude-plugin lint
+
+      - name: Test SDK
         run: pnpm --filter @mangrovemarkets/sdk test -- --run
 
-      - name: Build
+      - name: Test Claude Plugin
+        run: pnpm --filter @mangrovemarkets/claude-plugin test -- --run
+
+      - name: Test OpenClaw Plugin
+        run: pnpm --filter @mangrovemarkets/openclaw-plugin test -- --run
+
+      - name: Build SDK
         run: pnpm --filter @mangrovemarkets/sdk build
+
+      - name: Build Claude Plugin
+        run: pnpm --filter @mangrovemarkets/claude-plugin build
+
+      - name: Build OpenClaw Plugin
+        run: pnpm --filter @mangrovemarkets/openclaw-plugin build

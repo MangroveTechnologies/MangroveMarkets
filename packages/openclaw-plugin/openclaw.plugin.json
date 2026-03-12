@@ -1,0 +1,82 @@
+{
+  "name": "mangrove-markets",
+  "version": "0.1.0",
+  "description": "MangroveMarkets DEX aggregation, marketplace, and wallet for OpenClaw agents",
+  "config": {
+    "mcpServerUrl": { "type": "string", "default": "https://mangrovemarkets.com" },
+    "apiKey": { "type": "string", "default": "" },
+    "defaultNetwork": { "type": "string", "default": "mainnet", "enum": ["mainnet", "testnet"] },
+    "autoRefreshInterval": { "type": "number", "default": 30000 }
+  },
+  "tools": [
+    {
+      "name": "mangrove_dex_quote",
+      "description": "Get a swap quote from the best available DEX venue",
+      "parameters": {
+        "src": { "type": "string", "description": "Source token address or symbol" },
+        "dst": { "type": "string", "description": "Destination token address or symbol" },
+        "amount": { "type": "string", "description": "Amount in smallest unit" },
+        "chainId": { "type": "number", "description": "EVM chain ID" }
+      }
+    },
+    {
+      "name": "mangrove_dex_swap",
+      "description": "Execute a token swap with local signing",
+      "parameters": {
+        "src": { "type": "string" },
+        "dst": { "type": "string" },
+        "amount": { "type": "string" },
+        "chainId": { "type": "number" },
+        "slippage": { "type": "number", "default": 0.5 }
+      }
+    },
+    {
+      "name": "mangrove_dex_status",
+      "description": "Check the status of a pending swap transaction",
+      "parameters": {
+        "txHash": { "type": "string" },
+        "chainId": { "type": "number" }
+      }
+    },
+    {
+      "name": "mangrove_marketplace_search",
+      "description": "Search marketplace listings",
+      "parameters": {
+        "query": { "type": "string" },
+        "category": { "type": "string" }
+      }
+    },
+    {
+      "name": "mangrove_wallet_info",
+      "description": "Get chain info for wallet operations",
+      "parameters": {
+        "chain": { "type": "string", "enum": ["evm", "xrpl", "solana"] }
+      }
+    },
+    {
+      "name": "mangrove_wallet_create",
+      "description": "Create a new wallet",
+      "parameters": {
+        "chain": { "type": "string", "enum": ["evm", "xrpl", "solana"] },
+        "chainId": { "type": "number" }
+      }
+    },
+    {
+      "name": "mangrove_portfolio_value",
+      "description": "Get portfolio value across chains",
+      "parameters": {
+        "addresses": { "type": "array", "items": { "type": "string" } },
+        "chainId": { "type": "number" }
+      }
+    }
+  ],
+  "hooks": {
+    "onAgentCall": "src/handlers/agentCall.ts",
+    "onTaskComplete": "src/handlers/taskComplete.ts"
+  },
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": false
+  }
+}
