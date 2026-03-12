@@ -47,12 +47,15 @@ export function normalizeUnsignedTx(raw: ServerResponse): UnsignedTransaction {
   const payload = (raw.payload ?? {}) as Record<string, unknown>;
   const chainId = (payload.chainId ?? raw.chain_id ?? raw.chainId) as number;
 
+  const nonce = payload.nonce ?? raw.nonce;
+
   return {
     chainId,
     to: (payload.to ?? raw.to) as string,
     data: (payload.data ?? raw.data) as string,
     value: String(payload.value ?? raw.value ?? '0'),
     gas: String(payload.gas ?? raw.gas ?? '0'),
+    ...(nonce != null ? { nonce: Number(nonce) } : {}),
     ...(payload.gasPrice ? { gasPrice: String(payload.gasPrice) } : {}),
     ...(payload.maxFeePerGas ? { maxFeePerGas: String(payload.maxFeePerGas) } : {}),
     ...(payload.maxPriorityFeePerGas ? { maxPriorityFeePerGas: String(payload.maxPriorityFeePerGas) } : {}),

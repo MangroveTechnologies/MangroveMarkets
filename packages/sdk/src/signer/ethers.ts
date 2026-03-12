@@ -37,6 +37,7 @@ export class EthersSigner implements Signer {
       data: tx.data,
       value: tx.value,
       gasLimit: tx.gas,
+      ...(tx.nonce != null ? { nonce: tx.nonce } : {}),
       ...(tx.gasPrice ? { gasPrice: tx.gasPrice } : {}),
       ...(tx.maxFeePerGas ? { maxFeePerGas: tx.maxFeePerGas } : {}),
       ...(tx.maxPriorityFeePerGas ? { maxPriorityFeePerGas: tx.maxPriorityFeePerGas } : {}),

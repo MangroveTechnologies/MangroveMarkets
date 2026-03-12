@@ -45,6 +45,8 @@ export interface UnsignedTransaction {
   value: string;
   /** Gas limit for the transaction. */
   gas: string;
+  /** Transaction nonce (sequence number). */
+  nonce?: number;
   /** Legacy gas price (wei). Mutually exclusive with EIP-1559 fields. */
   gasPrice?: string;
   /** EIP-1559 max fee per gas (wei). */
