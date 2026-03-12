@@ -19,9 +19,9 @@ jobs:
           node-version: 20
           registry-url: 'https://registry.npmjs.org'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @mangrovemarkets/sdk lint
-      - run: pnpm --filter @mangrovemarkets/sdk test -- --run
-      - run: pnpm --filter @mangrovemarkets/sdk build
+      - run: pnpm --filter @mangrove-ai/sdk lint
+      - run: pnpm --filter @mangrove-ai/sdk test -- --run
+      - run: pnpm --filter @mangrove-ai/sdk build
       - run: cd packages/sdk && npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

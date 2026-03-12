@@ -59,4 +59,26 @@ describe('RestTransport', () => {
     const callArgs = mockFetch.mock.calls[0][1];
     expect(callArgs.headers).not.toHaveProperty('Authorization');
   });
+
+  it('rejects non-HTTPS URLs', () => {
+    expect(() => new RestTransport('http://api.example.com')).toThrow('requires HTTPS');
+  });
+
+  it('allows localhost HTTP', () => {
+    expect(() => new RestTransport('http://localhost:8080')).not.toThrow();
+  });
+
+  it('rejects invalid tool names', async () => {
+    await expect(transport.callTool('../etc/passwd', {})).rejects.toThrow('Invalid tool name');
+    await expect(transport.callTool('tool?query=1', {})).rejects.toThrow('Invalid tool name');
+  });
+
+  it('detects error body in 200 OK response', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ error: true, code: 'BROADCAST_ERROR', message: 'tx failed' }),
+    });
+
+    await expect(transport.callTool('dex_broadcast', {})).rejects.toThrow('tx failed');
+  });
 });

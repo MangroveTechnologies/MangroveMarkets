@@ -1,19 +1,19 @@
-# @mangrovemarkets/sdk
+# @mangrove-ai/sdk
 
 TypeScript SDK for MangroveMarkets -- DEX aggregation and agent marketplace with pluggable signing.
 
 ## Installation
 
 ```bash
-pnpm add @mangrovemarkets/sdk
+pnpm add @mangrove-ai/sdk
 # or
-npm install @mangrovemarkets/sdk
+npm install @mangrove-ai/sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { MangroveClient, EthersSigner } from '@mangrovemarkets/sdk';
+import { MangroveClient, EthersSigner } from '@mangrove-ai/sdk';
 import { Wallet } from 'ethers';
 
 const wallet = new Wallet(process.env.PRIVATE_KEY!);

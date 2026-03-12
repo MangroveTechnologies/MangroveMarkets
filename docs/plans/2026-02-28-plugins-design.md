@@ -8,7 +8,7 @@
 
 ## 1. Goal
 
-Provide two platform-specific plugins -- one for Claude Code and one for OpenClaw -- that expose MangroveMarkets capabilities (DEX, marketplace, wallet, portfolio) to agents on each platform. Both plugins are thin wrappers around the `@mangrovemarkets/sdk` SDK. They add no business logic; they translate between platform conventions and SDK calls.
+Provide two platform-specific plugins -- one for Claude Code and one for OpenClaw -- that expose MangroveMarkets capabilities (DEX, marketplace, wallet, portfolio) to agents on each platform. Both plugins are thin wrappers around the `@mangrove-ai/sdk` SDK. They add no business logic; they translate between platform conventions and SDK calls.
 
 ---
 
@@ -29,7 +29,7 @@ graph TD
     end
 
     subgraph "SDK Layer"
-        SDK["@mangrovemarkets/sdk<br/>MangroveClient"]
+        SDK["@mangrove-ai/sdk<br/>MangroveClient"]
     end
 
     subgraph "Transport"
@@ -328,7 +328,7 @@ Both plugins instantiate `MangroveClient` from the SDK. Configuration comes from
 
 ```typescript
 // Claude Plugin -- src/index.ts
-import { MangroveClient, EthersSigner } from "@mangrovemarkets/sdk";
+import { MangroveClient, EthersSigner } from "@mangrove-ai/sdk";
 
 const client = new MangroveClient({
   url: process.env.MANGROVE_MCP_URL ?? "https://api.mangrovemarkets.com",
@@ -341,7 +341,7 @@ await client.connect();
 
 ```typescript
 // OpenClaw Plugin -- lib/client.ts
-import { MangroveClient, EthersSigner } from "@mangrovemarkets/sdk";
+import { MangroveClient, EthersSigner } from "@mangrove-ai/sdk";
 
 let client: MangroveClient | null = null;
 
@@ -468,7 +468,7 @@ describe("/swap skill", () => {
   "name": "@mangrovemarkets/claude-plugin",
   "version": "0.1.0",
   "dependencies": {
-    "@mangrovemarkets/sdk": "workspace:*"
+    "@mangrove-ai/sdk": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
@@ -487,7 +487,7 @@ describe("/swap skill", () => {
   "name": "@mangrovemarkets/openclaw-plugin",
   "version": "0.1.0",
   "dependencies": {
-    "@mangrovemarkets/sdk": "workspace:*",
+    "@mangrove-ai/sdk": "workspace:*",
     "@openclaw/plugin-sdk": ">=0.1.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
@@ -505,4 +505,4 @@ describe("/swap skill", () => {
 
 ### Shared
 
-Both plugins depend on the SDK (`@mangrovemarkets/sdk`) as a workspace dependency. The SDK owns all transport, signing, and API logic. Plugins never import `@modelcontextprotocol/sdk`, `xrpl`, or venue-specific packages directly.
+Both plugins depend on the SDK (`@mangrove-ai/sdk`) as a workspace dependency. The SDK owns all transport, signing, and API logic. Plugins never import `@modelcontextprotocol/sdk`, `xrpl`, or venue-specific packages directly.

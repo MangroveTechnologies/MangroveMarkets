@@ -10,7 +10,7 @@ This repo contains the **client-side packages** for MangroveMarkets:
 
 | Package | Path | Description |
 |---------|------|-------------|
-| **TypeScript SDK** | `packages/sdk` | `@mangrovemarkets/sdk` -- typed client for MCP server + REST API |
+| **TypeScript SDK** | `packages/sdk` | `@mangrove-ai/sdk` -- typed client for MCP server + REST API |
 | **Claude Plugin** | `packages/claude-plugin` | `@mangrovemarkets/claude-plugin` -- Claude Code plugin with /swap, /marketplace, /wallet, /portfolio skills |
 | **OpenClaw Plugin** | `packages/openclaw-plugin` | `@mangrovemarkets/openclaw-plugin` -- OpenClaw plugin with tool definitions, dashboard, agent hooks |
 | **Website** | `packages/website` | Next.js marketing site for mangrovemarkets.com |
@@ -37,11 +37,11 @@ flowchart TD
 ### Using the SDK
 
 ```bash
-pnpm add @mangrovemarkets/sdk
+pnpm add @mangrove-ai/sdk
 ```
 
 ```typescript
-import { MangroveClient } from "@mangrovemarkets/sdk";
+import { MangroveClient } from "@mangrove-ai/sdk";
 
 const client = new MangroveClient({
   url: "https://api.mangrovemarkets.com",
@@ -178,7 +178,7 @@ This repo uses Claude Code's orchestrator pattern with domain-specific agent def
 
 ```
 packages/
-  sdk/                           # @mangrovemarkets/sdk
+  sdk/                           # @mangrove-ai/sdk
     src/
       index.ts                   # Main exports
       client/                    # MangroveClient (HTTP wrapper)
@@ -219,7 +219,7 @@ pnpm build
 pnpm test
 
 # Run SDK tests only
-pnpm --filter @mangrovemarkets/sdk test
+pnpm --filter @mangrove-ai/sdk test
 
 # Start the website locally
 pnpm --filter website dev

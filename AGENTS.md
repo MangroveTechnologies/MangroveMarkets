@@ -59,7 +59,7 @@ MangroveMarkets is delivered to agents as:
 
 ```
 packages/
-  sdk/                 # @mangrovemarkets/sdk -- TypeScript client library
+  sdk/                 # @mangrove-ai/sdk -- TypeScript client library
     src/
       client/          # MangroveClient, transport layer (MCP + REST)
       dex/             # DexService, SwapOrchestrator

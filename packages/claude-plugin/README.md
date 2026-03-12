@@ -30,7 +30,7 @@ Environment variables:
 
 ## Architecture
 
-This plugin is a thin wrapper around `@mangrovemarkets/sdk`. It translates Claude Code skill/command invocations into SDK client calls. No business logic lives here -- all transport, signing, and API orchestration is handled by the SDK.
+This plugin is a thin wrapper around `@mangrove-ai/sdk`. It translates Claude Code skill/command invocations into SDK client calls. No business logic lives here -- all transport, signing, and API orchestration is handled by the SDK.
 
 The swap skill uses `MangroveClient.dex.*` methods from the SDK directly. The marketplace, wallet, and portfolio skills use `transport.callTool()` directly since those SDK services are not yet implemented.
 

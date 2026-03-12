@@ -35,7 +35,7 @@ TypeScript SDK, Claude Plugin, and OpenClaw Plugin for MangroveMarkets -- the op
 
 ```
 packages/
-  sdk/              # @mangrovemarkets/sdk -- TypeScript client library
+  sdk/              # @mangrove-ai/sdk -- TypeScript client library
   claude-plugin/    # Claude Code plugin (planned)
   openclaw-plugin/  # OpenClaw plugin (planned)
   website/          # mangrovemarkets.com marketing site

@@ -16,12 +16,10 @@ export class SwapOrchestrator {
   private signer: Signer;
   private transport: Transport;
 
-  constructor(dex: DexService, signer: Signer, transport?: Transport) {
+  constructor(dex: DexService, signer: Signer, transport: Transport) {
     this.dex = dex;
     this.signer = signer;
-    // Transport is needed for allowance check; DexService already has it
-    // We pass it through DexService's transport reference
-    this.transport = transport || (dex as any).transport;
+    this.transport = transport;
   }
 
   /**
@@ -49,7 +47,15 @@ export class SwapOrchestrator {
       mode,
     });
 
-    // 2. Check if approval needed (skip for native tokens)
+    // 2. Check quote expiry
+    if (quote.expiresAt) {
+      const expiry = new Date(quote.expiresAt);
+      if (!isNaN(expiry.getTime()) && expiry < new Date()) {
+        throw new Error(`Quote ${quote.quoteId} expired at ${quote.expiresAt}. Re-fetch a fresh quote.`);
+      }
+    }
+
+    // 3. Check if approval needed (skip for native tokens)
     const isNativeToken = params.src.toLowerCase() === NATIVE_TOKEN.toLowerCase();
     if (!isNativeToken) {
       const needsApproval = await this.checkNeedsApproval(params.src, params.chainId);
@@ -58,21 +64,21 @@ export class SwapOrchestrator {
       }
     }
 
-    // 3. Prepare swap
+    // 4. Prepare swap
     const walletAddress = await this.signer.getAddress();
     const unsignedTx = await this.dex.prepareSwap({ quoteId: quote.quoteId, walletAddress, slippage });
 
-    // 4. Sign
+    // 5. Sign
     const signedTx = await this.signer.signTransaction(unsignedTx);
 
-    // 5. Broadcast
+    // 6. Broadcast
     const broadcastResult = await this.dex.broadcast({
       chainId: params.chainId,
       signedTx,
       mevProtection,
     });
 
-    // 6. Poll for confirmation
+    // 7. Poll for confirmation
     const status = await this.pollStatus(broadcastResult.txHash, params.chainId);
 
     return {
@@ -88,18 +94,28 @@ export class SwapOrchestrator {
   }
 
   private async checkNeedsApproval(tokenAddress: string, chainId: number): Promise<boolean> {
+    const walletAddress = await this.signer.getAddress();
+    const result = await this.transport.callTool('oneinch_allowances', {
+      chain_id: chainId,
+      wallet_address: walletAddress,
+      spender: 'router',
+    });
+
+    // Server returns {allowances: {tokenAddress: amount}} or flat {tokenAddress: amount}
+    const raw = result as Record<string, unknown>;
+    const allowanceMap = (typeof raw.allowances === 'object' && raw.allowances !== null)
+      ? raw.allowances as Record<string, string>
+      : raw as Record<string, string>;
+
+    const value = allowanceMap[tokenAddress];
+    if (value === undefined || value === null || value === '0') {
+      return true;
+    }
+
     try {
-      const walletAddress = await this.signer.getAddress();
-      const result = await this.transport.callTool('oneinch_allowances', {
-        chain_id: chainId,
-        wallet_address: walletAddress,
-        spender: 'router',
-      });
-      const allowances = result as Record<string, string>;
-      const allowance = allowances[tokenAddress] || '0';
-      return allowance === '0' || BigInt(allowance) === 0n;
+      return BigInt(value) === 0n;
     } catch {
-      // If allowance check fails, assume approval is needed
+      // Non-numeric allowance value -- cannot determine, re-approve to be safe
       return true;
     }
   }
@@ -112,7 +128,10 @@ export class SwapOrchestrator {
       chainId,
       signedTx: signedApproval,
     });
-    await this.pollStatus(approvalBroadcast.txHash, chainId);
+    const status = await this.pollStatus(approvalBroadcast.txHash, chainId);
+    if (status.status === 'failed') {
+      throw new Error(`Approval transaction failed on-chain: ${approvalBroadcast.txHash}`);
+    }
   }
 
   private async pollStatus(txHash: string, chainId: number): Promise<TransactionStatus> {

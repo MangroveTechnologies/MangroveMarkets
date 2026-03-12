@@ -1,4 +1,4 @@
-import { MangroveClient } from '@mangrovemarkets/sdk';
+import { MangroveClient } from '@mangrove-ai/sdk';
 import type { OpenClawMangroveConfig } from './config';
 
 let _instance: MangroveClient | null = null;

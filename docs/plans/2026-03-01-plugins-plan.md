@@ -2,11 +2,11 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Build two platform plugins (Claude Code and OpenClaw) that expose MangroveMarkets capabilities through the @mangrovemarkets/sdk.
+**Goal:** Build two platform plugins (Claude Code and OpenClaw) that expose MangroveMarkets capabilities through the @mangrove-ai/sdk.
 
 **Architecture:** Both plugins are thin wrappers around the SDK. Claude Plugin provides skills (/swap, /marketplace, /wallet, /portfolio) and commands. OpenClaw Plugin provides tool definitions, dashboard components, and agent hooks. Neither plugin contains business logic.
 
-**Tech Stack:** TypeScript 5+, pnpm workspaces, vitest, React 18 (OpenClaw dashboard), @mangrovemarkets/sdk
+**Tech Stack:** TypeScript 5+, pnpm workspaces, vitest, React 18 (OpenClaw dashboard), @mangrove-ai/sdk
 
 **Design Doc:** `docs/plans/2026-02-28-plugins-design.md`
 
@@ -16,7 +16,7 @@
 
 The following corrections apply to the original design doc:
 
-1. **SDK package name:** `@mangrovemarkets/sdk` (not `@mangrove-one/mangrovemarkets`)
+1. **SDK package name:** `@mangrove-ai/sdk` (not `@mangrove-one/mangrovemarkets`)
 2. **Method renames:** `txStatus()` replaces `swapStatus()`, `supportedVenues()` replaces `supportedChains()`
 3. **OpenClaw package path:** `packages/openclaw-plugin/` (not `packages/plugin/`)
 4. **No marketplace/wallet SDK services:** The SDK only exports `DexService` and `OneInchService`. For marketplace and wallet operations, plugins call `transport.callTool()` directly (e.g., `transport.callTool('marketplace_search', {...})`, `transport.callTool('wallet_chain_info', {...})`).
@@ -51,7 +51,7 @@ The following corrections apply to the original design doc:
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@mangrovemarkets/sdk": "workspace:*"
+    "@mangrove-ai/sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -191,7 +191,7 @@ TDD: 4 tests.
 - Create: `packages/openclaw-plugin/vitest.config.ts`
 - Create: `packages/openclaw-plugin/openclaw.plugin.json`
 
-Package.json deps: `@mangrovemarkets/sdk: "workspace:*"`. Private, not published.
+Package.json deps: `@mangrove-ai/sdk: "workspace:*"`. Private, not published.
 OpenClaw manifest includes tool definitions for DEX, marketplace, wallet, portfolio.
 
 **Commit:** `chore(openclaw-plugin): scaffold package with manifest and config`
@@ -277,7 +277,7 @@ Placeholder React components with `data-testid` for future testing. No real func
 
 ## Verification Checklist
 
-- [ ] `pnpm --filter @mangrovemarkets/sdk test -- --run` passes (54 tests)
+- [ ] `pnpm --filter @mangrove-ai/sdk test -- --run` passes (54 tests)
 - [ ] `pnpm --filter @mangrovemarkets/claude-plugin test -- --run` passes (~18 tests)
 - [ ] `pnpm --filter @mangrovemarkets/openclaw-plugin test -- --run` passes (~8 tests)
 - [ ] `pnpm --filter @mangrovemarkets/claude-plugin build` succeeds

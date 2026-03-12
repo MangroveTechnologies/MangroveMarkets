@@ -3,7 +3,7 @@
 **Date:** 2026-02-23
 **Status:** Approved
 **Approach:** B — Domain-Scoped SDK with Signing Orchestration
-**Package:** `@mangrovemarkets/sdk` (npm, public)
+**Package:** `@mangrove-ai/sdk` (npm, public)
 
 ---
 
@@ -31,7 +31,7 @@ Build a TypeScript SDK that wraps the MangroveMarkets MCP server's DEX and 1inch
 ```
 MangroveMarkets/
 ├── packages/
-│   ├── sdk/                          # @mangrovemarkets/sdk
+│   ├── sdk/                          # @mangrove-ai/sdk
 │   │   ├── src/
 │   │   │   ├── index.ts              # Main exports
 │   │   │   ├── client.ts             # MangroveClient class
@@ -209,7 +209,7 @@ Skips approval for native tokens (ETH). Supports MEV protection opt-in.
 - `client.dex.*` — getQuote, prepareSwap, approveToken, broadcast, txStatus
 - `client.dex.swap()` — high-level orchestrated swap
 - Tests with mocked transport
-- Publish `@mangrovemarkets/sdk@0.1.0`
+- Publish `@mangrove-ai/sdk@0.1.0`
 
 **Phase 2: OneInch Service**
 - `client.oneinch.*` — balances, allowances, spotPrice, gasPrice, tokenSearch, tokenInfo

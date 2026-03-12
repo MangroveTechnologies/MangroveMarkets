@@ -47,7 +47,7 @@ Defined in `openclaw.plugin.json`:
 
 ## Architecture
 
-This plugin is a thin wrapper around `@mangrovemarkets/sdk`. Tool handlers delegate to SDK client methods or `transport.callTool()` calls. No business logic lives in the plugin layer -- all transport, signing, and API orchestration is handled by the SDK.
+This plugin is a thin wrapper around `@mangrove-ai/sdk`. Tool handlers delegate to SDK client methods or `transport.callTool()` calls. No business logic lives in the plugin layer -- all transport, signing, and API orchestration is handled by the SDK.
 
 The DEX tools use `MangroveClient.dex.*` methods directly. Marketplace, wallet, and portfolio tools use `transport.callTool()` since those SDK services are not yet implemented.
 

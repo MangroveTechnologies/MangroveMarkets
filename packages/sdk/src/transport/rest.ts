@@ -1,5 +1,7 @@
 import type { Transport, ToolCallResult } from '../types/transport';
 
+const TOOL_NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
+
 /**
  * REST API transport using native fetch. Calls POST /api/v1/tools/{name} on the FastAPI server.
  */
@@ -9,15 +11,23 @@ export class RestTransport implements Transport {
 
   /**
    * Create a REST transport targeting the given base URL with optional API key.
-   * @param baseUrl - Base URL of the FastAPI server (trailing slash is stripped).
+   * @param baseUrl - Base URL of the FastAPI server (trailing slash is stripped). Must use HTTPS unless localhost.
    * @param apiKey - Optional Bearer token for authenticated requests.
    */
   constructor(baseUrl: string, apiKey?: string) {
-    this.baseUrl = baseUrl.replace(/\/$/, '');
+    const url = baseUrl.replace(/\/$/, '');
+    if (!url.startsWith('https://') && !url.startsWith('http://localhost') && !url.startsWith('http://127.0.0.1')) {
+      throw new Error(`RestTransport requires HTTPS for non-local URLs (got: ${url})`);
+    }
+    this.baseUrl = url;
     this.apiKey = apiKey;
   }
 
   async callTool(name: string, params: Record<string, unknown>): Promise<ToolCallResult> {
+    if (!TOOL_NAME_PATTERN.test(name)) {
+      throw new Error(`Invalid tool name: ${name}`);
+    }
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };

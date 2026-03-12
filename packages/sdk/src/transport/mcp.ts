@@ -44,7 +44,11 @@ export class McpTransport implements Transport {
     if (!textContent) {
       throw new Error(`No text content in response for tool: ${name}`);
     }
-    return JSON.parse(textContent.text);
+    try {
+      return JSON.parse(textContent.text);
+    } catch {
+      throw new Error(`Invalid JSON in MCP response for tool '${name}'`);
+    }
   }
 
   async disconnect(): Promise<void> {

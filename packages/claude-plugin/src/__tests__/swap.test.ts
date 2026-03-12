@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { handleSwap } from '../skills/swap';
-import type { MangroveClient } from '@mangrovemarkets/sdk';
+import type { MangroveClient } from '@mangrove-ai/sdk';
 
 function mockClient() {
   return {

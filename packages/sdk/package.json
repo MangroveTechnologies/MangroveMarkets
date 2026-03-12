@@ -1,5 +1,5 @@
 {
-  "name": "@mangrovemarkets/sdk",
+  "name": "@mangrove-ai/sdk",
   "version": "0.1.0",
   "description": "TypeScript SDK for MangroveMarkets -- DEX aggregation and agent marketplace with pluggable signing",
   "type": "module",

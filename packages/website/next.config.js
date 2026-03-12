@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@mangrovemarkets/sdk'],
+  transpilePackages: ['@mangrove-ai/sdk'],
   images: {
     domains: [],
   },

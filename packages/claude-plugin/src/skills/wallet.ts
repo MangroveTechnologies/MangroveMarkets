@@ -1,4 +1,4 @@
-import type { Transport, ToolCallResult } from '@mangrovemarkets/sdk';
+import type { Transport, ToolCallResult } from '@mangrove-ai/sdk';
 
 export interface WalletInfoParams {
   action: 'info';
