@@ -8,7 +8,7 @@
 
 ## 1. Goal
 
-Provide two platform-specific plugins -- one for Claude Code and one for OpenClaw -- that expose MangroveMarkets capabilities (DEX, marketplace, wallet, portfolio) to agents on each platform. Both plugins are thin wrappers around the `@mangrove-one/mangrovemarkets` SDK. They add no business logic; they translate between platform conventions and SDK calls.
+Provide two platform-specific plugins -- one for Claude Code and one for OpenClaw -- that expose MangroveMarkets capabilities (DEX, marketplace, wallet, portfolio) to agents on each platform. Both plugins are thin wrappers around the `@mangrovemarkets/sdk` SDK. They add no business logic; they translate between platform conventions and SDK calls.
 
 ---
 
@@ -29,7 +29,7 @@ graph TD
     end
 
     subgraph "SDK Layer"
-        SDK["@mangrove-one/mangrovemarkets<br/>MangroveClient"]
+        SDK["@mangrovemarkets/sdk<br/>MangroveClient"]
     end
 
     subgraph "Transport"
@@ -145,7 +145,7 @@ Each skill maps user intent to SDK calls:
 
 | Skill | SDK Methods | Description |
 |-------|-------------|-------------|
-| `/swap` | `client.dex.getQuote()`, `client.dex.swap()`, `client.dex.swapStatus()` | Interactive swap flow: get quote, confirm, execute |
+| `/swap` | `client.dex.getQuote()`, `client.dex.swap()`, `client.dex.txStatus()` | Interactive swap flow: get quote, confirm, execute |
 | `/marketplace` | `client.marketplace.browse()`, `client.marketplace.create()`, `client.marketplace.buy()` | Browse listings, create new listings, purchase |
 | `/wallet` | `client.wallet.create()`, `client.wallet.balance()`, `client.wallet.send()` | Create wallets (EVM/XRPL/Solana), check balances |
 | `/portfolio` | `client.oneinch.getPortfolioValue()`, `client.oneinch.getPortfolioPnl()` | Aggregate portfolio view across chains |
@@ -238,7 +238,7 @@ export const dexTools = [
       txHash: { type: "string" },
       chainId: { type: "number" },
     },
-    handler: async (params) => client.dex.swapStatus(params),
+    handler: async (params) => client.dex.txStatus(params),
   },
 ];
 ```
@@ -328,7 +328,7 @@ Both plugins instantiate `MangroveClient` from the SDK. Configuration comes from
 
 ```typescript
 // Claude Plugin -- src/index.ts
-import { MangroveClient, EthersSigner } from "@mangrove-one/mangrovemarkets";
+import { MangroveClient, EthersSigner } from "@mangrovemarkets/sdk";
 
 const client = new MangroveClient({
   url: process.env.MANGROVE_MCP_URL ?? "https://api.mangrovemarkets.com",
@@ -341,7 +341,7 @@ await client.connect();
 
 ```typescript
 // OpenClaw Plugin -- lib/client.ts
-import { MangroveClient, EthersSigner } from "@mangrove-one/mangrovemarkets";
+import { MangroveClient, EthersSigner } from "@mangrovemarkets/sdk";
 
 let client: MangroveClient | null = null;
 
@@ -395,7 +395,7 @@ graph LR
 |-------------------|-------------|-------------|
 | DEX quote | `client.dex` | `getQuote()` |
 | DEX swap | `client.dex` | `swap()` (orchestrated) |
-| DEX status | `client.dex` | `swapStatus()` |
+| DEX status | `client.dex` | `txStatus()` |
 | Marketplace browse | `client.marketplace` | `browse()`, `search()` |
 | Marketplace list | `client.marketplace` | `create()` |
 | Marketplace buy | `client.marketplace` | `buy()` |
@@ -465,10 +465,10 @@ describe("/swap skill", () => {
 
 ```json
 {
-  "name": "@mangrove-one/claude-plugin",
+  "name": "@mangrovemarkets/claude-plugin",
   "version": "0.1.0",
   "dependencies": {
-    "@mangrove-one/mangrovemarkets": "workspace:*"
+    "@mangrovemarkets/sdk": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
@@ -484,10 +484,10 @@ describe("/swap skill", () => {
 
 ```json
 {
-  "name": "@mangrove-one/openclaw-plugin",
+  "name": "@mangrovemarkets/openclaw-plugin",
   "version": "0.1.0",
   "dependencies": {
-    "@mangrove-one/mangrovemarkets": "workspace:*",
+    "@mangrovemarkets/sdk": "workspace:*",
     "@openclaw/plugin-sdk": ">=0.1.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
@@ -505,4 +505,4 @@ describe("/swap skill", () => {
 
 ### Shared
 
-Both plugins depend on the SDK (`@mangrove-one/mangrovemarkets`) as a workspace dependency. The SDK owns all transport, signing, and API logic. Plugins never import `@modelcontextprotocol/sdk`, `xrpl`, or venue-specific packages directly.
+Both plugins depend on the SDK (`@mangrovemarkets/sdk`) as a workspace dependency. The SDK owns all transport, signing, and API logic. Plugins never import `@modelcontextprotocol/sdk`, `xrpl`, or venue-specific packages directly.

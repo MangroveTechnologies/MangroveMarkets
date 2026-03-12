@@ -3,7 +3,7 @@
 **Date:** 2026-02-23
 **Status:** Approved
 **Approach:** B — Domain-Scoped SDK with Signing Orchestration
-**Package:** `@mangrove-one/mangrovemarkets` (npm, public)
+**Package:** `@mangrovemarkets/sdk` (npm, public)
 
 ---
 
@@ -31,7 +31,7 @@ Build a TypeScript SDK that wraps the MangroveMarkets MCP server's DEX and 1inch
 ```
 MangroveMarkets/
 ├── packages/
-│   ├── sdk/                          # @mangrove-one/mangrovemarkets
+│   ├── sdk/                          # @mangrovemarkets/sdk
 │   │   ├── src/
 │   │   │   ├── index.ts              # Main exports
 │   │   │   ├── client.ts             # MangroveClient class
@@ -111,7 +111,7 @@ await client.dex.broadcast({ chainId, signedTx: signedApproval });
 const swapTx = await client.dex.prepareSwap({ quoteId: quote.quoteId, slippage: 0.5 });
 const signedSwap = await signer.signTransaction(swapTx);
 const { txHash } = await client.dex.broadcast({ chainId, signedTx: signedSwap, mevProtection: true });
-const status = await client.dex.swapStatus({ txHash, chainId });
+const status = await client.dex.txStatus({ txHash, chainId });
 ```
 
 ### OneInch Ancillary APIs
@@ -206,10 +206,10 @@ Skips approval for native tokens (ETH). Supports MEV protection opt-in.
 - Monorepo scaffold (pnpm workspace, tsconfig, vitest, placeholder packages)
 - Transport layer (MCP + REST interfaces, MCP implementation)
 - Signer interface + EthersSigner adapter
-- `client.dex.*` — getQuote, prepareSwap, approveToken, broadcast, swapStatus
+- `client.dex.*` — getQuote, prepareSwap, approveToken, broadcast, txStatus
 - `client.dex.swap()` — high-level orchestrated swap
 - Tests with mocked transport
-- Publish `@mangrove-one/mangrovemarkets@0.1.0`
+- Publish `@mangrovemarkets/sdk@0.1.0`
 
 **Phase 2: OneInch Service**
 - `client.oneinch.*` — balances, allowances, spotPrice, gasPrice, tokenSearch, tokenInfo
@@ -224,8 +224,8 @@ Skips approval for native tokens (ETH). Supports MEV protection opt-in.
 - Integrates into `swap()` for x402 billing mode
 
 **Phase 5: Plugins**
-- `@mangrove-one/openclaw-plugin`
-- `@mangrove-one/claude-plugin`
+- `@mangrovemarkets/openclaw-plugin`
+- `@mangrovemarkets/claude-plugin`
 
 ### Build Order Dependencies
 

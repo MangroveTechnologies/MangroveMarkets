@@ -22,6 +22,13 @@ export interface MarketplaceCreateParams {
 
 export type MarketplaceParams = MarketplaceSearchParams | MarketplaceGetParams | MarketplaceCreateParams;
 
+/**
+ * Handle a /marketplace skill invocation. Uses transport.callTool() directly
+ * since SDK marketplace services are not yet implemented.
+ * @param transport - The MCP transport instance
+ * @param params - Marketplace parameters including the action discriminator
+ * @returns Tool call result from the MCP server
+ */
 export async function handleMarketplace(
   transport: Transport,
   params: MarketplaceParams,

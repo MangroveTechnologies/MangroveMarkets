@@ -28,6 +28,13 @@ export interface SwapStatusParams {
 
 export type SwapParams = SwapQuoteParams | SwapExecuteParams | SwapStatusParams;
 
+/**
+ * Handle a /swap skill invocation. Dispatches to the appropriate SDK DEX method
+ * based on the action: quote, execute, or status.
+ * @param client - The MangroveClient instance
+ * @param params - Swap parameters including the action discriminator
+ * @returns Quote, SwapResult, or TransactionStatus depending on the action
+ */
 export async function handleSwap(
   client: MangroveClient,
   params: SwapParams,

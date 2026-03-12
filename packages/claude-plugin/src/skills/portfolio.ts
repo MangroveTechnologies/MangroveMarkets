@@ -20,6 +20,13 @@ export interface PortfolioBalancesParams {
 
 export type PortfolioParams = PortfolioValueParams | PortfolioPnlParams | PortfolioBalancesParams;
 
+/**
+ * Handle a /portfolio skill invocation. Uses transport.callTool() directly
+ * since SDK portfolio services are not yet implemented.
+ * @param transport - The MCP transport instance
+ * @param params - Portfolio parameters including the action discriminator
+ * @returns Tool call result from the MCP server
+ */
 export async function handlePortfolio(
   transport: Transport,
   params: PortfolioParams,

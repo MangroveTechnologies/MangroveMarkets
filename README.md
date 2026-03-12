@@ -10,12 +10,12 @@ This repo contains the **client-side packages** for MangroveMarkets:
 
 | Package | Path | Description |
 |---------|------|-------------|
-| **TypeScript SDK** | `packages/sdk` | `@mangrove-one/mangrovemarkets` -- typed client for MCP server + REST API |
-| **Claude Plugin** | `packages/claude-plugin` | Claude Code plugin with /swap, /marketplace, /wallet, /portfolio skills |
-| **OpenClaw Plugin** | `packages/plugin` | OpenClaw plugin with tool definitions, dashboard, agent hooks |
+| **TypeScript SDK** | `packages/sdk` | `@mangrovemarkets/sdk` -- typed client for MCP server + REST API |
+| **Claude Plugin** | `packages/claude-plugin` | `@mangrovemarkets/claude-plugin` -- Claude Code plugin with /swap, /marketplace, /wallet, /portfolio skills |
+| **OpenClaw Plugin** | `packages/openclaw-plugin` | `@mangrovemarkets/openclaw-plugin` -- OpenClaw plugin with tool definitions, dashboard, agent hooks |
 | **Website** | `packages/website` | Next.js marketing site for mangrovemarkets.com |
 
-For the **MCP server** (backend), see [MangroveMarkets-MCP-Server](https://github.com/mangrove-one/MangroveMarkets-MCP-Server).
+For the **MCP server** (backend), see [MangroveMarkets-MCP-Server](https://github.com/MangroveTechnologies/MangroveMarkets-MCP-Server).
 
 ## How It Works
 
@@ -37,11 +37,11 @@ flowchart TD
 ### Using the SDK
 
 ```bash
-pnpm add @mangrove-one/mangrovemarkets
+pnpm add @mangrovemarkets/sdk
 ```
 
 ```typescript
-import { MangroveClient } from "@mangrove-one/mangrovemarkets";
+import { MangroveClient } from "@mangrovemarkets/sdk";
 
 const client = new MangroveClient({
   url: "https://api.mangrovemarkets.com",
@@ -100,7 +100,7 @@ Install the Claude Plugin, then use skills directly:
 ### Using OpenClaw
 
 ```bash
-openclaw plugins install @mangrove-one/openclaw-mangrovemarkets
+openclaw plugins install @mangrovemarkets/openclaw-plugin
 ```
 
 ## Documentation
@@ -178,7 +178,7 @@ This repo uses Claude Code's orchestrator pattern with domain-specific agent def
 
 ```
 packages/
-  sdk/                           # @mangrove-one/mangrovemarkets
+  sdk/                           # @mangrovemarkets/sdk
     src/
       index.ts                   # Main exports
       client/                    # MangroveClient (HTTP wrapper)
@@ -190,15 +190,15 @@ packages/
       x402/                      # x402 payment handler
       marketplace/               # Marketplace client
       wallet/                    # Wallet client
-  claude-plugin/                 # Claude Code plugin
+  claude-plugin/                 # @mangrovemarkets/claude-plugin
     .claude-plugin/plugin.json   # Plugin manifest
     src/skills/                  # /swap, /marketplace, /wallet, /portfolio
     src/commands/                # /mangrove-status, /mangrove-connect
-  plugin/                        # OpenClaw plugin
+  openclaw-plugin/               # @mangrovemarkets/openclaw-plugin
     openclaw.plugin.json         # Plugin manifest
-    tools/                       # Tool definitions (delegate to SDK)
-    handlers/                    # Agent hooks
-    components/                  # Dashboard React components
+    src/tools/                   # Tool definitions (delegate to SDK)
+    src/handlers/                # Agent hooks
+    src/components/              # Dashboard React components
   website/                       # Next.js marketing site
 docs/                            # Vision, designs, plans
 .claude/                         # Agent definitions, rules, skills
@@ -208,7 +208,7 @@ docs/                            # Vision, designs, plans
 
 ```bash
 # Clone and install
-git clone https://github.com/mangrove-one/MangroveMarkets.git
+git clone https://github.com/MangroveTechnologies/MangroveMarkets.git
 cd MangroveMarkets
 pnpm install
 
@@ -219,7 +219,7 @@ pnpm build
 pnpm test
 
 # Run SDK tests only
-pnpm --filter @mangrove-one/mangrovemarkets test
+pnpm --filter @mangrovemarkets/sdk test
 
 # Start the website locally
 pnpm --filter website dev
@@ -252,6 +252,6 @@ MIT
 ## Links
 
 - Website: [mangrovemarkets.com](https://mangrovemarkets.com)
-- GitHub: [@mangrove-one](https://github.com/mangrove-one)
+- GitHub: [@MangroveTechnologies](https://github.com/MangroveTechnologies)
 - x402 Protocol: [x402.org](https://www.x402.org/)
 - MCP Protocol: [modelcontextprotocol.io](https://modelcontextprotocol.io)

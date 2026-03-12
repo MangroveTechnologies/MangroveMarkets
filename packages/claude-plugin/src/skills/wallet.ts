@@ -20,6 +20,13 @@ export interface WalletBalanceParams {
 
 export type WalletParams = WalletInfoParams | WalletCreateParams | WalletBalanceParams;
 
+/**
+ * Handle a /wallet skill invocation. Uses transport.callTool() directly
+ * since SDK wallet services are not yet implemented.
+ * @param transport - The MCP transport instance
+ * @param params - Wallet parameters including the action discriminator
+ * @returns Tool call result from the MCP server
+ */
 export async function handleWallet(
   transport: Transport,
   params: WalletParams,
