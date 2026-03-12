@@ -44,10 +44,10 @@ async function main() {
   console.log('Swap tx:', txHash);
 
   // Step 4: Poll status
-  let status = await client.dex.swapStatus({ txHash, chainId: 8453 });
+  let status = await client.dex.txStatus({ txHash, chainId: 8453 });
   while (status.status === 'pending') {
     await new Promise(r => setTimeout(r, 3000));
-    status = await client.dex.swapStatus({ txHash, chainId: 8453 });
+    status = await client.dex.txStatus({ txHash, chainId: 8453 });
   }
   console.log('Final status:', status);
 

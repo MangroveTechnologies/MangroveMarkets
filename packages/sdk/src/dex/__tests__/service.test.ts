@@ -82,7 +82,7 @@ describe('DexService', () => {
     expect(transport.calls[0].params.signed_tx).toBe('0xsigned');
   });
 
-  it('swapStatus calls dex_swap_status and returns TransactionStatus', async () => {
+  it('txStatus calls dex_tx_status and returns TransactionStatus', async () => {
     const mockStatus: TransactionStatus = {
       txHash: '0xabc123',
       chainId: 8453,
@@ -90,16 +90,16 @@ describe('DexService', () => {
       blockNumber: 12345,
       gasUsed: '180000',
     };
-    transport.addResponse('dex_swap_status', mockStatus as any);
+    transport.addResponse('dex_tx_status', mockStatus as any);
 
-    const result = await dex.swapStatus({ txHash: '0xabc123', chainId: 8453 });
+    const result = await dex.txStatus({ txHash: '0xabc123', chainId: 8453 });
 
     expect(result.status).toBe('confirmed');
   });
 
-  it('supportedChains calls dex_supported_chains', async () => {
-    transport.addResponse('dex_supported_chains', { chains: [{ id: 1, name: 'Ethereum' }, { id: 8453, name: 'Base' }] });
-    const result = await dex.supportedChains();
+  it('supportedVenues calls dex_supported_venues', async () => {
+    transport.addResponse('dex_supported_venues', { chains: [{ id: 1, name: 'Ethereum' }, { id: 8453, name: 'Base' }] });
+    const result = await dex.supportedVenues();
     expect(result.chains).toHaveLength(2);
   });
 

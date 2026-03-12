@@ -27,11 +27,11 @@ describe('MockTransport', () => {
 
   it('supports sequential responses', async () => {
     const mock = new MockTransport();
-    mock.addResponse('dex_swap_status', { status: 'pending' });
-    mock.addResponse('dex_swap_status', { status: 'confirmed' });
+    mock.addResponse('dex_tx_status', { status: 'pending' });
+    mock.addResponse('dex_tx_status', { status: 'confirmed' });
 
-    const r1 = await mock.callTool('dex_swap_status', { tx_hash: '0x1', chain_id: 1 });
-    const r2 = await mock.callTool('dex_swap_status', { tx_hash: '0x1', chain_id: 1 });
+    const r1 = await mock.callTool('dex_tx_status', { tx_hash: '0x1', chain_id: 1 });
+    const r2 = await mock.callTool('dex_tx_status', { tx_hash: '0x1', chain_id: 1 });
     expect(r1).toEqual({ status: 'pending' });
     expect(r2).toEqual({ status: 'confirmed' });
   });

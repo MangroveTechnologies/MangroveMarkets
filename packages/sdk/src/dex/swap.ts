@@ -115,7 +115,7 @@ export class SwapOrchestrator {
 
   private async pollStatus(txHash: string, chainId: number): Promise<TransactionStatus> {
     for (let i = 0; i < MAX_POLLS; i++) {
-      const status = await this.dex.swapStatus({ txHash, chainId });
+      const status = await this.dex.txStatus({ txHash, chainId });
       if (status.status === 'confirmed' || status.status === 'failed') {
         return status;
       }

@@ -45,7 +45,7 @@ describe('SwapOrchestrator', () => {
       txHash: '0xtxhash', chainId: 8453, broadcastMethod: 'public',
     });
     // Status - confirmed
-    transport.addResponse('dex_swap_status', {
+    transport.addResponse('dex_tx_status', {
       txHash: '0xtxhash', chainId: 8453, status: 'confirmed', blockNumber: 100, gasUsed: '180000',
     });
 
@@ -82,7 +82,7 @@ describe('SwapOrchestrator', () => {
       txHash: '0xapproval_hash', chainId: 8453, broadcastMethod: 'public',
     });
     // Approval status confirmed
-    transport.addResponse('dex_swap_status', {
+    transport.addResponse('dex_tx_status', {
       txHash: '0xapproval_hash', chainId: 8453, status: 'confirmed', blockNumber: 99, gasUsed: '45000',
     });
     // Prepare swap
@@ -94,7 +94,7 @@ describe('SwapOrchestrator', () => {
       txHash: '0xswap_hash', chainId: 8453, broadcastMethod: 'public',
     });
     // Swap status confirmed
-    transport.addResponse('dex_swap_status', {
+    transport.addResponse('dex_tx_status', {
       txHash: '0xswap_hash', chainId: 8453, status: 'confirmed', blockNumber: 101, gasUsed: '180000',
     });
 
@@ -121,7 +121,7 @@ describe('SwapOrchestrator', () => {
     transport.addResponse('dex_broadcast', {
       txHash: '0xfailed', chainId: 1, broadcastMethod: 'public',
     });
-    transport.addResponse('dex_swap_status', {
+    transport.addResponse('dex_tx_status', {
       txHash: '0xfailed', chainId: 1, status: 'failed',
     });
 

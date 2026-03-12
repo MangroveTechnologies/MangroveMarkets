@@ -43,7 +43,7 @@ export class MangroveClient {
 
   /**
    * Access DEX operations. Includes low-level methods (getQuote, prepareSwap, approveToken,
-   * broadcast, swapStatus) and high-level swap() orchestration.
+   * broadcast, txStatus) and high-level swap() orchestration.
    * Calling swap() requires a Signer in the config.
    */
   get dex(): DexClientApi {

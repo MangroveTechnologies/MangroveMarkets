@@ -91,7 +91,7 @@ Built-in: `EthersSigner` wraps an ethers.js Wallet. Bring your own for MPC walle
 
 | Service | Methods |
 |---------|---------|
-| `client.dex` | getQuote, prepareSwap, approveToken, broadcast, swapStatus, swap |
+| `client.dex` | getQuote, prepareSwap, approveToken, broadcast, txStatus, swap |
 | `client.oneinch` | getBalances, getAllowances, getSpotPrice, getGasPrice, searchTokens, getTokenInfo, getPortfolioValue, getPortfolioPnl, getPortfolioTokens, getPortfolioDefi, getChart, getHistory |
 
 ## Security

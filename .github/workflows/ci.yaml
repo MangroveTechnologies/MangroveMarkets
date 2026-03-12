@@ -37,3 +37,6 @@ jobs:
 
       - name: Run tests
         run: pnpm --filter @mangrovemarkets/sdk test -- --run
+
+      - name: Build
+        run: pnpm --filter @mangrovemarkets/sdk build

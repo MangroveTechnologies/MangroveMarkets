@@ -76,12 +76,12 @@ export class DexService {
   }
 
   /**
-   * Check the on-chain status of a swap transaction.
+   * Check the on-chain status of a transaction.
    * @param params - Transaction hash and chain ID.
    * @returns Current transaction status (pending, confirmed, or failed).
    */
-  async swapStatus(params: SwapStatusParams): Promise<TransactionStatus> {
-    const result = await this.transport.callTool('dex_swap_status', {
+  async txStatus(params: SwapStatusParams): Promise<TransactionStatus> {
+    const result = await this.transport.callTool('dex_tx_status', {
       tx_hash: params.txHash,
       chain_id: params.chainId,
     });
@@ -89,11 +89,11 @@ export class DexService {
   }
 
   /**
-   * List all chains supported by the DEX aggregator.
-   * @returns Supported chain metadata.
+   * List all venues supported by the DEX aggregator.
+   * @returns Supported venue metadata.
    */
-  async supportedChains(): Promise<ToolCallResult> {
-    return this.transport.callTool('dex_supported_chains', {});
+  async supportedVenues(): Promise<ToolCallResult> {
+    return this.transport.callTool('dex_supported_venues', {});
   }
 
   /**
