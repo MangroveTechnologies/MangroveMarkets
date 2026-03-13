@@ -1,6 +1,6 @@
 {
   "name": "@mangrove-ai/sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "TypeScript SDK for MangroveMarkets -- DEX aggregation and agent marketplace with pluggable signing",
   "type": "module",
   "main": "dist/index.cjs",
@@ -31,6 +31,11 @@
     "swap",
     "1inch"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MangroveTechnologies/MangroveMarkets",
+    "directory": "packages/sdk"
+  },
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
