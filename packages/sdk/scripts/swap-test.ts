@@ -27,7 +27,7 @@ const SERVER_URL = 'https://mangrovemarkets.com';
 const CHAIN_ID = 8453; // Base
 const USDC = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913';
 const USDT = '0xfde4c96c8593536e31f229ea8f37b2ada2699bb2';
-const SWAP_AMOUNT = '4000000'; // 4 USDC (6 decimals)
+const SWAP_AMOUNT = '5000000'; // 5 USDC (6 decimals)
 
 function header(msg: string) {
   console.log(`\n${'='.repeat(60)}`);
@@ -136,12 +136,19 @@ async function main() {
     console.log('  Continuing -- approval may not be needed or may be pre-approved');
   }
 
-  // -- Step 4: Prepare swap --
+  // -- Step 4: Re-quote and prepare swap --
   header('4. Prepare swap (get unsigned calldata)');
+  // Re-fetch quote in case the original expired during approval
+  const freshQuote = await client.dex.getQuote({
+    src: USDC, dst: USDT, amount: SWAP_AMOUNT, chainId: CHAIN_ID, mode: 'standard',
+  });
+  console.log(`  [OK] Fresh quote ID: ${freshQuote.quoteId}`);
+  console.log(`  [OK] Output: ${freshQuote.outputAmount}`);
+
   let unsignedTx: Awaited<ReturnType<typeof client.dex.prepareSwap>>;
   try {
     unsignedTx = await client.dex.prepareSwap({
-      quoteId: quote.quoteId,
+      quoteId: freshQuote.quoteId,
       walletAddress,
       slippage: 1.0,
     });
