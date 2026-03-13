@@ -1,4 +1,10 @@
 import type { Transport, ToolCallResult } from '../types/transport';
+import type { TokenBalance, GasPrice, TokenInfo } from '../types/oneinch';
+import {
+  normalizeTokenBalance,
+  normalizeGasPrice,
+  normalizeTokenInfo,
+} from '../utils/normalize';
 
 /**
  * 1inch ancillary API service. Provides balance, pricing, token, portfolio,
@@ -10,13 +16,26 @@ export class OneInchService {
   /**
    * Get ERC-20 token balances for a wallet.
    * @param params - Chain ID and wallet address.
-   * @returns Token address to balance mapping.
+   * @returns Array of token balances with symbol, decimals, and name.
    */
-  async getBalances(params: { chainId: number; wallet: string }): Promise<ToolCallResult> {
-    return this.transport.callTool('oneinch_balances', {
+  async getBalances(params: { chainId: number; wallet: string }): Promise<TokenBalance[]> {
+    const result = await this.transport.callTool('oneinch_balances', {
       chain_id: params.chainId,
       wallet: params.wallet,
     });
+    const raw = result as Record<string, unknown>;
+    // Server may return { balances: [...] } or { balances: { addr: amount } }
+    const balances = raw.balances;
+    if (Array.isArray(balances)) {
+      return balances.map((b: Record<string, unknown>) => normalizeTokenBalance(b));
+    }
+    // If balances is a mapping (address -> amount), convert to array form
+    if (balances && typeof balances === 'object') {
+      return Object.entries(balances as Record<string, unknown>).map(([address, balance]) =>
+        normalizeTokenBalance({ address, balance: String(balance) }),
+      );
+    }
+    return [];
   }
 
   /**
@@ -47,12 +66,13 @@ export class OneInchService {
   /**
    * Get current gas price estimates for a chain.
    * @param params - Chain ID.
-   * @returns Gas price data (base fee, priority fee, etc.).
+   * @returns Typed gas price data (baseFee, maxPriorityFeePerGas, maxFeePerGas).
    */
-  async getGasPrice(params: { chainId: number }): Promise<ToolCallResult> {
-    return this.transport.callTool('oneinch_gas_price', {
+  async getGasPrice(params: { chainId: number }): Promise<GasPrice> {
+    const result = await this.transport.callTool('oneinch_gas_price', {
       chain_id: params.chainId,
     });
+    return normalizeGasPrice(result as Record<string, unknown>);
   }
 
   /**
@@ -70,13 +90,14 @@ export class OneInchService {
   /**
    * Get detailed metadata for a specific token.
    * @param params - Chain ID and token contract address.
-   * @returns Token name, symbol, decimals, and logo URL.
+   * @returns Typed token info (address, symbol, name, decimals, logoURI).
    */
-  async getTokenInfo(params: { chainId: number; address: string }): Promise<ToolCallResult> {
-    return this.transport.callTool('oneinch_token_info', {
+  async getTokenInfo(params: { chainId: number; address: string }): Promise<TokenInfo> {
+    const result = await this.transport.callTool('oneinch_token_info', {
       chain_id: params.chainId,
       address: params.address,
     });
+    return normalizeTokenInfo(result as Record<string, unknown>);
   }
 
   /**

@@ -5,6 +5,9 @@ import { McpTransport } from './transport/mcp';
 import { RestTransport } from './transport/rest';
 import { DexService } from './dex/service';
 import { SwapOrchestrator } from './dex/swap';
+import { OneInchService } from './oneinch/service';
+import { WalletService } from './wallet/service';
+import { MarketplaceService } from './marketplace/service';
 
 /** Combined DEX API surface exposing both low-level tools and high-level swap(). */
 interface DexClientApi extends DexService {
@@ -18,6 +21,9 @@ interface DexClientApi extends DexService {
 export class MangroveClient {
   private transport: Transport;
   private _dex: DexService;
+  private _oneinch: OneInchService;
+  private _wallet: WalletService;
+  private _marketplace: MarketplaceService;
   private _swapOrchestrator?: SwapOrchestrator;
   private config: MangroveConfig;
 
@@ -35,6 +41,9 @@ export class MangroveClient {
     }
 
     this._dex = new DexService(this.transport);
+    this._oneinch = new OneInchService(this.transport);
+    this._wallet = new WalletService(this.transport);
+    this._marketplace = new MarketplaceService(this.transport);
 
     if (config.signer) {
       this._swapOrchestrator = new SwapOrchestrator(this._dex, config.signer, this.transport);
@@ -62,6 +71,29 @@ export class MangroveClient {
         return typeof value === 'function' ? value.bind(target) : value;
       },
     }) as DexClientApi;
+  }
+
+  /**
+   * Access 1inch ancillary operations: balances, gas prices, token info,
+   * portfolio data, charts, and history.
+   */
+  get oneinch(): OneInchService {
+    return this._oneinch;
+  }
+
+  /**
+   * Access wallet operations: chain info, wallet creation, balance, and transaction history.
+   */
+  get wallet(): WalletService {
+    return this._wallet;
+  }
+
+  /**
+   * Access marketplace operations: create listings, search, get details,
+   * make offers, accept offers, confirm delivery, and rate transactions.
+   */
+  get marketplace(): MarketplaceService {
+    return this._marketplace;
   }
 
   /** Open the transport connection. Must be called before making any tool calls. */

@@ -60,6 +60,18 @@ describe('MangroveClient', () => {
     expect(client.dex.swap).toBeDefined();
   });
 
+  it('exposes oneinch service', () => {
+    const client = new MangroveClient({
+      url: 'https://api.mangrovemarkets.com',
+      signer: mockSigner,
+    });
+    expect(client.oneinch).toBeDefined();
+    expect(client.oneinch.getBalances).toBeDefined();
+    expect(client.oneinch.getGasPrice).toBeDefined();
+    expect(client.oneinch.getTokenInfo).toBeDefined();
+    expect(client.oneinch.getPortfolioValue).toBeDefined();
+  });
+
   it('connect delegates to transport', async () => {
     const client = new MangroveClient({
       url: 'https://api.mangrovemarkets.com',

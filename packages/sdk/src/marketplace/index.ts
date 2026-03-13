@@ -1,0 +1,1 @@
+export { MarketplaceService } from './service';

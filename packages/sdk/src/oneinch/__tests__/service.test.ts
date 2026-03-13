@@ -11,14 +11,41 @@ describe('OneInchService', () => {
     oneinch = new OneInchService(transport);
   });
 
-  it('getBalances calls oneinch_balances with chain_id and wallet', async () => {
-    transport.addResponse('oneinch_balances', { balances: { '0xA0b8...': '1000000' } });
+  it('getBalances calls oneinch_balances and normalizes array response', async () => {
+    transport.addResponse('oneinch_balances', {
+      balances: [
+        { address: '0xA0b8', balance: '1000000', decimals: 6, symbol: 'USDC', name: 'USD Coin' },
+      ],
+    });
 
     const result = await oneinch.getBalances({ chainId: 8453, wallet: '0xWallet' });
 
     expect(transport.calls[0].name).toBe('oneinch_balances');
     expect(transport.calls[0].params).toEqual({ chain_id: 8453, wallet: '0xWallet' });
-    expect(result.balances).toBeDefined();
+    expect(result).toHaveLength(1);
+    expect(result[0].address).toBe('0xA0b8');
+    expect(result[0].balance).toBe('1000000');
+    expect(result[0].symbol).toBe('USDC');
+  });
+
+  it('getBalances normalizes mapping response to array', async () => {
+    transport.addResponse('oneinch_balances', {
+      balances: { '0xA0b8': '1000000' },
+    });
+
+    const result = await oneinch.getBalances({ chainId: 8453, wallet: '0xWallet' });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].address).toBe('0xA0b8');
+    expect(result[0].balance).toBe('1000000');
+  });
+
+  it('getBalances returns empty array when no balances', async () => {
+    transport.addResponse('oneinch_balances', {});
+
+    const result = await oneinch.getBalances({ chainId: 8453, wallet: '0xWallet' });
+
+    expect(result).toEqual([]);
   });
 
   it('getAllowances calls oneinch_allowances with chain_id, wallet, and spender', async () => {
@@ -41,14 +68,34 @@ describe('OneInchService', () => {
     expect(result.prices).toBeDefined();
   });
 
-  it('getGasPrice calls oneinch_gas_price with chain_id', async () => {
-    transport.addResponse('oneinch_gas_price', { baseFee: '0.01', maxPriorityFeePerGas: '0.001' });
+  it('getGasPrice calls oneinch_gas_price and returns typed GasPrice', async () => {
+    transport.addResponse('oneinch_gas_price', {
+      baseFee: '0.01',
+      maxPriorityFeePerGas: '0.001',
+      maxFeePerGas: '0.02',
+    });
 
     const result = await oneinch.getGasPrice({ chainId: 8453 });
 
     expect(transport.calls[0].name).toBe('oneinch_gas_price');
     expect(transport.calls[0].params).toEqual({ chain_id: 8453 });
-    expect(result.baseFee).toBeDefined();
+    expect(result.baseFee).toBe('0.01');
+    expect(result.maxPriorityFeePerGas).toBe('0.001');
+    expect(result.maxFeePerGas).toBe('0.02');
+  });
+
+  it('getGasPrice normalizes snake_case fields', async () => {
+    transport.addResponse('oneinch_gas_price', {
+      base_fee: '0.05',
+      max_priority_fee_per_gas: '0.002',
+      max_fee_per_gas: '0.06',
+    });
+
+    const result = await oneinch.getGasPrice({ chainId: 1 });
+
+    expect(result.baseFee).toBe('0.05');
+    expect(result.maxPriorityFeePerGas).toBe('0.002');
+    expect(result.maxFeePerGas).toBe('0.06');
   });
 
   it('searchTokens calls oneinch_token_search with chain_id and query', async () => {
@@ -61,14 +108,38 @@ describe('OneInchService', () => {
     expect(result.tokens).toBeDefined();
   });
 
-  it('getTokenInfo calls oneinch_token_info with chain_id and address', async () => {
-    transport.addResponse('oneinch_token_info', { symbol: 'USDC', decimals: 6, name: 'USD Coin' });
+  it('getTokenInfo calls oneinch_token_info and returns typed TokenInfo', async () => {
+    transport.addResponse('oneinch_token_info', {
+      symbol: 'USDC',
+      decimals: 6,
+      name: 'USD Coin',
+      address: '0xA0b8',
+      logoURI: 'https://example.com/usdc.png',
+    });
 
-    const result = await oneinch.getTokenInfo({ chainId: 8453, address: '0xA0b8...' });
+    const result = await oneinch.getTokenInfo({ chainId: 8453, address: '0xA0b8' });
 
     expect(transport.calls[0].name).toBe('oneinch_token_info');
-    expect(transport.calls[0].params).toEqual({ chain_id: 8453, address: '0xA0b8...' });
+    expect(transport.calls[0].params).toEqual({ chain_id: 8453, address: '0xA0b8' });
     expect(result.symbol).toBe('USDC');
+    expect(result.decimals).toBe(6);
+    expect(result.name).toBe('USD Coin');
+    expect(result.address).toBe('0xA0b8');
+    expect(result.logoURI).toBe('https://example.com/usdc.png');
+  });
+
+  it('getTokenInfo normalizes logo_uri to logoURI', async () => {
+    transport.addResponse('oneinch_token_info', {
+      symbol: 'ETH',
+      decimals: 18,
+      name: 'Ether',
+      address: '0xEee',
+      logo_uri: 'https://example.com/eth.png',
+    });
+
+    const result = await oneinch.getTokenInfo({ chainId: 1, address: '0xEee' });
+
+    expect(result.logoURI).toBe('https://example.com/eth.png');
   });
 
   it('getPortfolioValue calls oneinch_portfolio_value with addresses', async () => {
