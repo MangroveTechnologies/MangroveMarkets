@@ -9,18 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "14.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "@mangrove-ai/sdk": "workspace:*",
-    "@tanstack/react-query": "^5.0.0"
+    "@tanstack/react-query": "^5.90.21",
+    "next": "^15.5.12",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "typescript": "^5.0.0",
-    "eslint": "^8.0.0",
-    "eslint-config-next": "14.1.0"
+    "@types/node": "^20.19.37",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.5.12",
+    "typescript": "^5.9.3"
   }
 }
