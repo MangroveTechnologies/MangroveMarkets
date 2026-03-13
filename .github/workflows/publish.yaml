@@ -2,6 +2,10 @@ name: Publish SDK
 on:
   release:
     types: [published]
+  push:
+    branches: [main]
+    paths:
+      - 'packages/sdk/package.json'
 
 jobs:
   publish:
@@ -19,9 +23,30 @@ jobs:
           node-version: 20
           registry-url: 'https://registry.npmjs.org'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @mangrove-ai/sdk lint
-      - run: pnpm --filter @mangrove-ai/sdk test -- --run
-      - run: pnpm --filter @mangrove-ai/sdk build
-      - run: cd packages/sdk && npm publish --provenance --access public
+
+      # Check if this version is already published (skip if so)
+      - name: Check if version exists on npm
+        id: check
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./packages/sdk/package.json').version")
+          echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+          if npm view @mangrove-ai/sdk@$PACKAGE_VERSION version 2>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - if: steps.check.outputs.exists == 'false'
+        run: pnpm --filter @mangrove-ai/sdk lint
+      - if: steps.check.outputs.exists == 'false'
+        run: pnpm --filter @mangrove-ai/sdk test -- --run
+      - if: steps.check.outputs.exists == 'false'
+        run: pnpm --filter @mangrove-ai/sdk build
+      - if: steps.check.outputs.exists == 'false'
+        run: cd packages/sdk && npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - if: steps.check.outputs.exists == 'true'
+        run: echo "Version ${{ steps.check.outputs.version }} already published, skipping."
