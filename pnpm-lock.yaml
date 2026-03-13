@@ -14,7 +14,7 @@ importers:
 
   packages/claude-plugin:
     dependencies:
-      '@mangrovemarkets/sdk':
+      '@mangrove-ai/sdk':
         specifier: workspace:*
         version: link:../sdk
       ethers:
@@ -36,7 +36,7 @@ importers:
 
   packages/openclaw-plugin:
     dependencies:
-      '@mangrovemarkets/sdk':
+      '@mangrove-ai/sdk':
         specifier: workspace:*
         version: link:../sdk
     devDependencies:
@@ -80,7 +80,7 @@ importers:
 
   packages/website:
     dependencies:
-      '@mangrovemarkets/sdk':
+      '@mangrove-ai/sdk':
         specifier: workspace:*
         version: link:../sdk
       '@tanstack/react-query':

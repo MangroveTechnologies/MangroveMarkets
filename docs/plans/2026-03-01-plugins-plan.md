@@ -38,7 +38,7 @@ The following corrections apply to the original design doc:
 
 ```json
 {
-  "name": "@mangrovemarkets/claude-plugin",
+  "name": "@mangrove-ai/claude-plugin",
   "version": "0.1.0",
   "description": "Claude Code plugin for MangroveMarkets -- DEX, marketplace, wallet",
   "type": "module",
@@ -267,7 +267,7 @@ Placeholder React components with `data-testid` for future testing. No real func
 ### Task 13: Full plugin test suite and CI
 
 **Steps:**
-1. Run all tests for both plugins: `pnpm --filter @mangrovemarkets/claude-plugin test -- --run` and `pnpm --filter @mangrovemarkets/openclaw-plugin test -- --run`
+1. Run all tests for both plugins: `pnpm --filter @mangrove-ai/claude-plugin test -- --run` and `pnpm --filter @mangrove-ai/openclaw-plugin test -- --run`
 2. Update `.github/workflows/ci.yaml` to include both plugins in lint/test/build steps
 3. Verify all tests pass
 
@@ -278,10 +278,10 @@ Placeholder React components with `data-testid` for future testing. No real func
 ## Verification Checklist
 
 - [ ] `pnpm --filter @mangrove-ai/sdk test -- --run` passes (54 tests)
-- [ ] `pnpm --filter @mangrovemarkets/claude-plugin test -- --run` passes (~18 tests)
-- [ ] `pnpm --filter @mangrovemarkets/openclaw-plugin test -- --run` passes (~8 tests)
-- [ ] `pnpm --filter @mangrovemarkets/claude-plugin build` succeeds
-- [ ] `pnpm --filter @mangrovemarkets/openclaw-plugin build` succeeds
+- [ ] `pnpm --filter @mangrove-ai/claude-plugin test -- --run` passes (~18 tests)
+- [ ] `pnpm --filter @mangrove-ai/openclaw-plugin test -- --run` passes (~8 tests)
+- [ ] `pnpm --filter @mangrove-ai/claude-plugin build` succeeds
+- [ ] `pnpm --filter @mangrove-ai/openclaw-plugin build` succeeds
 - [ ] CI workflow includes all three packages
 - [ ] No references to old SDK name `@mangrove-one/mangrovemarkets`
 - [ ] No references to old method names `swapStatus()` or `supportedChains()`

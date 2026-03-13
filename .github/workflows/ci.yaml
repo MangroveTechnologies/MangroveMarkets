@@ -36,22 +36,22 @@ jobs:
         run: pnpm --filter @mangrove-ai/sdk lint
 
       - name: Type check (Claude Plugin)
-        run: pnpm --filter @mangrovemarkets/claude-plugin lint
+        run: pnpm --filter @mangrove-ai/claude-plugin lint
 
       - name: Test SDK
         run: pnpm --filter @mangrove-ai/sdk test -- --run
 
       - name: Test Claude Plugin
-        run: pnpm --filter @mangrovemarkets/claude-plugin test -- --run
+        run: pnpm --filter @mangrove-ai/claude-plugin test -- --run
 
       - name: Test OpenClaw Plugin
-        run: pnpm --filter @mangrovemarkets/openclaw-plugin test -- --run
+        run: pnpm --filter @mangrove-ai/openclaw-plugin test -- --run
 
       - name: Build SDK
         run: pnpm --filter @mangrove-ai/sdk build
 
       - name: Build Claude Plugin
-        run: pnpm --filter @mangrovemarkets/claude-plugin build
+        run: pnpm --filter @mangrove-ai/claude-plugin build
 
       - name: Build OpenClaw Plugin
-        run: pnpm --filter @mangrovemarkets/openclaw-plugin build
+        run: pnpm --filter @mangrove-ai/openclaw-plugin build

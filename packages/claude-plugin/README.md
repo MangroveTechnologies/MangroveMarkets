@@ -1,4 +1,4 @@
-# @mangrovemarkets/claude-plugin
+# @mangrove-ai/claude-plugin
 
 Claude Code plugin for MangroveMarkets. Provides skills and commands for interacting with the MangroveMarkets MCP server -- DEX aggregation, marketplace, wallet management, and portfolio tracking.
 

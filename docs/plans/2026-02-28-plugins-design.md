@@ -465,7 +465,7 @@ describe("/swap skill", () => {
 
 ```json
 {
-  "name": "@mangrovemarkets/claude-plugin",
+  "name": "@mangrove-ai/claude-plugin",
   "version": "0.1.0",
   "dependencies": {
     "@mangrove-ai/sdk": "workspace:*"
@@ -484,7 +484,7 @@ describe("/swap skill", () => {
 
 ```json
 {
-  "name": "@mangrovemarkets/openclaw-plugin",
+  "name": "@mangrove-ai/openclaw-plugin",
   "version": "0.1.0",
   "dependencies": {
     "@mangrove-ai/sdk": "workspace:*",

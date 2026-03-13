@@ -1,5 +1,5 @@
 {
-  "name": "@mangrovemarkets/claude-plugin",
+  "name": "@mangrove-ai/claude-plugin",
   "version": "0.1.0",
   "description": "Claude Code plugin for MangroveMarkets -- DEX, marketplace, wallet",
   "type": "module",

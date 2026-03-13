@@ -1,4 +1,4 @@
-# @mangrovemarkets/openclaw-plugin
+# @mangrove-ai/openclaw-plugin
 
 OpenClaw plugin for MangroveMarkets. Exposes DEX aggregation, marketplace, wallet, and portfolio tools to OpenClaw agents, with agent hooks and dashboard components.
 

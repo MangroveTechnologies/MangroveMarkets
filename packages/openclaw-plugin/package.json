@@ -1,5 +1,5 @@
 {
-  "name": "@mangrovemarkets/openclaw-plugin",
+  "name": "@mangrove-ai/openclaw-plugin",
   "version": "0.1.0",
   "description": "OpenClaw plugin for MangroveMarkets -- DEX, marketplace, wallet",
   "type": "module",

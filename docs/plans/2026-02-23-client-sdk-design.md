@@ -224,8 +224,8 @@ Skips approval for native tokens (ETH). Supports MEV protection opt-in.
 - Integrates into `swap()` for x402 billing mode
 
 **Phase 5: Plugins**
-- `@mangrovemarkets/openclaw-plugin`
-- `@mangrovemarkets/claude-plugin`
+- `@mangrove-ai/openclaw-plugin`
+- `@mangrove-ai/claude-plugin`
 
 ### Build Order Dependencies
 

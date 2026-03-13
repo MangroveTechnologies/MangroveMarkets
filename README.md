@@ -11,8 +11,8 @@ This repo contains the **client-side packages** for MangroveMarkets:
 | Package | Path | Description |
 |---------|------|-------------|
 | **TypeScript SDK** | `packages/sdk` | `@mangrove-ai/sdk` -- typed client for MCP server + REST API |
-| **Claude Plugin** | `packages/claude-plugin` | `@mangrovemarkets/claude-plugin` -- Claude Code plugin with /swap, /marketplace, /wallet, /portfolio skills |
-| **OpenClaw Plugin** | `packages/openclaw-plugin` | `@mangrovemarkets/openclaw-plugin` -- OpenClaw plugin with tool definitions, dashboard, agent hooks |
+| **Claude Plugin** | `packages/claude-plugin` | `@mangrove-ai/claude-plugin` -- Claude Code plugin with /swap, /marketplace, /wallet, /portfolio skills |
+| **OpenClaw Plugin** | `packages/openclaw-plugin` | `@mangrove-ai/openclaw-plugin` -- OpenClaw plugin with tool definitions, dashboard, agent hooks |
 | **Website** | `packages/website` | Next.js marketing site for mangrovemarkets.com |
 
 For the **MCP server** (backend), see [MangroveMarkets-MCP-Server](https://github.com/MangroveTechnologies/MangroveMarkets-MCP-Server).
@@ -100,7 +100,7 @@ Install the Claude Plugin, then use skills directly:
 ### Using OpenClaw
 
 ```bash
-openclaw plugins install @mangrovemarkets/openclaw-plugin
+openclaw plugins install @mangrove-ai/openclaw-plugin
 ```
 
 ## Documentation
@@ -190,11 +190,11 @@ packages/
       x402/                      # x402 payment handler
       marketplace/               # Marketplace client
       wallet/                    # Wallet client
-  claude-plugin/                 # @mangrovemarkets/claude-plugin
+  claude-plugin/                 # @mangrove-ai/claude-plugin
     .claude-plugin/plugin.json   # Plugin manifest
     src/skills/                  # /swap, /marketplace, /wallet, /portfolio
     src/commands/                # /mangrove-status, /mangrove-connect
-  openclaw-plugin/               # @mangrovemarkets/openclaw-plugin
+  openclaw-plugin/               # @mangrove-ai/openclaw-plugin
     openclaw.plugin.json         # Plugin manifest
     src/tools/                   # Tool definitions (delegate to SDK)
     src/handlers/                # Agent hooks
