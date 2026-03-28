@@ -4,13 +4,13 @@ import type {
   CreateListingResult,
   SearchParams,
   SearchResult,
-  Listing,
+  GetListingResult,
   MakeOfferParams,
   AcceptOfferParams,
   ConfirmDeliveryParams,
   RateParams,
 } from '../types/marketplace';
-import { normalizeCreateListingResult, normalizeListing, normalizeSearchResult } from '../utils/normalize';
+import { normalizeCreateListingResult, normalizeGetListingResult, normalizeSearchResult } from '../utils/normalize';
 
 /**
  * Low-level Marketplace service wrapping the marketplace_* MCP tools.
@@ -54,6 +54,7 @@ export class MarketplaceService {
       ...(params.maxPrice != null ? { max_price: params.maxPrice } : {}),
       ...(params.listingType != null ? { listing_type: params.listingType } : {}),
       ...(params.limit != null ? { limit: params.limit } : {}),
+      ...(params.payment != null ? { payment: params.payment } : {}),
     });
     return normalizeSearchResult(result as Record<string, unknown>);
   }
@@ -61,13 +62,15 @@ export class MarketplaceService {
   /**
    * Get full details of a specific listing by ID.
    * @param listingId - The listing's unique identifier.
-   * @returns Full listing details.
+   * @param payment - Optional base64-encoded x402 payment signature. When omitted, the server returns payment requirements.
+   * @returns Listing details with optional settlement receipt.
    */
-  async getListing(listingId: string): Promise<Listing> {
+  async getListing(listingId: string, payment?: string): Promise<GetListingResult> {
     const result = await this.transport.callTool('marketplace_get_listing', {
       listing_id: listingId,
+      ...(payment != null ? { payment } : {}),
     });
-    return normalizeListing(result as Record<string, unknown>);
+    return normalizeGetListingResult(result as Record<string, unknown>);
   }
 
   /**

@@ -1,9 +1,4 @@
 /**
- * Fee billing mode. 'standard' bakes fee into swap; 'x402' pays separately for better output.
- */
-export type BillingMode = 'standard' | 'x402';
-
-/**
  * Server-issued swap quote with pricing, fees, and expiry.
  */
 export interface Quote {
@@ -24,7 +19,7 @@ export interface Quote {
   /** EVM chain ID where the swap will execute. */
   chainId: number;
   /** Billing mode used for this quote. */
-  billingMode: BillingMode;
+  billingMode: 'standard';
   /** Ordered list of DEX routes the aggregator will use. */
   routes: string[];
   /** ISO 8601 timestamp after which this quote is no longer valid. */
@@ -117,8 +112,6 @@ export interface QuoteParams {
   amount: string;
   /** EVM chain ID to get the quote on. */
   chainId: number;
-  /** Fee billing mode. Defaults to 'standard'. */
-  mode?: BillingMode;
 }
 
 /**
@@ -137,8 +130,6 @@ export interface SwapParams {
   slippage?: number;
   /** Whether to use Flashbots or similar MEV protection. Defaults to false. */
   mevProtection?: boolean;
-  /** Fee billing mode. Defaults to 'standard'. */
-  mode?: BillingMode;
 }
 
 /**

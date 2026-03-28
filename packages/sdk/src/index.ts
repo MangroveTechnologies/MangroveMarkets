@@ -14,7 +14,6 @@ export type {
   ApproveParams,
   BroadcastParams,
   SwapStatusParams,
-  BillingMode,
   Transport,
   ToolCallResult,
   Signer,
@@ -41,6 +40,9 @@ export type {
   ConfirmDeliveryParams,
   RateParams,
   CreateListingResult,
+  GetListingResult,
+  SettlementReceipt,
+  PaymentRequirements,
 } from './types';
 
 // Services

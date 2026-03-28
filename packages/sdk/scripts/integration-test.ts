@@ -175,25 +175,116 @@ async function testDexToolsViaREST() {
 }
 
 // ---------------------------------------------------------------------------
-// 5b. SDK RestTransport -- marketplace tools
+// 5b. SDK -- marketplace tools (x402-gated)
 // ---------------------------------------------------------------------------
 
 async function testMarketplaceViaREST() {
-  header('5b. SDK RestTransport -- marketplace_search');
+  header('5b. SDK -- marketplace_create_listing (free)');
+  let listingId: string | undefined;
   try {
-    const { RestTransport } = await import('../src/transport/rest.js');
-    const transport = new RestTransport(SERVER_URL);
+    const { MangroveClient } = await import('../src/index.js');
+    const client = new MangroveClient({ url: SERVER_URL, transport: 'rest' });
+    await client.connect();
 
-    const result = await transport.callTool('marketplace_search', { query: 'test' }) as any;
-    if ('listings' in result || 'total_count' in result) {
-      ok(`Search returned ${result.total_count ?? 0} results`);
-    } else if (result.error) {
-      fail(`Server error: ${result.code} -- ${result.message}`);
+    const result = await client.marketplace.createListing({
+      sellerAddress: '0xbf57B1ACf74885e215617783Fad4aE4DF849A8d0',
+      title: 'SDK Integration Test Listing',
+      description: 'Created by integration-test.ts to verify the full SDK marketplace flow.',
+      category: 'data',
+      priceXrp: 1.0,
+      listingType: 'static',
+      tags: ['test', 'sdk'],
+    });
+    listingId = result.listingId;
+    ok(`Created listing: ${listingId} (status: ${result.status})`);
+    await client.disconnect();
+  } catch (e: any) {
+    fail(`marketplace_create_listing: ${e.message}`);
+  }
+
+  header('5b-2. SDK -- marketplace_search without payment (expect PAYMENT_REQUIRED)');
+  try {
+    const { MangroveClient } = await import('../src/index.js');
+    const client = new MangroveClient({ url: SERVER_URL, transport: 'rest' });
+    await client.connect();
+
+    try {
+      await client.marketplace.search({ query: 'test' });
+      fail('Expected PAYMENT_REQUIRED error but got success');
+    } catch (e: any) {
+      if (e.message.includes('x402') || e.message.includes('payment')) {
+        ok(`Correctly requires x402 payment: "${e.message.slice(0, 80)}..."`);
+      } else {
+        fail(`Unexpected error: ${e.message}`);
+      }
+    }
+    await client.disconnect();
+  } catch (e: any) {
+    fail(`marketplace_search setup: ${e.message}`);
+  }
+
+  header('5b-3. Raw fetch -- get x402 payment requirements');
+  let paymentRequiredB64: string | undefined;
+  try {
+    const resp = await fetch(`${SERVER_URL}/api/v1/tools/marketplace_search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: 'test' }),
+    });
+    const data = await resp.json() as any;
+    if (data.payment_required) {
+      paymentRequiredB64 = data.payment_required;
+      const decoded = data.payment_required_decoded || {};
+      const accept = decoded.accepts?.[0] || {};
+      ok(`Got payment requirements (${accept.network}, $${(Number(accept.maxAmountRequired || accept.amount || 0) / 1e6).toFixed(4)} USDC)`);
+      ok(`PayTo: ${accept.payTo}`);
     } else {
-      ok(`Response: ${JSON.stringify(result).slice(0, 100)}`);
+      fail(`Expected payment_required in response, got: ${JSON.stringify(data).slice(0, 200)}`);
     }
   } catch (e: any) {
-    fail(`marketplace_search: ${e.message}`);
+    fail(`Payment requirements fetch: ${e.message}`);
+  }
+
+  // Only attempt payment signing if WALLET_SECRET is set
+  const walletSecret = process.env.WALLET_SECRET;
+  if (walletSecret && paymentRequiredB64) {
+    header('5b-4. Sign x402 payment and call marketplace_search with payment');
+    try {
+      const { ethers } = await import('ethers');
+      const wallet = new ethers.Wallet(walletSecret);
+
+      // Use raw fetch for signing since x402 SDK is Python-only
+      // In production, agents would use the x402 JS client or similar
+      // For this test, we call the server with a pre-signed payment
+      // NOTE: x402 signing requires the x402 JS SDK which isn't in this package
+      skip('x402 JS signing SDK not available in this package -- payment signing requires Python x402 client or x402 JS SDK');
+    } catch (e: any) {
+      skip(`x402 payment signing: ${e.message}`);
+    }
+  } else if (!walletSecret) {
+    skip('WALLET_SECRET not set -- skipping x402 payment test (set it to test full flow)');
+  }
+
+  if (listingId) {
+    header('5b-5. SDK -- marketplace_get_listing without payment (expect PAYMENT_REQUIRED)');
+    try {
+      const { MangroveClient } = await import('../src/index.js');
+      const client = new MangroveClient({ url: SERVER_URL, transport: 'rest' });
+      await client.connect();
+      try {
+        await client.marketplace.getListing(listingId);
+        fail('Expected PAYMENT_REQUIRED error but got success');
+      } catch (e: any) {
+        if (e.message.includes('x402') || e.message.includes('payment')) {
+          ok(`Correctly requires x402 payment for getListing`);
+        } else {
+          fail(`Unexpected error: ${e.message}`);
+        }
+      }
+      await client.disconnect();
+    } catch (e: any) {
+      fail(`marketplace_get_listing setup: ${e.message}`);
+    }
   }
 }
 
@@ -337,12 +428,13 @@ async function main() {
   console.log('='.repeat(60));
 
   console.log(`
-HONEST STATUS (updated):
-  - REST API exposes all 37 MCP tools via auto-bridge (proven: wallet, DEX, marketplace, 1inch)
-  - MCP endpoint proven working (initialize, tools/list, tools/call all return valid data)
-  - MCP SDK client (McpTransport) may timeout in stateless mode -- client compatibility issue
-  - SwapOrchestrator has NEVER been tested end-to-end through the SDK
-  - x402 payment flow has NEVER been tested through the SDK
+HONEST STATUS (2026-03-14):
+  - REST API exposes all 37 MCP tools via auto-bridge (proven)
+  - MCP endpoint proven working (initialize, tools/list, tools/call)
+  - McpTransport (TypeScript) connects and calls tools successfully
+  - Marketplace x402 gating proven (PAYMENT_REQUIRED returned correctly, payment flow proven via Python client)
+  - x402 payment signing requires x402 JS SDK or Python x402 client (not bundled in this SDK)
+  - SwapOrchestrator tested via swap-test.ts (proven on Base mainnet, block 43280998)
 `);
 
   process.exit(failed > 0 ? 1 : 0);

@@ -34,7 +34,7 @@ export class DexService {
       output_token: params.dst,
       amount: params.amount,
       chain_id: params.chainId,
-      mode: params.mode || 'standard',
+      mode: 'standard',
     });
     return normalizeQuote(result as Record<string, unknown>);
   }

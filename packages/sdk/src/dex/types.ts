@@ -9,5 +9,4 @@ export type {
   ApproveParams,
   BroadcastParams,
   SwapStatusParams,
-  BillingMode,
 } from '../types/dex';

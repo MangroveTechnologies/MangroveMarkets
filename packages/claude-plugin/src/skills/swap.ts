@@ -1,4 +1,4 @@
-import type { MangroveClient, BillingMode, Quote, SwapResult, TransactionStatus } from '@mangrove-ai/sdk';
+import type { MangroveClient, Quote, SwapResult, TransactionStatus } from '@mangrove-ai/sdk';
 
 export interface SwapQuoteParams {
   action: 'quote';
@@ -6,7 +6,6 @@ export interface SwapQuoteParams {
   dst: string;
   amount: string;
   chainId: number;
-  mode?: BillingMode;
 }
 
 export interface SwapExecuteParams {
@@ -17,7 +16,6 @@ export interface SwapExecuteParams {
   chainId: number;
   slippage?: number;
   mevProtection?: boolean;
-  mode?: BillingMode;
 }
 
 export interface SwapStatusParams {
@@ -46,7 +44,6 @@ export async function handleSwap(
         dst: params.dst,
         amount: params.amount,
         chainId: params.chainId,
-        mode: params.mode,
       });
 
     case 'execute':
@@ -57,7 +54,6 @@ export async function handleSwap(
         chainId: params.chainId,
         slippage: params.slippage,
         mevProtection: params.mevProtection,
-        mode: params.mode,
       });
 
     case 'status':

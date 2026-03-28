@@ -5,6 +5,26 @@
  * with camelCase naming per TypeScript convention.
  */
 
+// -- x402 Payment types --
+
+/** Receipt returned when an x402 payment has been verified and settled. */
+export interface SettlementReceipt {
+  verified: boolean;
+  settled: boolean;
+  transaction: string;
+  network: string;
+  payer: string;
+}
+
+/** Returned by x402-gated tools when called without a valid payment. */
+export interface PaymentRequirements {
+  error: boolean;
+  code: string;
+  message: string;
+  payment_required: string;
+  payment_required_decoded: Record<string, unknown>;
+}
+
 // -- Enums (matching server's ListingType, ListingStatus, OfferStatus, Category) --
 
 export type ListingType = 'static' | 'service';
@@ -76,6 +96,15 @@ export interface SearchResult {
   listings: Listing[];
   totalCount: number;
   nextCursor: string | null;
+  /** Present when the request included a valid x402 payment. */
+  settlement?: SettlementReceipt;
+}
+
+/** Result from marketplace_get_listing, including optional x402 settlement. */
+export interface GetListingResult {
+  listing: Listing;
+  /** Present when the request included a valid x402 payment. */
+  settlement?: SettlementReceipt;
 }
 
 // -- Parameter types --
@@ -102,6 +131,8 @@ export interface SearchParams {
   maxPrice?: number;
   listingType?: string;
   limit?: number;
+  /** Base64-encoded x402 payment signature. When omitted, the server returns payment requirements. */
+  payment?: string;
 }
 
 /** Parameters for marketplace_make_offer. */

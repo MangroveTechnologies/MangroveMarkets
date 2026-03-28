@@ -102,20 +102,83 @@ describe('MarketplaceService', () => {
       expires_at: null,
     } as any);
 
-    const listing = await marketplace.getListing('lst-002');
+    const result = await marketplace.getListing('lst-002');
 
-    expect(listing.listingId).toBe('lst-002');
-    expect(listing.sellerAddress).toBe('rSeller');
-    expect(listing.category).toBe('compute');
-    expect(listing.subcategory).toBe('gpu');
-    expect(listing.priceXrp).toBe(25.0);
-    expect(listing.listingType).toBe('service');
-    expect(listing.storageUri).toBe('ipfs://Qm123');
-    expect(listing.contentHash).toBe('sha256:abc');
-    expect(listing.expiresAt).toBeNull();
+    expect(result.listing.listingId).toBe('lst-002');
+    expect(result.listing.sellerAddress).toBe('rSeller');
+    expect(result.listing.category).toBe('compute');
+    expect(result.listing.subcategory).toBe('gpu');
+    expect(result.listing.priceXrp).toBe(25.0);
+    expect(result.listing.listingType).toBe('service');
+    expect(result.listing.storageUri).toBe('ipfs://Qm123');
+    expect(result.listing.contentHash).toBe('sha256:abc');
+    expect(result.listing.expiresAt).toBeNull();
+    expect(result.settlement).toBeUndefined();
 
     expect(transport.calls[0].name).toBe('marketplace_get_listing');
     expect(transport.calls[0].params.listing_id).toBe('lst-002');
+  });
+
+  it('getListing with settlement includes settlement receipt', async () => {
+    transport.addResponse('marketplace_get_listing', {
+      listing_id: 'lst-003',
+      seller_address: 'rSeller',
+      title: 'Paid Listing',
+      description: 'x402 gated',
+      category: 'data',
+      price_xrp: 10.0,
+      listing_type: 'static',
+      status: 'active',
+      tags: [],
+      created_at: '2026-03-14T10:00:00Z',
+      updated_at: '2026-03-14T10:00:00Z',
+      expires_at: null,
+      settlement: {
+        verified: true,
+        settled: true,
+        transaction: '0xabc123',
+        network: 'eip155:8453',
+        payer: '0xbf57',
+      },
+    } as any);
+
+    const result = await marketplace.getListing('lst-003', 'base64payment');
+
+    expect(result.listing.listingId).toBe('lst-003');
+    expect(result.settlement).toBeDefined();
+    expect(result.settlement!.verified).toBe(true);
+    expect(result.settlement!.settled).toBe(true);
+    expect(result.settlement!.transaction).toBe('0xabc123');
+    expect(result.settlement!.network).toBe('eip155:8453');
+    expect(result.settlement!.payer).toBe('0xbf57');
+
+    // Verify payment param was sent
+    expect(transport.calls[0].params.payment).toBe('base64payment');
+  });
+
+  it('search with payment passes payment param and includes settlement', async () => {
+    transport.addResponse('marketplace_search', {
+      listings: [],
+      total_count: 0,
+      next_cursor: null,
+      settlement: {
+        verified: true,
+        settled: true,
+        transaction: '0xdef456',
+        network: 'eip155:8453',
+        payer: '0xbf57',
+      },
+    } as any);
+
+    const result = await marketplace.search({
+      query: 'test',
+      payment: 'base64payment',
+    });
+
+    expect(result.totalCount).toBe(0);
+    expect(result.settlement).toBeDefined();
+    expect(result.settlement!.transaction).toBe('0xdef456');
+    expect(transport.calls[0].params.payment).toBe('base64payment');
   });
 
   it('makeOffer sends listing_id and buyer_address', async () => {

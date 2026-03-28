@@ -29,14 +29,13 @@ export class SwapOrchestrator {
    * approve if needed -> prepare unsigned swap tx -> sign locally ->
    * broadcast -> poll until confirmed or failed.
    *
-   * @param params - Swap parameters (src, dst, amount, chainId, slippage, mevProtection, mode).
+   * @param params - Swap parameters (src, dst, amount, chainId, slippage, mevProtection).
    * @returns Final swap result including tx hash, status, and amounts.
    * @throws If the transaction does not confirm within the polling timeout.
    */
   async swap(params: SwapParams): Promise<SwapResult> {
     const slippage = params.slippage ?? 0.5;
     const mevProtection = params.mevProtection ?? false;
-    const mode = params.mode ?? 'standard';
 
     // 1. Get quote
     const quote = await this.dex.getQuote({
@@ -44,7 +43,6 @@ export class SwapOrchestrator {
       dst: params.dst,
       amount: params.amount,
       chainId: params.chainId,
-      mode,
     });
 
     // 2. Check quote expiry

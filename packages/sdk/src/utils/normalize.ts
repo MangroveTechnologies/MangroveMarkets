@@ -20,7 +20,9 @@ import type {
 import type {
   Listing,
   SearchResult,
+  GetListingResult,
   CreateListingResult,
+  SettlementReceipt,
 } from '../types/marketplace';
 
 type ServerResponse = Record<string, unknown>;
@@ -41,7 +43,7 @@ export function normalizeQuote(raw: ServerResponse): Quote {
     outputAmount: String(raw.output_amount ?? raw.outputAmount ?? '0'),
     mangroveFee: String(raw.mangrove_fee ?? raw.mangroveFee ?? '0'),
     chainId: (raw.chain_id ?? raw.chainId) as number,
-    billingMode: (raw.billing_mode ?? raw.billingMode ?? 'standard') as 'standard' | 'x402',
+    billingMode: 'standard' as const,
     routes: (raw.routes ?? []) as string[],
     expiresAt: (raw.expires_at ?? raw.expiresAt ?? '') as string,
   };
@@ -192,15 +194,48 @@ export function normalizeListing(raw: ServerResponse): Listing {
 }
 
 /**
+ * Normalize an optional settlement receipt from the server response.
+ * Returns undefined if no settlement data is present.
+ */
+function normalizeSettlement(raw: ServerResponse): SettlementReceipt | undefined {
+  const settlement = raw.settlement as ServerResponse | undefined;
+  if (!settlement) return undefined;
+  return {
+    verified: (settlement.verified ?? false) as boolean,
+    settled: (settlement.settled ?? false) as boolean,
+    transaction: (settlement.transaction ?? '') as string,
+    network: (settlement.network ?? '') as string,
+    payer: (settlement.payer ?? '') as string,
+  };
+}
+
+/**
  * Normalize a server search response to SDK SearchResult type.
  *
- * Server fields: listings (array of listing dicts), total_count, next_cursor
+ * Server fields: listings (array of listing dicts), total_count, next_cursor, settlement
  */
 export function normalizeSearchResult(raw: ServerResponse): SearchResult {
   const rawListings = (raw.listings ?? []) as ServerResponse[];
+  const settlement = normalizeSettlement(raw);
   return {
     listings: rawListings.map(normalizeListing),
     totalCount: (raw.total_count ?? raw.totalCount ?? 0) as number,
     nextCursor: (raw.next_cursor ?? raw.nextCursor ?? null) as string | null,
+    ...(settlement ? { settlement } : {}),
+  };
+}
+
+/**
+ * Normalize a server get-listing response to SDK GetListingResult type.
+ *
+ * The server may return the listing fields at the top level (backward compat)
+ * or nested under a `listing` key. Settlement is optional.
+ */
+export function normalizeGetListingResult(raw: ServerResponse): GetListingResult {
+  const listingData = (raw.listing ?? raw) as ServerResponse;
+  const settlement = normalizeSettlement(raw);
+  return {
+    listing: normalizeListing(listingData),
+    ...(settlement ? { settlement } : {}),
   };
 }
