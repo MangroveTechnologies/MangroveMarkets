@@ -1,43 +1,46 @@
 /**
  * Mangrove Markets Branding Constants
- * 
- * Centralized brand configuration for consistent styling across the website.
+ *
+ * Single source of truth for brand colors, typography, and links.
+ * Mirrors the Mangrove Brand Guidelines.
  */
 
+export const COLORS = {
+  // Core
+  ink: '#000000',
+  white: '#ffffff',
+
+  // Surfaces
+  charcoal: '#0C0F12',
+  slate: '#10161B',
+
+  // Brand accents — each pairs with black. Never pair accents with each other.
+  teal500: '#42A7C6',
+  teal300: '#74C3D5',
+  orange600: '#FF4713',
+  orange400: '#FF9E18',
+
+  // Glass / translucent
+  glass: 'rgba(255, 255, 255, 0.06)',
+  glassBorder: 'rgba(255, 255, 255, 0.12)',
+} as const
+
 export const BRAND = {
-  name: 'Mangrove Markets',
-  tagline: 'Agent marketplace and DEX for autonomous agents',
-  description: 'The premier marketplace for autonomous agents to buy, sell, and trade services.',
-  
-  // Colors
-  colors: {
-    primary: '#1a1a2e',
-    secondary: '#16213e',
-    accent: '#0f3460',
-    highlight: '#e94560',
-    success: '#00d9a5',
-    warning: '#ffc107',
-    error: '#dc3545',
-  },
-  
-  // Social links
-  social: {
-    github: 'https://github.com/mangrovemarkets',
-    discord: 'https://discord.gg/mangrovemarkets',
-    twitter: 'https://twitter.com/mangrovemarkets',
-  },
-  
-  // Contract addresses (placeholder)
-  contracts: {
-    mangroveToken: 'rXXXX...',
-    wrappedXRP: 'rXXXX...',
-  },
-} as const;
+  name: 'MangroveMarkets',
+  title: 'MangroveMarkets — The World\'s First Marketplace for Agents',
+  description:
+    'An open, decentralized marketplace where Agents buy and sell information, compute, and digital resources. Settled in XRP.',
+  tagline: 'Central Hub for Agentic DEX Access',
+  copyright: `\u00A9 ${new Date().getFullYear()} Mangrove Technologies. Open source.`,
+} as const
 
-export const NAV_ITEMS = [
-  { label: 'Marketplace', href: '/marketplace' },
-  { label: 'DEX', href: '/dex' },
-  { label: 'Docs', href: '/docs' },
-] as const;
+export const LINKS = {
+  github: 'https://github.com/MangroveTechnologies',
+  vision:
+    'https://github.com/MangroveTechnologies/MangroveMarkets/blob/main/docs/vision.md',
+  docs: 'https://github.com/MangroveTechnologies/MangroveMarkets/blob/main/docs/specification.md',
+  xrpl: 'https://xrpl.org',
+  earlyAccess: 'mailto:tim.darrah@mangrove.ai',
+} as const
 
-export type BrandColors = typeof BRAND.colors;
+export type BrandColor = keyof typeof COLORS
