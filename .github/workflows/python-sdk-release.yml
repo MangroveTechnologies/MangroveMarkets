@@ -1,0 +1,113 @@
+name: Python SDK Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+
+defaults:
+  run:
+    working-directory: packages/python-sdk
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+      - name: Compute next version
+        id: version
+        env:
+          BUMP_TYPE: ${{ github.event.inputs.bump }}
+        run: |
+          LATEST_TAG=$(git tag -l 'python-sdk-v*' --sort=-v:refname | head -1)
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG="python-sdk-v0.0.0"
+          fi
+          CURRENT="${LATEST_TAG#python-sdk-v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          case "$BUMP_TYPE" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=python-sdk-v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Releasing: ${LATEST_TAG} -> python-sdk-v${NEW_VERSION}"
+
+      - name: Update version files
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          sed -i "s/^version = .*/version = \"${NEW_VERSION}\"/" pyproject.toml
+          sed -i "s/^__version__ = .*/__version__ = \"${NEW_VERSION}\"/" src/mangrovemarkets/_version.py
+
+      - name: Commit and tag
+        env:
+          VERSION_TAG: ${{ steps.version.outputs.tag }}
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pyproject.toml src/mangrovemarkets/_version.py
+          git diff --cached --quiet || git commit -m "release: python-sdk v${NEW_VERSION}"
+          git tag -a "$VERSION_TAG" -m "Release $VERSION_TAG"
+          git push origin HEAD:main --follow-tags
+
+      - name: Build
+        run: |
+          pip install build
+          python -m build
+
+      - name: Verify version
+        env:
+          EXPECTED: ${{ steps.version.outputs.version }}
+        run: |
+          BUILT=$(unzip -p dist/*.whl '*/METADATA' | grep '^Version:' | cut -d' ' -f2)
+          echo "Expected: ${EXPECTED}, Built: ${BUILT}"
+          [ "$BUILT" = "$EXPECTED" ] || exit 1
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages-dir: packages/python-sdk/dist/
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: mangrovemarkets ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          body: |
+            ## mangrovemarkets ${{ steps.version.outputs.version }}
+
+            ```bash
+            pip install mangrovemarkets==${{ steps.version.outputs.version }}
+            ```

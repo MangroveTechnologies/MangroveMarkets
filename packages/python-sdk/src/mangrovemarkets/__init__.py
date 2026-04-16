@@ -1,44 +1,40 @@
-"""Mangrove Markets Python SDK.
+"""MangroveMarkets Python SDK.
 
 Quickstart:
-    from mangrovemarkets import MangroveClient
-    
-    client = MangroveClient(base_url="http://localhost:8080")
-    health = client.health()
-    print(health)
-"""
-from .client import MangroveClient, create_client
-from .models import (
-    HealthStatus,
-    MarketplaceListing,
-    DexQuote,
-    WalletBalance,
-)
-from .exceptions import (
-    MangroveClientError,
-    ApiError,
-    AuthenticationError,
-    ValidationError,
-    RateLimitError,
-    NetworkError,
-)
+    from mangrovemarkets import MangroveMarkets
 
-__version__ = "0.1.0"
+    client = MangroveMarkets(base_url="http://localhost:8080")
+    venues = client.dex.supported_venues()
+"""
+
+from ._client import MangroveMarkets
+from ._version import __version__
+from .exceptions import (
+    APIError,
+    AuthenticationError,
+    ConfigurationError,
+    ConnectionError,
+    MangroveError,
+    NotFoundError,
+    NotImplementedOnServer,
+    RateLimitError,
+    ServerError,
+    TimeoutError,
+    ValidationError,
+)
 
 __all__ = [
-    # Client
-    "MangroveClient",
-    "create_client",
-    # Models
-    "HealthStatus",
-    "MarketplaceListing",
-    "DexQuote",
-    "WalletBalance",
-    # Exceptions
-    "MangroveClientError",
-    "ApiError",
+    "__version__",
+    "MangroveMarkets",
+    "MangroveError",
+    "APIError",
     "AuthenticationError",
-    "ValidationError",
+    "ConfigurationError",
+    "ConnectionError",
+    "NotFoundError",
+    "NotImplementedOnServer",
     "RateLimitError",
-    "NetworkError",
+    "ServerError",
+    "TimeoutError",
+    "ValidationError",
 ]
