@@ -9,19 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@mangrove-ai/sdk": "workspace:*",
-    "@tanstack/react-query": "^5.90.21",
     "next": "^15.5.12",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
-    "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20.19.37",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "autoprefixer": "^10.5.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.5.12",
     "postcss": "^8.5.10",

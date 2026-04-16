@@ -2,7 +2,6 @@
 const nextConfig = {
   output: 'export',
   reactStrictMode: true,
-  transpilePackages: ['@mangrove-ai/sdk'],
   images: {
     unoptimized: true,
   },
