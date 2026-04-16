@@ -6,7 +6,7 @@ from mangrovemarkets._services.wallet import WalletService
 from mangrovemarkets._transport._auth import NoAuth
 from mangrovemarkets._transport._mock import MockTransport
 from mangrovemarkets._transport._service import ServiceTransport
-from mangrovemarkets.exceptions import NotImplementedOnServer
+from mangrovemarkets.exceptions import APIError, NotImplementedOnServer
 from mangrovemarkets.models.wallet import ChainInfo, WalletCreateResult
 
 
@@ -76,6 +76,21 @@ class TestWalletCreate:
         assert result.address.startswith("0x")
         assert result.private_key is not None
         assert result.chain_id == 8453
+
+
+class TestToolErrorHandling:
+    def test_server_error_raises_api_error(self) -> None:
+        mock, svc = _make_service()
+        mock.add_response("POST", "/tools/wallet_chain_info", json={
+            "error": True,
+            "code": "INVALID_CHAIN",
+            "message": "Unsupported chain: solana",
+            "suggestion": "Supported chains: xrpl, evm",
+        })
+        with pytest.raises(APIError, match="Unsupported chain: solana") as exc_info:
+            svc.chain_info(chain="solana")
+        assert exc_info.value.code == "INVALID_CHAIN"
+        assert exc_info.value.suggestion == "Supported chains: xrpl, evm"
 
 
 class TestNotImplementedStubs:
