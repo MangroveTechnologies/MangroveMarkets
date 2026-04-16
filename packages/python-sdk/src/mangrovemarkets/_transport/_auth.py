@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-from typing import Protocol
+from abc import ABC, abstractmethod
 
 
-class AuthStrategy(Protocol):
+class AuthStrategy(ABC):
+    """Strategy for applying authentication to request headers."""
+
+    @abstractmethod
     def apply(self, headers: dict[str, str]) -> dict[str, str]: ...
 
 
-class ApiKeyAuth:
+class ApiKeyAuth(AuthStrategy):
     """Authorization: Bearer {api_key}"""
 
     def __init__(self, api_key: str) -> None:
@@ -18,7 +21,7 @@ class ApiKeyAuth:
         return headers
 
 
-class NoAuth:
+class NoAuth(AuthStrategy):
     """No authentication headers."""
 
     def apply(self, headers: dict[str, str]) -> dict[str, str]:

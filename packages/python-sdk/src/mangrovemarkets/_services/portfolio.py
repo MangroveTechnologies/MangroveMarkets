@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from ..models.portfolio import (
     PortfolioDefi,
     PortfolioPnL,
@@ -15,21 +17,21 @@ class PortfolioService(BaseService):
 
     def value(self, addresses: str, chain_id: int | None = None) -> PortfolioValue:
         """Get total portfolio value across chains."""
-        params: dict = {"addresses": addresses}
+        params: dict[str, Any] = {"addresses": addresses}
         if chain_id is not None:
             params["chain_id"] = chain_id
         return self._call_tool_model("oneinch_portfolio_value", PortfolioValue, params)
 
     def pnl(self, addresses: str, chain_id: int | None = None) -> PortfolioPnL:
         """Get profit and loss across chains."""
-        params: dict = {"addresses": addresses}
+        params: dict[str, Any] = {"addresses": addresses}
         if chain_id is not None:
             params["chain_id"] = chain_id
         return self._call_tool_model("oneinch_portfolio_pnl", PortfolioPnL, params)
 
     def tokens(self, addresses: str, chain_id: int | None = None) -> PortfolioTokens:
         """Get token holdings across chains."""
-        params: dict = {"addresses": addresses}
+        params: dict[str, Any] = {"addresses": addresses}
         if chain_id is not None:
             params["chain_id"] = chain_id
         return self._call_tool_model(
@@ -38,7 +40,7 @@ class PortfolioService(BaseService):
 
     def defi(self, addresses: str, chain_id: int | None = None) -> PortfolioDefi:
         """Get DeFi positions across chains."""
-        params: dict = {"addresses": addresses}
+        params: dict[str, Any] = {"addresses": addresses}
         if chain_id is not None:
             params["chain_id"] = chain_id
         return self._call_tool_model("oneinch_portfolio_defi", PortfolioDefi, params)

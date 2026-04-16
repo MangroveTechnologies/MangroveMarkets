@@ -20,7 +20,7 @@ class RetryConfig:
     def wait_time(self, attempt: int, retry_after: int | None = None) -> float:
         if retry_after is not None:
             return float(retry_after)
-        base = min(2**attempt, 30)
+        base: float = min(2**attempt, 30)
         jitter = random.uniform(0, base * 0.5)
         return base + jitter
 

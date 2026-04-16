@@ -7,7 +7,7 @@ from ._config import ClientConfig
 from ._services.dex import DexService
 from ._services.portfolio import PortfolioService
 from ._services.wallet import WalletService
-from ._transport._auth import ApiKeyAuth, NoAuth
+from ._transport._auth import ApiKeyAuth, AuthStrategy, NoAuth
 from ._transport._http import HttpTransport
 from ._transport._mock import MockTransport
 from ._transport._retry import RetryConfig
@@ -53,7 +53,7 @@ class MangroveMarkets:
                 timeout=timeout, retry_config=retry, httpx_client=httpx_client
             )
 
-        auth = ApiKeyAuth(self._config.api_key) if self._config.api_key else NoAuth()
+        auth: AuthStrategy = ApiKeyAuth(self._config.api_key) if self._config.api_key else NoAuth()
         self._transport = ServiceTransport(
             self._http, self._config.tools_base_url, auth
         )
