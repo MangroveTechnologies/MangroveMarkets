@@ -35,7 +35,10 @@ class HttpTransport:
             timeout=timeout,
             headers={
                 "Content-Type": "application/json",
-                "User-Agent": f"mangrovemarkets-sdk/{__version__} python/{sys.version_info.major}.{sys.version_info.minor}",
+                "User-Agent": (
+                    f"mangrovemarkets-sdk/{__version__}"
+                    f" python/{sys.version_info.major}.{sys.version_info.minor}"
+                ),
             },
         )
 

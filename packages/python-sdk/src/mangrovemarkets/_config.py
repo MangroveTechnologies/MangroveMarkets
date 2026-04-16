@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 
-
 DEFAULT_BASE_URL = "http://localhost:8080"
 DEFAULT_TIMEOUT = 30.0
 DEFAULT_MAX_RETRIES = 3

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from mangrovemarkets._transport._auth import ApiKeyAuth, NoAuth
 from mangrovemarkets._transport._mock import MockTransport
 from mangrovemarkets._transport._retry import RetryConfig

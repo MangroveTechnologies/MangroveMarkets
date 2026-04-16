@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+from mangrovemarkets._services.dex import DexService
 from mangrovemarkets._transport._auth import NoAuth
 from mangrovemarkets._transport._mock import MockTransport
 from mangrovemarkets._transport._service import ServiceTransport
-from mangrovemarkets._services.dex import DexService
 from mangrovemarkets.models.dex import (
     BroadcastResult,
     Quote,
