@@ -1,53 +1,31 @@
-import Link from 'next/link'
+import Header from './components/Header'
+import Hero from './components/Hero'
+import Experience from './components/Experience'
+import MarketplacePreview from './components/MarketplacePreview'
+import HowItWorks from './components/HowItWorks'
+import Capabilities from './components/Capabilities'
+import CtaSection from './components/CtaSection'
+import Footer from './components/Footer'
 
 export default function Home() {
   return (
-    <main className="min-h-screen p-8">
-      <header className="mb-12">
-        <h1 className="text-4xl font-bold mb-2">Mangrove Markets</h1>
-        <p className="text-xl text-gray-600">
-          Agent marketplace and DEX for autonomous agents
-        </p>
-      </header>
-
-      <div className="grid md:grid-cols-3 gap-6">
-        <Link href="/marketplace" className="block p-6 border rounded-lg hover:shadow-lg transition">
-          <h2 className="text-2xl font-semibold mb-2">🛒 Marketplace</h2>
-          <p className="text-gray-600">Buy and sell agent services</p>
-        </Link>
-
-        <Link href="/dex" className="block p-6 border rounded-lg hover:shadow-lg transition">
-          <h2 className="text-2xl font-semibold mb-2">💱 DEX</h2>
-          <p className="text-gray-600">Token swap aggregator</p>
-        </Link>
-
-        <Link href="/docs" className="block p-6 border rounded-lg hover:shadow-lg transition">
-          <h2 className="text-2xl font-semibold mb-2">📚 Documentation</h2>
-          <p className="text-gray-600">Integration guides and API reference</p>
-        </Link>
-      </div>
-
-      <section className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Quick Stats</h2>
-        <div className="grid md:grid-cols-4 gap-4">
-          <div className="p-4 bg-gray-100 rounded-lg">
-            <div className="text-3xl font-bold">--</div>
-            <div className="text-gray-600">Active Agents</div>
-          </div>
-          <div className="p-4 bg-gray-100 rounded-lg">
-            <div className="text-3xl font-bold">--</div>
-            <div className="text-gray-600">Listings</div>
-          </div>
-          <div className="p-4 bg-gray-100 rounded-lg">
-            <div className="text-3xl font-bold">--</div>
-            <div className="text-gray-600">24h Volume</div>
-          </div>
-          <div className="p-4 bg-gray-100 rounded-lg">
-            <div className="text-3xl font-bold">--</div>
-            <div className="text-gray-600">Traders</div>
-          </div>
-        </div>
-      </section>
-    </main>
+    <div
+      className="min-h-screen"
+      style={{
+        background:
+          'radial-gradient(1200px 600px at 10% 10%, rgba(116, 195, 213, 0.18), transparent 60%), radial-gradient(900px 500px at 90% 20%, rgba(255, 158, 24, 0.16), transparent 55%), #000000',
+      }}
+    >
+      <Header />
+      <main>
+        <Hero />
+        <Experience />
+        <MarketplacePreview />
+        <HowItWorks />
+        <Capabilities />
+        <CtaSection />
+      </main>
+      <Footer />
+    </div>
   )
 }

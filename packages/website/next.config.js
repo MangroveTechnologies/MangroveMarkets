@@ -1,12 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
   reactStrictMode: true,
-  transpilePackages: ['@mangrove-ai/sdk'],
   images: {
-    remotePatterns: [],
-  },
-  env: {
-    NEXT_PUBLIC_MCP_SERVER_URL: process.env.MCP_SERVER_URL || 'http://localhost:8080',
+    unoptimized: true,
   },
 }
 

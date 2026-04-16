@@ -1,0 +1,10 @@
+# Gitleaks configuration — allowlist for known false positives
+# These are public smart-contract addresses, not secrets.
+
+[allowlist]
+  description = "Known false positives (public contract addresses)"
+
+  # USDC contract address on Base (public, not a secret)
+  fingerprints = [
+    "7e4b17eb8d628a6c4de55e0c84482a36806637bb:packages/sdk/scripts/integration-test.ts:generic-api-key:164",
+  ]

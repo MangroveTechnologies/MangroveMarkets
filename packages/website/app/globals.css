@@ -1,26 +1,167 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
-}
+/* ── Tailwind v4 Theme ────────────────────────────────────────────── */
+@theme {
+  /* Colors */
+  --color-ink: #000000;
+  --color-charcoal: #0C0F12;
+  --color-slate: #10161B;
+  --color-teal-300: #74C3D5;
+  --color-teal-500: #42A7C6;
+  --color-orange-400: #FF9E18;
+  --color-orange-600: #FF4713;
+  --color-glass: rgba(255, 255, 255, 0.06);
+  --color-glass-border: rgba(255, 255, 255, 0.12);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-rgb: 0, 0, 0;
+  /* Fonts */
+  --font-display: 'Outfit Variable', 'Outfit', system-ui, sans-serif;
+  --font-body: 'Source Sans 3 Variable', 'Source Sans 3', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', monospace;
+
+  /* Shadows */
+  --shadow-glow: 0 12px 30px rgba(66, 167, 198, 0.35);
+  --shadow-panel: 0 20px 60px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 30px 60px rgba(0, 0, 0, 0.35);
+
+  /* Animations */
+  --animate-fade-up: fade-up 0.6s ease-out forwards;
+  --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+/* ── Source detection (tell Tailwind where to scan) ────────────────── */
+@source "../lib/**/*.ts";
+
+/* ── Base styles ──────────────────────────────────────────────────── */
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--color-ink);
+    color: #ffffff;
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(66, 167, 198, 0.3);
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-charcoal);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(66, 167, 198, 0.3);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(66, 167, 198, 0.5);
+  }
+
+  a {
+    color: inherit;
+  }
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* ── Component classes ────────────────────────────────────────────── */
+@utility gradient-text {
+  background-image: linear-gradient(135deg, #74C3D5 0%, #42A7C6 45%, #FF9E18 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
+
+@utility glass-card {
+  background: rgba(16, 22, 27, 0.7);
+  border: 1px solid rgba(116, 195, 213, 0.2);
+  backdrop-filter: blur(12px);
+}
+
+@utility glass-card-subtle {
+  background: rgba(16, 22, 27, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  background: var(--color-teal-500);
+  color: var(--color-ink);
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 12px 30px rgba(66, 167, 198, 0.35);
+  &:hover {
+    background: var(--color-teal-300);
+    transform: translateY(-2px);
+  }
+}
+
+@utility btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  background: transparent;
+  color: #ffffff;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  &:hover {
+    border-color: var(--color-orange-400);
+    color: var(--color-orange-400);
+    transform: translateY(-2px);
+  }
+}
+
+/* ── Staggered fade-up animation ──────────────────────────────────── */
+.animate-stagger > * {
+  opacity: 0;
+  animation: fade-up 0.6s ease-out forwards;
+}
+
+.animate-stagger > *:nth-child(1) { animation-delay: 0s; }
+.animate-stagger > *:nth-child(2) { animation-delay: 0.1s; }
+.animate-stagger > *:nth-child(3) { animation-delay: 0.2s; }
+.animate-stagger > *:nth-child(4) { animation-delay: 0.3s; }
+.animate-stagger > *:nth-child(5) { animation-delay: 0.4s; }
