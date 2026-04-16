@@ -38,9 +38,9 @@ export const LINKS = {
   github: 'https://github.com/MangroveTechnologies',
   vision:
     'https://github.com/MangroveTechnologies/MangroveMarkets/blob/main/docs/vision.md',
-  docs: 'https://github.com/MangroveTechnologies/MangroveMarkets/blob/main/docs/specification.md',
+  docs: 'https://github.com/MangroveTechnologies/MangroveMarkets-MCP-Server/blob/main/docs',
   xrpl: 'https://xrpl.org',
-  earlyAccess: 'mailto:tim.darrah@mangrove.ai',
+  earlyAccess: 'https://mangrove.ai',
 } as const
 
 export type BrandColor = keyof typeof COLORS
