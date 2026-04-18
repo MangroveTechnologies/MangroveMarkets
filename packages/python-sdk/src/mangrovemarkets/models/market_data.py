@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from ._base import MangroveModel
 
 
@@ -15,7 +17,18 @@ class SpotPrice(MangroveModel):
 
 
 class GasPrice(MangroveModel):
+    """Gas price data from oneinch_gas_price.
+
+    The server returns EIP-1559 gas data nested under `gas`:
+        gas.baseFee: str
+        gas.low / gas.medium / gas.high / gas.instant: {maxPriorityFeePerGas, maxFeePerGas}
+
+    The flat low/medium/high fields are kept for backwards compatibility
+    with legacy chains that return non-EIP-1559 data.
+    """
+
     chain_id: int
+    gas: dict[str, Any] | None = None
     low: str | None = None
     medium: str | None = None
     high: str | None = None
