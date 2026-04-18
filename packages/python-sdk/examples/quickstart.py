@@ -1,8 +1,13 @@
 """Quick start: check chain info and list DEX venues."""
 
+import os
+
 from mangrovemarkets import MangroveMarkets
 
-client = MangroveMarkets(base_url="http://localhost:8080")
+client = MangroveMarkets(
+    base_url="https://mangrovemarkets-pcqgpciucq-uc.a.run.app",
+    api_key=os.getenv("MANGROVE_API_KEY"),
+)
 
 # Chain info
 info = client.wallet.chain_info(chain="evm")
