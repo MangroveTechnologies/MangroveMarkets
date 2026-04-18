@@ -81,7 +81,7 @@ def test_full_swap_flow_base_mainnet_1inch():
     )
     if approval is not None:
         assert isinstance(approval, UnsignedTransaction)
-        print(f"2. Approval needed, signing and broadcasting...")
+        print("2. Approval needed, signing and broadcasting...")
         signed = _sign_tx(w3, acct, approval.payload, CHAIN_ID)
         approval_result = client.dex.broadcast(
             signed_tx=signed, chain_id=CHAIN_ID,
@@ -120,7 +120,7 @@ def test_full_swap_flow_base_mainnet_1inch():
     print(f"   BaseScan: https://basescan.org/tx/{result.tx_hash}")
 
 
-def _sign_tx(w3: "Web3", acct, payload: dict, chain_id: int) -> str:
+def _sign_tx(w3: Web3, acct, payload: dict, chain_id: int) -> str:
     """Sign an unsigned tx payload with the account's private key."""
     tx = {
         "to": w3.to_checksum_address(payload["to"]),
