@@ -1,8 +1,13 @@
 """Full DEX swap flow: quote -> approve -> prepare -> sign -> broadcast -> confirm."""
 
+import os
+
 from mangrovemarkets import MangroveMarkets
 
-client = MangroveMarkets(base_url="http://localhost:8080")
+client = MangroveMarkets(
+    base_url="https://mangrovemarkets-pcqgpciucq-uc.a.run.app",
+    api_key=os.getenv("MANGROVE_API_KEY"),
+)
 
 # 1. Get quote
 quote = client.dex.get_quote(
