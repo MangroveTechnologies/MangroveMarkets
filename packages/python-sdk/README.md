@@ -10,10 +10,16 @@ pip install mangrovemarkets
 
 ## Quickstart
 
+The MangroveMarkets MCP server requires an API key for authenticated endpoints. You can pass it explicitly via the `api_key` parameter or set the `MANGROVE_API_KEY` environment variable (the SDK reads it automatically as a fallback).
+
 ```python
+import os
 from mangrovemarkets import MangroveMarkets
 
-client = MangroveMarkets(base_url="http://localhost:8080")
+client = MangroveMarkets(
+    base_url="https://mangrovemarkets-pcqgpciucq-uc.a.run.app",
+    api_key="prod_...",  # or rely on MANGROVE_API_KEY env var
+)
 
 # Chain info
 info = client.wallet.chain_info(chain="evm")
@@ -31,11 +37,34 @@ print(f"Total portfolio: ${value.total_value_usd:,.2f}")
 client.close()
 ```
 
-The client also works as a context manager:
+The client also works as a context manager (and picks up `MANGROVE_API_KEY` / `MANGROVE_BASE_URL` from the environment):
 
 ```python
 with MangroveMarkets() as client:
     venues = client.dex.supported_venues()
+```
+
+For local development, point the client at a locally running MCP server:
+
+```python
+client = MangroveMarkets(base_url="http://localhost:8080", api_key=os.getenv("MANGROVE_API_KEY"))
+```
+
+## Getting an API key
+
+1. Sign up at [https://mangrovedeveloper.ai](https://mangrovedeveloper.ai).
+2. Go to **Settings -> API Keys -> Create**.
+3. Copy the key -- it is shown only once.
+4. Export it as `MANGROVE_API_KEY` or pass it directly to `MangroveMarkets(api_key=...)`:
+
+   ```bash
+   export MANGROVE_API_KEY="prod_..."
+   ```
+
+If you call the API without a valid key, the server returns HTTP 401 with this payload:
+
+```json
+{"detail": "Missing or malformed Authorization header. Expected: Bearer <api_key>"}
 ```
 
 ## Full swap flow
@@ -43,9 +72,13 @@ with MangroveMarkets() as client:
 A DEX swap goes through six steps: quote, approve, prepare, sign locally, broadcast, and confirm.
 
 ```python
+import os
 from mangrovemarkets import MangroveMarkets
 
-client = MangroveMarkets(base_url="http://localhost:8080")
+client = MangroveMarkets(
+    base_url="https://mangrovemarkets-pcqgpciucq-uc.a.run.app",
+    api_key=os.getenv("MANGROVE_API_KEY"),
+)
 
 # 1. Get a quote
 quote = client.dex.get_quote(
@@ -90,7 +123,7 @@ client.close()
 
 | Parameter | Env var | Default | Description |
 |-----------|---------|---------|-------------|
-| `base_url` | `MANGROVE_BASE_URL` | `http://localhost:8080` | MCP server URL |
+| `base_url` | `MANGROVE_BASE_URL` | `https://mangrovemarkets-pcqgpciucq-uc.a.run.app` | MCP server URL (use `http://localhost:8080` for local dev) |
 | `api_key` | `MANGROVE_API_KEY` | `None` | API key for authenticated endpoints |
 | `timeout` | -- | `30.0` | Request timeout in seconds |
 | `max_retries` | -- | `3` | Max retries on 429/5xx |
