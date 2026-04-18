@@ -103,6 +103,15 @@ See the [examples/](examples/) directory for runnable scripts:
 - **quickstart.py** -- chain info and DEX venues
 - **swap_flow.py** -- full swap lifecycle
 - **portfolio_check.py** -- portfolio value, P&L, and token holdings
+- **e2e_swap.py** -- a real 0.1 USDC → ETH swap on Base mainnet (requires `web3` and a funded wallet; install with `pip install mangrovemarkets[e2e]` or `pip install web3`)
+
+Run the end-to-end swap with:
+
+```bash
+E2E_SWAP_PRIVATE_KEY=0x... MANGROVE_API_KEY=prod_... python examples/e2e_swap.py
+```
+
+Costs a few cents in gas per run. Never runs in CI.
 
 ## Security
 
