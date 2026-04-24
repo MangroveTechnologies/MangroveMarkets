@@ -153,26 +153,32 @@ class DexService(BaseService):
         return [TokenSearchResult.model_validate(t) for t in data.get("tokens", [])]
 
     def token_info(self, chain_id: int, address: str) -> TokenInfo:
-        return self._call_tool_model(
+        # Server wraps token fields under a `token` sub-dict (issue #62).
+        # Unwrap defensively: if the envelope goes away in a future server
+        # release, the fallback to `data` keeps the SDK working.
+        data = self._call_tool(
             "oneinch_token_info",
-            TokenInfo,
             {"chain_id": chain_id, "address": address},
         )
+        return TokenInfo.model_validate(data.get("token", data))
 
     def chart(
         self,
         chain_id: int,
-        token0: str,
-        token1: str,
-        period: str = "1h",
+        address: str,
+        timerange: str = "1month",
     ) -> list[ChartCandle]:
+        # 1inch removed the pair-based OHLCV endpoint; the `oneinch_chart`
+        # server tool now takes a single `address` and a `timerange`
+        # (issue #63). Old token0/token1/period kwargs are gone on purpose:
+        # the previous signature 500'd on every call, so no working caller
+        # is depending on it.
         data = self._call_tool(
             "oneinch_chart",
             {
                 "chain_id": chain_id,
-                "token0": token0,
-                "token1": token1,
-                "period": period,
+                "address": address,
+                "timerange": timerange,
             },
         )
         return [ChartCandle.model_validate(c) for c in data.get("candles", [])]

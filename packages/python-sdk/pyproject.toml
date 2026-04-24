@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mangrovemarkets"
-version = "0.1.0"
+version = "0.1.2"
 description = "Python SDK for MangroveMarkets — DEX aggregation, wallet management, and portfolio analytics for agents"
 readme = "README.md"
 license = "MIT"
