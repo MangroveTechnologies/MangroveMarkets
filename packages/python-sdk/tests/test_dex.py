@@ -13,8 +13,10 @@ from mangrovemarkets.models.dex import (
 )
 from mangrovemarkets.models.market_data import (
     Balances,
+    ChartCandle,
     GasPrice,
     SpotPrice,
+    TokenInfo,
     TokenSearchResult,
 )
 
@@ -224,3 +226,103 @@ class TestTokenSearch:
         assert len(result) == 1
         assert isinstance(result[0], TokenSearchResult)
         assert result[0].symbol == "USDC"
+
+
+class TestTokenInfo:
+    """Contract tests for dex.token_info — see issue #62."""
+
+    def test_unwraps_token_envelope(self) -> None:
+        """Server wraps token fields under `token`; SDK must unwrap before validating."""
+        mock, svc = _make_service()
+        mock.add_response(
+            "POST",
+            "/tools/oneinch_token_info",
+            json={
+                "chain_id": 8453,
+                "token": {
+                    "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                    "symbol": "USDC",
+                    "name": "USD Coin",
+                    "decimals": 6,
+                    "logo_uri": "https://...",
+                },
+            },
+        )
+        result = svc.token_info(chain_id=8453, address="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913")
+        assert isinstance(result, TokenInfo)
+        assert result.symbol == "USDC"
+        assert result.decimals == 6
+
+    def test_accepts_flat_shape_for_future_compat(self) -> None:
+        """If the server ever drops the envelope, SDK stays working."""
+        mock, svc = _make_service()
+        mock.add_response(
+            "POST",
+            "/tools/oneinch_token_info",
+            json={
+                "address": "0x833...",
+                "symbol": "USDC",
+                "name": "USD Coin",
+                "decimals": 6,
+            },
+        )
+        result = svc.token_info(chain_id=8453, address="0x833...")
+        assert isinstance(result, TokenInfo)
+        assert result.symbol == "USDC"
+
+
+class TestChart:
+    """Contract tests for dex.chart — see issue #63."""
+
+    def test_sends_address_and_timerange(self) -> None:
+        """Request payload must match the current server contract."""
+        mock, svc = _make_service()
+        mock.add_response(
+            "POST",
+            "/tools/oneinch_chart",
+            json={"candles": []},
+        )
+        svc.chart(chain_id=8453, address="0x833...", timerange="1month")
+
+        # Assert the payload we sent matches what the server expects now.
+        sent = mock.requests[-1]
+        assert sent.method == "POST"
+        assert sent.url.endswith("/tools/oneinch_chart")
+        body = sent.json
+        assert body["chain_id"] == 8453
+        assert body["address"] == "0x833..."
+        assert body["timerange"] == "1month"
+        # Old keys must not be present.
+        assert "token0" not in body
+        assert "token1" not in body
+        assert "period" not in body
+
+    def test_default_timerange_is_1month(self) -> None:
+        mock, svc = _make_service()
+        mock.add_response("POST", "/tools/oneinch_chart", json={"candles": []})
+        svc.chart(chain_id=8453, address="0x833...")
+        assert mock.requests[-1].json["timerange"] == "1month"
+
+    def test_old_kwargs_raise_type_error(self) -> None:
+        """Callers still passing the old signature get a loud failure, not silent 500s."""
+        import pytest
+
+        _, svc = _make_service()
+        with pytest.raises(TypeError):
+            svc.chart(chain_id=8453, token0="0xaaa", token1="0xbbb", period="1h")  # type: ignore[call-arg]
+
+    def test_returns_candles_list(self) -> None:
+        mock, svc = _make_service()
+        mock.add_response(
+            "POST",
+            "/tools/oneinch_chart",
+            json={
+                "candles": [
+                    {"timestamp": 1700000000, "open": 1.0, "high": 1.1, "low": 0.9, "close": 1.05},
+                ]
+            },
+        )
+        result = svc.chart(chain_id=8453, address="0x833...", timerange="1month")
+        assert len(result) == 1
+        assert isinstance(result[0], ChartCandle)
+        assert result[0].close == 1.05
