@@ -11,8 +11,6 @@ Wallet creation moved client-side in 0.2.0. These tests assert:
 """
 from __future__ import annotations
 
-import json
-
 import pytest
 
 from mangrovemarkets._services.wallet import WalletService
