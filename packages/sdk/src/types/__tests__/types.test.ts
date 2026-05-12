@@ -20,11 +20,14 @@ describe('DEX types', () => {
 
   it('UnsignedTransaction has EVM calldata fields', () => {
     const tx: UnsignedTransaction = {
-      chainId: 8453, to: '0x1111111254EEB25477B68fb85Ed929f73A960582',
+      chain_family: 'EVM', chainId: 8453, to: '0x1111111254EEB25477B68fb85Ed929f73A960582',
       data: '0x12aa3caf...', value: '0', gas: '200000',
     };
-    expect(tx.chainId).toBe(8453);
-    expect(tx.to).toMatch(/^0x/);
+    expect(tx.chain_family).toBe('EVM');
+    if (tx.chain_family === 'EVM') {
+      expect(tx.chainId).toBe(8453);
+      expect(tx.to).toMatch(/^0x/);
+    }
   });
 
   it('SwapParams accepts all swap config', () => {

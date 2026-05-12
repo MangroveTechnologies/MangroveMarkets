@@ -136,3 +136,20 @@ export interface CreateListingResult {
   status: ListingStatus;
   createdAt: string;
 }
+
+// -- Escrow parameter types --
+
+export interface EscrowCreateParams {
+  account: string;
+  destination: string;
+  amountXrp: number;
+  finishAfter?: number;
+  network?: string;
+}
+
+export interface EscrowActionParams {
+  account: string;
+  owner: string;
+  offerSequence: number;
+  network?: string;
+}

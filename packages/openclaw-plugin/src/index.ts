@@ -3,6 +3,7 @@ export type { OpenClawMangroveConfig } from './lib/config';
 export { dexToolHandlers } from './tools/dex';
 export { marketplaceToolHandlers } from './tools/marketplace';
 export { walletToolHandlers } from './tools/wallet';
+export { escrowToolHandlers } from './tools/escrow';
 export { portfolioToolHandlers } from './tools/portfolio';
 export { onAgentCall } from './handlers/agentCall';
 export { onTaskComplete } from './handlers/taskComplete';
