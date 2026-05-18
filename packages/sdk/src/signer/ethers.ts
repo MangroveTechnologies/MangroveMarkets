@@ -31,9 +31,6 @@ export class EthersSigner implements Signer {
 
   /** {@inheritDoc Signer.signTransaction} */
   async signTransaction(tx: UnsignedTransaction): Promise<string> {
-    if (tx.chain_family !== "EVM") {
-      throw new Error("EthersSigner only supports EVM transactions");
-    }
     return this.wallet.signTransaction({
       chainId: tx.chainId,
       to: tx.to,

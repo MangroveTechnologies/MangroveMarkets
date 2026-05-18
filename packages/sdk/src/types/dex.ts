@@ -32,22 +32,9 @@ export interface Quote {
 }
 
 /**
- * XRPL raw transaction payload from the server.
+ * Chain-agnostic unsigned transaction calldata. Agent signs locally.
  */
-export interface XrplTxPayload {
-  TransactionType: "OfferCreate" | "Payment" | "EscrowCreate" | "EscrowFinish" | "EscrowCancel";
-  Account: string;
-  Sequence: number;
-  LastLedgerSequence: number;
-  Fee: string;
-  [key: string]: unknown;
-}
-
-/**
- * EVM unsigned transaction calldata. Agent signs locally.
- */
-export interface EvmUnsignedTransaction {
-  chain_family: "EVM";
+export interface UnsignedTransaction {
   /** EVM chain ID for the transaction. */
   chainId: number;
   /** Target contract address. */
@@ -67,21 +54,6 @@ export interface EvmUnsignedTransaction {
   /** EIP-1559 max priority fee per gas (wei). */
   maxPriorityFeePerGas?: string;
 }
-
-/**
- * XRPL unsigned transaction. Agent signs locally with an XrplSigner.
- */
-export interface XrplUnsignedTransaction {
-  chain_family: "XRPL";
-  payload: XrplTxPayload;
-  venue_id?: string;
-  description?: string;
-}
-
-/**
- * Chain-agnostic unsigned transaction. Discriminated by chain_family.
- */
-export type UnsignedTransaction = EvmUnsignedTransaction | XrplUnsignedTransaction;
 
 /**
  * Result returned after broadcasting a signed transaction.
