@@ -9,8 +9,11 @@ import type {
   AcceptOfferParams,
   ConfirmDeliveryParams,
   RateParams,
+  EscrowCreateParams,
+  EscrowActionParams,
 } from '../types/marketplace';
-import { normalizeCreateListingResult, normalizeListing, normalizeSearchResult } from '../utils/normalize';
+import type { UnsignedTransaction } from '../types/dex';
+import { normalizeCreateListingResult, normalizeListing, normalizeSearchResult, normalizeXrplUnsignedTx } from '../utils/normalize';
 
 /**
  * Low-level Marketplace service wrapping the marketplace_* MCP tools.
@@ -122,5 +125,60 @@ export class MarketplaceService {
       score: params.score,
       ...(params.comment != null ? { comment: params.comment } : {}),
     });
+  }
+
+  /**
+   * Prepare an XRPL escrow creation transaction (unsigned).
+   * @param params - Escrow parameters (account, destination, amount, optional finishAfter/network).
+   */
+  async createEscrow(params: EscrowCreateParams): Promise<{ unsignedTx: UnsignedTransaction; signingInstructions: string }> {
+    const result = await this.transport.callTool('escrow_create', {
+      account: params.account,
+      destination: params.destination,
+      amount_xrp: params.amountXrp,
+      ...(params.finishAfter != null ? { finish_after: params.finishAfter } : {}),
+      ...(params.network ? { network: params.network } : {}),
+    });
+    const raw = result as Record<string, unknown>;
+    return {
+      unsignedTx: normalizeXrplUnsignedTx(raw),
+      signingInstructions: String(raw.signing_instructions ?? ''),
+    };
+  }
+
+  /**
+   * Prepare an XRPL escrow release (EscrowFinish) transaction (unsigned).
+   * @param params - Escrow action parameters (account, owner, offerSequence, optional network).
+   */
+  async releaseEscrow(params: EscrowActionParams): Promise<{ unsignedTx: UnsignedTransaction; signingInstructions: string }> {
+    const result = await this.transport.callTool('escrow_release', {
+      account: params.account,
+      owner: params.owner,
+      offer_sequence: params.offerSequence,
+      ...(params.network ? { network: params.network } : {}),
+    });
+    const raw = result as Record<string, unknown>;
+    return {
+      unsignedTx: normalizeXrplUnsignedTx(raw),
+      signingInstructions: String(raw.signing_instructions ?? ''),
+    };
+  }
+
+  /**
+   * Prepare an XRPL escrow cancellation (EscrowCancel) transaction (unsigned).
+   * @param params - Escrow action parameters (account, owner, offerSequence, optional network).
+   */
+  async cancelEscrow(params: EscrowActionParams): Promise<{ unsignedTx: UnsignedTransaction; signingInstructions: string }> {
+    const result = await this.transport.callTool('escrow_cancel', {
+      account: params.account,
+      owner: params.owner,
+      offer_sequence: params.offerSequence,
+      ...(params.network ? { network: params.network } : {}),
+    });
+    const raw = result as Record<string, unknown>;
+    return {
+      unsignedTx: normalizeXrplUnsignedTx(raw),
+      signingInstructions: String(raw.signing_instructions ?? ''),
+    };
   }
 }

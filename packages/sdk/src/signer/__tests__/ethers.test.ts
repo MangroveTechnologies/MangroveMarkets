@@ -16,7 +16,7 @@ describe('EthersSigner', () => {
   it('signTransaction delegates to ethers wallet', async () => {
     const signer = new EthersSigner(mockWallet as any, [1, 8453]);
     const tx: UnsignedTransaction = {
-      chainId: 1, to: '0x1111111254EEB25477B68fb85Ed929f73A960582',
+      chain_family: 'EVM', chainId: 1, to: '0x1111111254EEB25477B68fb85Ed929f73A960582',
       data: '0x12aa3caf', value: '0', gas: '200000',
     };
     const signed = await signer.signTransaction(tx);

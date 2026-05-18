@@ -8,7 +8,9 @@
 
 import type {
   Quote,
-  UnsignedTransaction,
+  EvmUnsignedTransaction,
+  XrplUnsignedTransaction,
+  XrplTxPayload,
   BroadcastResult,
   TransactionStatus,
 } from '../types/dex';
@@ -22,6 +24,12 @@ import type {
   SearchResult,
   CreateListingResult,
 } from '../types/marketplace';
+import type {
+  XrplBalance,
+  XrplTransactionRecord,
+  XrplTransactionHistory,
+  XrplFaucetResult,
+} from '../types/wallet';
 
 type ServerResponse = Record<string, unknown>;
 
@@ -48,18 +56,19 @@ export function normalizeQuote(raw: ServerResponse): Quote {
 }
 
 /**
- * Normalize a server UnsignedTransaction response to SDK UnsignedTransaction type.
+ * Normalize a server EVM UnsignedTransaction response to SDK EvmUnsignedTransaction type.
  *
  * Server nests EVM-specific fields inside `payload: {to, data, value, gas, ...}`.
- * SDK expects them flat: {chainId, to, data, value, gas, ...}.
+ * SDK expects them flat: {chain_family, chainId, to, data, value, gas, ...}.
  */
-export function normalizeUnsignedTx(raw: ServerResponse): UnsignedTransaction {
+export function normalizeUnsignedTx(raw: ServerResponse): EvmUnsignedTransaction {
   const payload = (raw.payload ?? {}) as Record<string, unknown>;
   const chainId = (payload.chainId ?? raw.chain_id ?? raw.chainId) as number;
 
   const nonce = payload.nonce ?? raw.nonce;
 
   return {
+    chain_family: "EVM",
     chainId,
     to: (payload.to ?? raw.to) as string,
     data: (payload.data ?? raw.data) as string,
@@ -69,6 +78,17 @@ export function normalizeUnsignedTx(raw: ServerResponse): UnsignedTransaction {
     ...(payload.gasPrice ? { gasPrice: String(payload.gasPrice) } : {}),
     ...(payload.maxFeePerGas ? { maxFeePerGas: String(payload.maxFeePerGas) } : {}),
     ...(payload.maxPriorityFeePerGas ? { maxPriorityFeePerGas: String(payload.maxPriorityFeePerGas) } : {}),
+  };
+}
+
+/**
+ * Normalize a server XRPL unsigned transaction response to SDK XrplUnsignedTransaction type.
+ */
+export function normalizeXrplUnsignedTx(raw: ServerResponse): XrplUnsignedTransaction {
+  return {
+    chain_family: "XRPL",
+    payload: (raw.unsigned_tx ?? raw.payload) as XrplTxPayload,
+    description: raw.signing_instructions as string | undefined,
   };
 }
 
@@ -202,5 +222,65 @@ export function normalizeSearchResult(raw: ServerResponse): SearchResult {
     listings: rawListings.map(normalizeListing),
     totalCount: (raw.total_count ?? raw.totalCount ?? 0) as number,
     nextCursor: (raw.next_cursor ?? raw.nextCursor ?? null) as string | null,
+  };
+}
+
+// -- XRPL wallet normalizers --
+
+export function normalizeXrplBalance(raw: ServerResponse): XrplBalance {
+  const xrpRaw = (raw.xrp ?? {}) as Record<string, unknown>;
+  const issued = (raw.issued_currencies ?? raw.issuedCurrencies ?? []) as ServerResponse[];
+  return {
+    xrp: {
+      balance: String(xrpRaw.balance ?? '0'),
+      reserve: String(xrpRaw.reserve ?? '0'),
+      available: String(xrpRaw.available ?? '0'),
+    },
+    issuedCurrencies: issued.map((c) => ({
+      currency: String(c.currency ?? ''),
+      issuer: String(c.issuer ?? ''),
+      balance: String(c.balance ?? '0'),
+      limit: String(c.limit ?? '0'),
+    })),
+  };
+}
+
+export function normalizeXrplTxRecord(raw: ServerResponse): XrplTransactionRecord {
+  const amountIssued = (raw.amount_issued ?? raw.amountIssued) as ServerResponse | undefined;
+  return {
+    txHash: String(raw.tx_hash ?? raw.txHash ?? ''),
+    txType: String(raw.tx_type ?? raw.txType ?? ''),
+    from: raw.from as string | undefined,
+    to: raw.to as string | undefined,
+    amountXrp: raw.amount_xrp != null ? String(raw.amount_xrp) : (raw.amountXrp != null ? String(raw.amountXrp) : undefined),
+    amountIssued: amountIssued ? {
+      value: String(amountIssued.value ?? '0'),
+      currency: String(amountIssued.currency ?? ''),
+      issuer: String(amountIssued.issuer ?? ''),
+    } : undefined,
+    feeXrp: raw.fee_xrp != null ? String(raw.fee_xrp) : (raw.feeXrp != null ? String(raw.feeXrp) : undefined),
+    status: (raw.status as 'SUCCESS' | 'FAILED') ?? 'FAILED',
+    ledgerIndex: raw.ledger_index != null ? Number(raw.ledger_index) : (raw.ledgerIndex != null ? Number(raw.ledgerIndex) : undefined),
+    date: (raw.date ?? raw.timestamp) as string | undefined,
+    sequence: raw.sequence != null ? Number(raw.sequence) : (raw.Sequence != null ? Number(raw.Sequence) : undefined),
+    offerSequence: raw.offer_sequence != null ? Number(raw.offer_sequence) : (raw.OfferSequence != null ? Number(raw.OfferSequence) : undefined),
+  };
+}
+
+export function normalizeXrplTransactionHistory(raw: ServerResponse): XrplTransactionHistory {
+  const txs = (raw.transactions ?? []) as ServerResponse[];
+  return {
+    address: String(raw.address ?? ''),
+    network: raw.network as string | undefined,
+    count: Number(raw.count ?? txs.length),
+    transactions: txs.map(normalizeXrplTxRecord),
+  };
+}
+
+export function normalizeXrplFaucetResult(raw: ServerResponse): XrplFaucetResult {
+  return {
+    success: Boolean(raw.success ?? false),
+    fundedAmountXrp: raw.funded_amount_xrp != null ? Number(raw.funded_amount_xrp) : (raw.fundedAmountXrp != null ? Number(raw.fundedAmountXrp) : undefined),
+    txHash: (raw.tx_hash ?? raw.txHash) as string | undefined,
   };
 }

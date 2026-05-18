@@ -38,7 +38,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.27.1"
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "xrpl": "^4.6.0"
   },
   "peerDependencies": {
     "ethers": "^6.0.0"

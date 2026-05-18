@@ -1,7 +1,8 @@
 import type { Signer } from '../types/signer';
-import type { SwapParams, SwapResult, TransactionStatus } from '../types/dex';
+import type { SwapParams, SwapResult, TransactionStatus, BroadcastResult } from '../types/dex';
 import type { Transport } from '../types/transport';
 import { DexService } from './service';
+import { XrplSigner } from '../signer/xrpl';
 
 const NATIVE_TOKEN = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const POLL_INTERVAL_MS = 2000;
@@ -68,18 +69,32 @@ export class SwapOrchestrator {
     const walletAddress = await this.signer.getAddress();
     const unsignedTx = await this.dex.prepareSwap({ quoteId: quote.quoteId, walletAddress, slippage });
 
-    // 5. Sign
-    const signedTx = await this.signer.signTransaction(unsignedTx);
+    // 5. Sign (chain-family-aware)
+    let broadcastResult: BroadcastResult;
 
-    // 6. Broadcast
-    const broadcastResult = await this.dex.broadcast({
-      chainId: params.chainId,
-      signedTx,
-      mevProtection,
-    });
+    if (unsignedTx.chain_family === "XRPL") {
+      if (!(this.signer instanceof XrplSigner)) {
+        throw new Error("XrplSigner required for XRPL swaps. Pass an XrplSigner in MangroveConfig.");
+      }
+      const signResult = await this.signer.signTransaction(unsignedTx);
+      const { tx_blob } = JSON.parse(signResult) as { tx_blob: string; tx_hash: string };
+      broadcastResult = await this.dex.broadcast({
+        chainId: 0,
+        signedTx: tx_blob,
+      });
+    } else {
+      const signedTx = await this.signer.signTransaction(unsignedTx);
+      broadcastResult = await this.dex.broadcast({
+        chainId: params.chainId,
+        signedTx,
+        mevProtection,
+      });
+    }
 
-    // 7. Poll for confirmation
-    const status = await this.pollStatus(broadcastResult.txHash, params.chainId);
+    // 6. Poll for confirmation
+    // For XRPL, use the chain ID from broadcastResult (0); for EVM, use params.chainId
+    const statusChainId = broadcastResult.chainId ?? params.chainId;
+    const status = await this.pollStatus(broadcastResult.txHash, statusChainId);
 
     return {
       txHash: broadcastResult.txHash,

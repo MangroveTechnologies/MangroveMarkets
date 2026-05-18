@@ -6,6 +6,9 @@ export type {
   MangroveConfig,
   Quote,
   UnsignedTransaction,
+  EvmUnsignedTransaction,
+  XrplUnsignedTransaction,
+  XrplTxPayload,
   BroadcastResult,
   TransactionStatus,
   SwapResult,
@@ -30,6 +33,11 @@ export type {
   CreateWalletParams,
   BalanceParams,
   TransactionsParams,
+  XrplBalance,
+  XrplSendParams,
+  XrplTransactionRecord,
+  XrplTransactionHistory,
+  XrplFaucetResult,
   Listing,
   Offer,
   Rating,
@@ -41,6 +49,8 @@ export type {
   ConfirmDeliveryParams,
   RateParams,
   CreateListingResult,
+  EscrowCreateParams,
+  EscrowActionParams,
 } from './types';
 
 // Services
@@ -49,8 +59,13 @@ export { OneInchService } from './oneinch';
 export { WalletService } from './wallet';
 export { MarketplaceService } from './marketplace';
 
-// Signer
+// Signers
 export { EthersSigner } from './signer/ethers';
+export { XrplSigner } from './signer/xrpl';
+
+// Escrow monitor
+export { EscrowMonitor } from './marketplace/escrow-monitor';
+export type { EscrowState } from './marketplace/escrow-monitor';
 
 // Transports
 export { McpTransport } from './transport/mcp';
