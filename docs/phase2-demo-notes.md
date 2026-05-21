@@ -183,7 +183,7 @@ Requires a live t54.ai facilitator. The server-side middleware is implemented bu
 ### Medium priority
 - [ ] DEX quotes on testnet: either mock testnet liquidity or add a flag to `dex_get_quote` that short-circuits to a simulated quote for demo/test environments
 - [ ] `EscrowMonitor`: extend to poll until `CONFIRMED` after broadcast (currently just does a one-shot `.check()`)
-- [ ] `marketplace_rate`: implement on server — currently returns `NOT_IMPLEMENTED`
+- [ ] `marketplace_rate`: implemented on server — not yet exercised in the demo script (add as Step 19)
 
 ### Low priority
 - [ ] Solana wallet creation in Python SDK (`WalletService.create(chain="solana")`)
