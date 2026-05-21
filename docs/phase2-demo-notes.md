@@ -175,21 +175,6 @@ Requires a live t54.ai facilitator. The server-side middleware is implemented bu
 
 ## Next Steps
 
-### High priority
-- [ ] `marketplace_accept_offer`: test with real testnet escrow sequence end-to-end using `demo-part6.mjs`
-- [ ] x402 / RLUSD path: stand up t54.ai facilitator locally or on staging; test `marketplace_search` with `X402_ENABLED=true`
-- [ ] Python SDK: merge `fix/python-sdk-xrpl-keygen` branch and cut SDK 0.2.1 release
-
-### Medium priority
-- [ ] DEX quotes on testnet: either mock testnet liquidity or add a flag to `dex_get_quote` that short-circuits to a simulated quote for demo/test environments
-- [ ] `EscrowMonitor`: extend to poll until `CONFIRMED` after broadcast (currently just does a one-shot `.check()`)
-- [ ] `marketplace_rate`: implemented on server — not yet exercised in the demo script (add as Step 19)
-
-### Low priority
-- [ ] Solana wallet creation in Python SDK (`WalletService.create(chain="solana")`)
-- [ ] Add `demo-part6.mjs` step for rating the completed transaction (Step 19)
-- [ ] CI: add E2E test that spins up the Docker server and runs `demo-part6.mjs` headlessly
-
 ---
 
 ## How to Run the Demo
