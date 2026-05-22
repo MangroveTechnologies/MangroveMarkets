@@ -1,8 +1,8 @@
 """Wallet operations.
 
-KEYGEN IS CLIENT-SIDE. The keypair is generated locally inside this SDK
-process; the private key never traverses the wire. The remote MCP server
-plays NO role in keypair generation.
+KEYGEN IS CLIENT-SIDE. All keypairs are generated locally inside this SDK
+process; secrets never traverse the wire. The remote MCP server plays NO
+role in keypair generation — EVM via eth_account, XRPL via xrpl-py.
 
 The only server interaction during wallet creation is for XRPL
 testnet/devnet, where the server is asked to request faucet funding
@@ -120,25 +120,23 @@ class WalletService(BaseService):
     # ------------------------------------------------------------------
 
     def _create_xrpl(self, network: str) -> WalletCreateResult:
-        """XRPL wallet creation — temporarily NOT IMPLEMENTED.
+        """Locally generate a fresh XRPL keypair using xrpl-py."""
+        try:
+            from xrpl.wallet import Wallet
+        except ImportError as e:  # pragma: no cover
+            raise ImportError(
+                "xrpl-py is required for XRPL wallet creation. "
+                "Install with: pip install xrpl-py>=4.0.0"
+            ) from e
 
-        The client-side XRPL flow needs `xrpl-py`, which currently pins
-        `httpx<0.25.0` while this SDK requires `httpx>=0.27.0`. We refuse
-        rather than silently fall back to server-side keygen (the leak
-        surface that drove the 0.2.0 architecture change in the first
-        place).
-
-        Tracking: client-side XRPL keygen will land once `xrpl-py`
-        relaxes its httpx pin. Until then, server-side XRPL keygen is
-        ALSO disabled on the MangroveMarkets-MCP-Server 0.2 release —
-        nobody creates XRPL wallets via this SDK or via the server.
-        """
-        raise NotImplementedError(
-            "XRPL client-side keygen is temporarily disabled in 0.2.x — "
-            "blocked on xrpl-py adopting httpx>=0.27. The previous "
-            "server-side path was removed because it placed plaintext "
-            "secrets on the wire. "
-            "Track: https://github.com/MangroveTechnologies/MangroveMarkets/issues"
+        wallet = Wallet.create()
+        return WalletCreateResult(
+            address=wallet.classic_address,
+            secret=wallet.seed,
+            chain="xrpl",
+            network=network,
+            is_funded=False,
+            warnings=list(_WARNINGS),
         )
 
     # ------------------------------------------------------------------

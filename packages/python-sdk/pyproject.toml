@@ -28,13 +28,11 @@ dependencies = [
     # eth_account is core — every EVM wallet creation goes through it.
     # Always installed; users get client-side EVM keygen out of the box.
     "eth_account>=0.13.0,<1.0",
+    "xrpl-py>=4.0.0,<5.0",
 ]
 
-# Note: client-side XRPL keygen blocked on `xrpl-py` adopting httpx>=0.27.
-# Until then, the SDK raises NotImplementedError for chain="xrpl". The
-# server-side XRPL path is *also* deprecated in MangroveMarkets-MCP-Server
-# 0.2 — nobody creates XRPL wallets server-side either. XRPL wallet
-# creation in the SDK will return when the dependency conflict resolves.
+# xrpl-py>=4.0 is compatible with httpx>=0.27 — conflict resolved in 4.x.
+# Provides client-side XRPL keypair generation via xrpl.wallet.Wallet.
 
 [project.optional-dependencies]
 dev = [

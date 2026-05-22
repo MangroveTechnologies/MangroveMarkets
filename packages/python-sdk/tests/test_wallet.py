@@ -117,23 +117,45 @@ class TestCreateEvm:
 # ----------------------------------------------------------------------
 
 class TestCreateXrpl:
-    """XRPL keygen is temporarily NotImplemented in 0.2.x — see
-    `WalletService._create_xrpl` docstring for the reason. The critical
-    invariant is that XRPL wallet creation must NOT silently fall back
-    to the old server-side path. We assert it raises and never makes a
-    network call."""
-
-    def test_mainnet_raises_not_implemented(self) -> None:
+    def test_does_not_call_server(self) -> None:
+        """XRPL wallet creation must not contact the server."""
         mock, svc = _make_service()
-        with pytest.raises(NotImplementedError, match="XRPL"):
-            svc.create(chain="xrpl", network="mainnet")
-        assert mock.requests == [], "XRPL keygen must not contact the server"
+        svc.create(chain="xrpl", network="testnet")
+        assert mock.requests == [], (
+            f"Expected zero HTTP requests, got {len(mock.requests)}: "
+            f"{[(r.method, r.path) for r in mock.requests]}"
+        )
 
-    def test_testnet_raises_not_implemented(self) -> None:
-        mock, svc = _make_service()
-        with pytest.raises(NotImplementedError, match="XRPL"):
-            svc.create(chain="xrpl", network="testnet")
-        assert mock.requests == [], "XRPL keygen must not contact the server"
+    def test_returns_valid_keypair(self) -> None:
+        """Returned address must derive from returned secret."""
+        from xrpl.wallet import Wallet
+
+        _, svc = _make_service()
+        result = svc.create(chain="xrpl", network="testnet")
+
+        assert isinstance(result, WalletCreateResult)
+        assert result.chain == "xrpl"
+        assert result.network == "testnet"
+        assert result.is_funded is False
+        assert result.secret is not None
+        assert result.address.startswith("r")
+
+        derived = Wallet.from_seed(result.secret).classic_address
+        assert derived == result.address
+
+    def test_each_call_produces_a_distinct_keypair(self) -> None:
+        _, svc = _make_service()
+        a = svc.create(chain="xrpl")
+        b = svc.create(chain="xrpl")
+        assert a.address != b.address
+        assert a.secret != b.secret
+
+    def test_warnings_are_present(self) -> None:
+        _, svc = _make_service()
+        result = svc.create(chain="xrpl")
+        assert result.warnings is not None
+        assert len(result.warnings) >= 1
+        assert any("save" in w.lower() for w in result.warnings)
 
 
 # ----------------------------------------------------------------------
