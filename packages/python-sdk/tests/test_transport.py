@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from mangrovemarkets._transport._auth import ApiKeyAuth, NoAuth
-from mangrovemarkets._transport._mock import MockTransport
-from mangrovemarkets._transport._retry import RetryConfig
-from mangrovemarkets._transport._service import ServiceTransport
+from mangrove_markets._transport._auth import ApiKeyAuth, NoAuth
+from mangrove_markets._transport._mock import MockTransport
+from mangrove_markets._transport._retry import RetryConfig
+from mangrove_markets._transport._service import ServiceTransport
 
 
 class TestRetryConfig:

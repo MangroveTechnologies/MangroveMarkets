@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from mangrovemarkets import MangroveMarkets
-from mangrovemarkets._services.dex import DexService
-from mangrovemarkets._services.portfolio import PortfolioService
-from mangrovemarkets._services.wallet import WalletService
-from mangrovemarkets._transport._mock import MockTransport
+from mangrove_markets import MangroveMarkets
+from mangrove_markets._services.dex import DexService
+from mangrove_markets._services.portfolio import PortfolioService
+from mangrove_markets._services.wallet import WalletService
+from mangrove_markets._transport._mock import MockTransport
 
 
 def _make_client(mock: MockTransport | None = None) -> MangroveMarkets:

@@ -24,8 +24,8 @@ import time
 
 from web3 import Web3
 
-from mangrovemarkets import MangroveMarkets
-from mangrovemarkets.models.dex import UnsignedTransaction
+from mangrove_markets import MangroveMarkets
+from mangrove_markets.models.dex import UnsignedTransaction
 
 # Config
 BASE_RPC = "https://mainnet.base.org"

@@ -26,8 +26,8 @@ try:
 except ImportError:
     WEB3_AVAILABLE = False
 
-from mangrovemarkets import MangroveMarkets
-from mangrovemarkets.models.dex import (
+from mangrove_markets import MangroveMarkets
+from mangrove_markets.models.dex import (
     BroadcastResult,
     Quote,
     TransactionStatus,

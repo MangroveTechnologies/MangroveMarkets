@@ -13,10 +13,10 @@ import os
 
 import pytest
 
-from mangrovemarkets import MangroveMarkets
-from mangrovemarkets.models.dex import Quote, Venue
-from mangrovemarkets.models.market_data import Balances, GasPrice, SpotPrice
-from mangrovemarkets.models.wallet import ChainInfo, WalletCreateResult
+from mangrove_markets import MangroveMarkets
+from mangrove_markets.models.dex import Quote, Venue
+from mangrove_markets.models.market_data import Balances, GasPrice, SpotPrice
+from mangrove_markets.models.wallet import ChainInfo, WalletCreateResult
 
 LIVE_URL = os.environ.get("MANGROVE_TEST_URL")
 API_KEY = os.environ.get("MANGROVE_TEST_API_KEY") or os.environ.get("MANGROVE_API_KEY")

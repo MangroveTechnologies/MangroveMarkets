@@ -1,6 +1,39 @@
 # Changelog
 
-All notable changes to the `mangrovemarkets` Python SDK are documented here.
+All notable changes to the `mangrove-markets` Python SDK are documented here.
+
+## 1.0.0 — 2026-05-26
+
+### Renamed (breaking)
+
+- **PyPI distribution: `mangrovemarkets` → `mangrove-markets`.** Install
+  with `pip install mangrove-markets`. The old `mangrovemarkets` package
+  receives one final `0.1.3` release containing a `DeprecationWarning`
+  and stops updating.
+- **Python import: `from mangrovemarkets import …` → `from mangrove_markets import …`.**
+  (Python module names use underscores; PyPI distribution names use
+  hyphens — same convention as `scikit-learn` / `sklearn`.)
+- **Git tag: `python-sdk-v1.0.0`** (the monorepo `python-sdk-v*` prefix
+  pattern continues).
+
+Rationale: aligns Python naming with the TypeScript SDK
+(`@mangrove-ai/sdk`) and the rebranded `mangrove-ai` Python SDK. The
+`MangroveMarkets` client class name, every method, every model — all
+unchanged.
+
+```diff
+- pip install mangrovemarkets
++ pip install mangrove-markets
+```
+```diff
+- from mangrovemarkets import MangroveMarkets
++ from mangrove_markets import MangroveMarkets
+```
+
+### Production stability
+
+- `Development Status :: 3 - Alpha` → `5 - Production/Stable`. The 1.0
+  release commits to semver compatibility going forward.
 
 ## 0.2.0 — 2026-05-04
 
