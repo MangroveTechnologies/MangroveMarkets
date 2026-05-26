@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from mangrovemarkets._services.portfolio import PortfolioService
-from mangrovemarkets._transport._auth import NoAuth
-from mangrovemarkets._transport._mock import MockTransport
-from mangrovemarkets._transport._service import ServiceTransport
-from mangrovemarkets.models.portfolio import (
+from mangrove_markets._services.portfolio import PortfolioService
+from mangrove_markets._transport._auth import NoAuth
+from mangrove_markets._transport._mock import MockTransport
+from mangrove_markets._transport._service import ServiceTransport
+from mangrove_markets.models.portfolio import (
     PortfolioDefi,
     PortfolioPnL,
     PortfolioTokens,

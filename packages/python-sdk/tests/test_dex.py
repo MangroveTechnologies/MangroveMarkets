@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from mangrovemarkets._services.dex import DexService
-from mangrovemarkets._transport._auth import NoAuth
-from mangrovemarkets._transport._mock import MockTransport
-from mangrovemarkets._transport._service import ServiceTransport
-from mangrovemarkets.models.dex import (
+from mangrove_markets._services.dex import DexService
+from mangrove_markets._transport._auth import NoAuth
+from mangrove_markets._transport._mock import MockTransport
+from mangrove_markets._transport._service import ServiceTransport
+from mangrove_markets.models.dex import (
     BroadcastResult,
     Quote,
     TransactionStatus,
     UnsignedTransaction,
     Venue,
 )
-from mangrovemarkets.models.market_data import (
+from mangrove_markets.models.market_data import (
     Balances,
     ChartCandle,
     GasPrice,

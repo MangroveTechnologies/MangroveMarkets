@@ -26,5 +26,5 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev]"
       - run: ruff check src/ tests/
-      - run: mypy src/mangrovemarkets/
-      - run: pytest tests/ -v --cov=mangrovemarkets --cov-report=term-missing
+      - run: mypy src/mangrove_markets/
+      - run: pytest tests/ -v --cov=mangrove_markets --cov-report=term-missing

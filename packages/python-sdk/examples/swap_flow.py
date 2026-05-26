@@ -2,7 +2,7 @@
 
 import os
 
-from mangrovemarkets import MangroveMarkets
+from mangrove_markets import MangroveMarkets
 
 client = MangroveMarkets(
     base_url="https://mangrovemarkets-pcqgpciucq-uc.a.run.app",

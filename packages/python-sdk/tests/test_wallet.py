@@ -13,12 +13,12 @@ from __future__ import annotations
 
 import pytest
 
-from mangrovemarkets._services.wallet import WalletService
-from mangrovemarkets._transport._auth import NoAuth
-from mangrovemarkets._transport._mock import MockTransport
-from mangrovemarkets._transport._service import ServiceTransport
-from mangrovemarkets.exceptions import APIError, NotImplementedOnServer
-from mangrovemarkets.models.wallet import ChainInfo, WalletCreateResult
+from mangrove_markets._services.wallet import WalletService
+from mangrove_markets._transport._auth import NoAuth
+from mangrove_markets._transport._mock import MockTransport
+from mangrove_markets._transport._service import ServiceTransport
+from mangrove_markets.exceptions import APIError, NotImplementedOnServer
+from mangrove_markets.models.wallet import ChainInfo, WalletCreateResult
 
 
 def _make_service() -> tuple[MockTransport, WalletService]:

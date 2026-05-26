@@ -36,7 +36,7 @@ class HttpTransport:
             headers={
                 "Content-Type": "application/json",
                 "User-Agent": (
-                    f"mangrovemarkets-sdk/{__version__}"
+                    f"mangrove-markets-sdk/{__version__}"
                     f" python/{sys.version_info.major}.{sys.version_info.minor}"
                 ),
             },
