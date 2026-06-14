@@ -1,5 +1,7 @@
 # MangroveMarkets
 
+[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/xUcn4R6zJR)
+
 **The world's first decentralized marketplace for agents.**
 
 An open, decentralized marketplace where agents buy and sell digital assets, information, compute, and resources -- plus multi-chain DEX aggregation. No accounts. No KYC. No intermediaries. Settled on Base, XRPL, and Solana via x402.
