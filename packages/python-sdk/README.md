@@ -1,27 +1,17 @@
-# mangrove-markets
+# mangrovemarkets
+
+[![PyPI Downloads](https://static.pepy.tech/badge/mangrovemarkets)](https://pepy.tech/projects/mangrovemarkets)
 
 Python SDK for MangroveMarkets -- DEX aggregation, wallet management, and portfolio analytics for agents.
 
 ## Installation
 
 ```bash
-pip install mangrove-markets
+pip install mangrovemarkets
 ```
 
-> **Migrating from `mangrovemarkets` (the pre-1.0 package name)?** Two changes:
->
-> ```diff
-> - pip install mangrovemarkets
-> + pip install mangrove-markets
-> ```
-> ```diff
-> - from mangrovemarkets import MangroveMarkets
-> + from mangrove_markets import MangroveMarkets
-> ```
->
-> The `MangroveMarkets` client class, every method, every model — unchanged.
-> The old `mangrovemarkets` PyPI package gets a final `0.1.3` release with a
-> `DeprecationWarning` and then stops updating. See `CHANGELOG.md` `[1.0.0]`.
+> The package imports as `mangrove_markets` (e.g. `from mangrove_markets import MangroveMarkets`).
+> The legacy `import mangrovemarkets` path also still works for backwards compatibility.
 
 ## Quickstart
 
@@ -151,7 +141,7 @@ See the [examples/](examples/) directory for runnable scripts:
 - **quickstart.py** -- chain info and DEX venues
 - **swap_flow.py** -- full swap lifecycle
 - **portfolio_check.py** -- portfolio value, P&L, and token holdings
-- **e2e_swap.py** -- a real 0.1 USDC → ETH swap on Base mainnet (requires `web3` and a funded wallet; install with `pip install mangrove-markets[e2e]` or `pip install web3`)
+- **e2e_swap.py** -- a real 0.1 USDC → ETH swap on Base mainnet (requires `web3` and a funded wallet; install with `pip install mangrovemarkets[e2e]` or `pip install web3`)
 
 Run the end-to-end swap with:
 
