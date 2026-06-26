@@ -270,6 +270,55 @@ class TestTokenInfo:
         assert isinstance(result, TokenInfo)
         assert result.symbol == "USDC"
 
+    def test_accepts_object_form_tags(self) -> None:
+        """The live 1inch token list returns `tags` as {provider, value}
+        objects, not bare strings — this used to ValidationError on every
+        call. token_info must accept the object form.
+        """
+        mock, svc = _make_service()
+        mock.add_response(
+            "POST",
+            "/tools/oneinch_token_info",
+            json={
+                "token": {
+                    "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                    "symbol": "USDC",
+                    "name": "USD Coin",
+                    "decimals": 6,
+                    "tags": [
+                        {"provider": "1inch", "value": "bluechip"},
+                        {"provider": "1inch", "value": "PEG:USD"},
+                    ],
+                },
+            },
+        )
+        result = svc.token_info(chain_id=8453, address="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913")
+        assert isinstance(result, TokenInfo)
+        assert result.decimals == 6
+        assert result.tags is not None
+        assert result.tags[0].provider == "1inch"
+        assert result.tags[0].value == "bluechip"
+
+    def test_normalizes_bare_string_tags(self) -> None:
+        """Bare-string tags (other token sources) normalize to {value: ...}."""
+        mock, svc = _make_service()
+        mock.add_response(
+            "POST",
+            "/tools/oneinch_token_info",
+            json={
+                "token": {
+                    "address": "0x833...",
+                    "symbol": "USDC",
+                    "name": "USD Coin",
+                    "decimals": 6,
+                    "tags": ["stablecoin", "bluechip"],
+                },
+            },
+        )
+        result = svc.token_info(chain_id=8453, address="0x833...")
+        assert result.tags is not None
+        assert [t.value for t in result.tags] == ["stablecoin", "bluechip"]
+
 
 class TestChart:
     """Contract tests for dex.chart — see issue #63."""
