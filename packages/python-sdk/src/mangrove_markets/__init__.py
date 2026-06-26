@@ -9,6 +9,7 @@ Quickstart:
 
 from ._client import MangroveMarkets
 from ._version import __version__
+from .cex import CexError, CredentialsRequiredError, KrakenClient
 from .exceptions import (
     APIError,
     AuthenticationError,
@@ -26,6 +27,9 @@ from .exceptions import (
 __all__ = [
     "__version__",
     "MangroveMarkets",
+    "KrakenClient",
+    "CexError",
+    "CredentialsRequiredError",
     "MangroveError",
     "APIError",
     "AuthenticationError",

@@ -12,6 +12,7 @@ from ._transport._http import HttpTransport
 from ._transport._mock import MockTransport
 from ._transport._retry import RetryConfig
 from ._transport._service import ServiceTransport
+from .cex import KrakenClient
 
 
 class MangroveMarkets:
@@ -69,6 +70,40 @@ class MangroveMarkets:
     @cached_property
     def portfolio(self) -> PortfolioService:
         return PortfolioService(self._transport)
+
+    def cex(
+        self,
+        *,
+        api_key: str,
+        api_secret: str,
+        base_url: str = "https://api.kraken.com",
+        tier: str = "intermediate",
+        timeout: float = 15.0,
+    ) -> KrakenClient:
+        """Construct a client-side Kraken client (bring your own key).
+
+        CEX is **not** server-mediated. You supply your own Kraken API key and
+        secret; the SDK signs locally and calls ``api.kraken.com`` directly. The
+        key never touches any Mangrove service, so it is passed here rather than
+        configured on the SDK client.
+
+        Args:
+            api_key: Your Kraken API key.
+            api_secret: Your Kraken API private key (base64).
+            base_url: Kraken REST base URL. Defaults to ``https://api.kraken.com``.
+            tier: Kraken verification tier for rate-limit shaping.
+            timeout: Per-request timeout in seconds.
+
+        Raises:
+            CredentialsRequiredError: if ``api_key`` or ``api_secret`` is missing.
+        """
+        return KrakenClient(
+            api_key=api_key,
+            api_secret=api_secret,
+            base_url=base_url,
+            tier=tier,
+            timeout=timeout,
+        )
 
     def close(self) -> None:
         self._http.close()
