@@ -63,15 +63,32 @@ Because execution + key are local, Mangrove cannot observe trades server-side. S
   self-reports. Mitigant: the agent has "Query Closed Orders & Trades" scope, so it can pull
   the user's **actual Kraken fills** locally and emit *those* — real data, key still local.
 
-## 5. `TradeRecord` schema + the tx-hash reality
+## 5. Shared trading-model family (promote, don't fork) + the tx-hash reality
 
-**A Kraken spot trade has no blockchain tx hash** — it is an internal ledger entry. Kraken
-gives a **trade reference** (`trade_id`, the `TradesHistory` key, e.g. `TQLM2-…`) and an
-**order reference** (`ordertxid`). A real `tx_hash` only exists for **DEX** legs and for
-on-chain deposits/withdrawals — never the CEX spot fill. (Translation already modeled
-server-side in `src/cex/kraken/mapping.py::to_trade_detail` — reuse it, don't rewrite.)
+A survey found a **three-stage lifecycle** duplicated (and in one case misnamed) across repos.
+Promote ONE shared, venue-agnostic, nullable-extended set into **MangroveRoots**; every repo
+imports it. **Do not collapse the three stages into one class** (that's the Frankenstein to
+avoid) — and do not invent a new `TradeRecord`; the agent already has the right execution shape.
 
-So the identifier is **polymorphic**, not a forced `tx_hash`:
+| Stage | Canonical (Roots) | Unifies | Notes |
+|---|---|---|---|
+| Order (intent/request) | `Order` | agent `OrderIntent` + server `OrderRequest`/`OrderReceipt`/`OrderDetail` | pre-execution |
+| Trade (single fill) | `TradeRecord` | **agent `Trade`** + server `TradeDetail` | **the telemetry unit** |
+| Position (round-trip) | `Position` | agent `Position` + **MangroveAI `TradeRecord`** | ⚠️ MangroveAI's "TradeRecord" is a **misnamed closed Position** — folds here, not into the fill |
+
+Shared enums: `Venue` (kraken\|1inch\|xpmarket\|jupiter), `OrderSide`, `OrderType`,
+`OrderStatus`, `TimeInForce`, `Mode` (live\|paper\|validate\|backtest).
+
+**`TradeRecord` (the telemetry fill)** = base the agent's `Trade` (`mode`, `tx_hash?`, `fees`,
+`fill_price`, `p_and_l?`), extended nullable: `user_id?` (server-stamped), `venue`,
+`venue_order_ref?`, `venue_trade_ref?`, and generalize DEX `input_token`/`output_token` →
+`base`/`quote`/`side`/`qty` (token in/out kept as optional DEX aliases); `mode` gains `validate`.
+
+**tx-hash reality.** A Kraken spot trade has **no blockchain tx hash** — it is an internal
+ledger entry, identified by Kraken's `trade_id` (`TradesHistory` key, e.g. `TQLM2-…`) and
+`ordertxid`. A real `tx_hash` only exists for **DEX** legs / on-chain transfers. So the
+identifier is **polymorphic**, never a forced `tx_hash` (translation already modeled in
+`src/cex/kraken/mapping.py::to_trade_detail` — reuse it):
 
 | field | CEX (Kraken) | DEX (1inch/…) |
 |---|---|---|
@@ -80,16 +97,16 @@ So the identifier is **polymorphic**, not a forced `tx_hash`:
 | `venue_trade_ref` | `trade_id` | null |
 | `tx_hash` | **null** (off-chain) | on-chain hash |
 
-Full record (owned by MangroveRoots): `user_id` (server-stamped), `venue`, `side`,
-`base`/`quote`, `qty`, `price`, `fee`, `cost`, `pnl?`, `ts`, `mode` (`validate`|`live`),
-`venue_order_ref`, `venue_trade_ref`, `tx_hash?`. A report's "transaction identifier" column
-resolves to `tx_hash` for DEX and `venue_trade_ref` for CEX.
+A report's "transaction identifier" column resolves to `tx_hash` for DEX and `venue_trade_ref`
+for CEX. The pnl report joins `Position` (pnl/outcome) ← `TradeRecord` (fills/refs/tx) ←
+`Order` (intent). MangroveTrader's `ParsedTrade` (social/options intent) stays its own domain
+object — align field names only, don't merge.
 
 ## 6. Action plan (dependency-ordered, bottom-up)
 
 | # | Repo | Deliverable | Depends on |
 |---|---|---|---|
-| 1 | **MangroveRoots** | `TradeRecord` shared schema (§5). Bump `mangrove-roots`. | — |
+| 1 | **MangroveRoots** | Shared trading-model **family** — `Order`, `TradeRecord` (promote agent `Trade`), `Position` (fold MangroveAI's closed-position record) + enums (§5). Bump `mangrove-roots`. | — |
 | 2 | **MangroveMarkets-MCP-Server** | Replace `metrics_*` `NOT_IMPLEMENTED` stubs: (a) `record_trade` ingestion (auth = Mangrove key → server-derived `user_id` → validate vs schema → persist per user); (b) read-side per-user history/stats. **401 without a key = enforcement.** | 1 |
 | 3 | **MangroveMarkets/python-sdk** | Client-side `KrakenClient` (BYOK, direct to `api.kraken.com`): place/validate orders + `query_trades()` → `trade_id`/`ordertxid`; `report_trades()` emits `TradeRecord`s to step 2 (auth = Mangrove key). Reuse server Kraken mapping; extract keyless translation to shared if cheap. Bump `mangrovemarkets`. | 1, 2 |
 | 4 | **mangrove-agent** | Finish the `setup-kraken` skill's "still being built": Kraken-key stash command (mirror `stash-secret.sh`), `cex_*` tools wired to the SDK `KrakenClient`, emit-after-trade + "pull my Kraken fills and report" flow. | 3 |
