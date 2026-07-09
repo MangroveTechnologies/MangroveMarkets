@@ -2,6 +2,16 @@
 
 All notable changes to the `mangrove-markets` Python SDK are documented here.
 
+## Unreleased
+
+### Added
+
+- **`client.cex.*` — keyless CEX (Kraken) service surface.** Connect, balances,
+  and orders on the user's OAuth-linked Kraken account via the MangroveMarkets
+  platform proxy — no venue key held by the caller (`connect_start`, `status`,
+  `balances`, `place_order`, `open_orders`, `cancel_order`; `user_id` derived
+  server-side). The BYOK alternative remains the top-level `KrakenClient`.
+
 ## 1.0.0 — 2026-05-26
 
 ### Renamed (breaking)
