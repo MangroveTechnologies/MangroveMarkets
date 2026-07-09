@@ -6,6 +6,7 @@ from typing import Any
 from ._config import ClientConfig
 from ._services.dex import DexService
 from ._services.portfolio import PortfolioService
+from ._services.telemetry import TelemetryService
 from ._services.wallet import WalletService
 from ._transport._auth import ApiKeyAuth, AuthStrategy, NoAuth
 from ._transport._http import HttpTransport
@@ -69,6 +70,11 @@ class MangroveMarkets:
     @cached_property
     def portfolio(self) -> PortfolioService:
         return PortfolioService(self._transport)
+
+    @cached_property
+    def telemetry(self) -> TelemetryService:
+        """Emit/read trade records to the server (user_id derived from the key)."""
+        return TelemetryService(self._transport)
 
     def close(self) -> None:
         self._http.close()

@@ -8,6 +8,7 @@ Quickstart:
 """
 
 from ._client import MangroveMarkets
+from ._kraken import KrakenClient, KrakenError
 from ._version import __version__
 from .exceptions import (
     APIError,
@@ -22,10 +23,14 @@ from .exceptions import (
     TimeoutError,
     ValidationError,
 )
+from .models.telemetry import TradeRecord
 
 __all__ = [
     "__version__",
     "MangroveMarkets",
+    "KrakenClient",
+    "KrakenError",
+    "TradeRecord",
     "MangroveError",
     "APIError",
     "AuthenticationError",
