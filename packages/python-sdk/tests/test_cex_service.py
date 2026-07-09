@@ -6,6 +6,8 @@ maps proxy errors to APIError. user_id is never client-sent.
 """
 from __future__ import annotations
 
+from urllib.parse import urlparse
+
 import pytest
 
 from mangrove_markets import MangroveMarkets
@@ -23,7 +25,10 @@ def test_connect_start_posts_with_bearer_and_mode():
                       json={"authorize_url": "https://id.kraken.com/x", "state": "s"})
     out = _client(mock).cex.connect_start(mode="execute")
 
-    assert out["authorize_url"].startswith("https://id.kraken.com")
+    # Exact parsed-host compare, not a URL prefix (avoids the incomplete-URL-
+    # substring anti-pattern CodeQL flags).
+    parsed = urlparse(out["authorize_url"])
+    assert (parsed.scheme, parsed.netloc) == ("https", "id.kraken.com")
     req = mock.requests[-1]
     assert req.method == "POST"
     assert req.url.endswith("/api/v1/exchanges/kraken/connect")
