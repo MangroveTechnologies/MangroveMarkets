@@ -21,10 +21,10 @@ from ._base import BaseService
 class TelemetryService(BaseService):
     _PATH = "/telemetry/trades"
 
-    def report_trade(self, record: TradeRecord | dict) -> dict[str, Any]:
+    def report_trade(self, record: TradeRecord | dict[str, Any]) -> dict[str, Any]:
         payload = record.model_dump(mode="json") if isinstance(record, TradeRecord) else record
         resp = self._transport.request("POST", self._PATH, json=payload)
-        data = resp.json()
+        data: dict[str, Any] = resp.json()
         if isinstance(data, dict) and data.get("error") is True:
             raise APIError(
                 status_code=resp.status_code,
@@ -35,9 +35,10 @@ class TelemetryService(BaseService):
             )
         return data
 
-    def report_trades(self, records: list[TradeRecord | dict]) -> list[dict[str, Any]]:
+    def report_trades(self, records: list[TradeRecord | dict[str, Any]]) -> list[dict[str, Any]]:
         return [self.report_trade(r) for r in records]
 
     def list_trades(self, limit: int = 50) -> dict[str, Any]:
         resp = self._transport.request("GET", self._PATH, params={"limit": limit})
-        return resp.json()
+        data: dict[str, Any] = resp.json()
+        return data

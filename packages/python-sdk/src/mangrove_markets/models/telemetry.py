@@ -8,7 +8,7 @@ the authenticated key — never trusted from the client.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -36,7 +36,7 @@ class TradeRecord(BaseModel):
     output_amount: float | None = None
 
     fill_price: float | None = None
-    fees: dict = Field(default_factory=dict)
+    fees: dict[str, Any] = Field(default_factory=dict)
     p_and_l: float | None = None
 
     strategy_id: str | None = None
