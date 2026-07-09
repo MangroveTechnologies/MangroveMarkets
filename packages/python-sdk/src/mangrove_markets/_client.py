@@ -4,6 +4,7 @@ from functools import cached_property
 from typing import Any
 
 from ._config import ClientConfig
+from ._services.cex import CexService
 from ._services.dex import DexService
 from ._services.portfolio import PortfolioService
 from ._services.telemetry import TelemetryService
@@ -75,6 +76,13 @@ class MangroveMarkets:
     def telemetry(self) -> TelemetryService:
         """Emit/read trade records to the server (user_id derived from the key)."""
         return TelemetryService(self._transport)
+
+    @cached_property
+    def cex(self) -> CexService:
+        """Keyless CEX (Kraken) access via the platform OAuth proxy — connect,
+        balances, and orders on the user's OAuth-linked account, no venue key.
+        (BYOK alternative: the top-level KrakenClient.)"""
+        return CexService(self._transport)
 
     def close(self) -> None:
         self._http.close()
