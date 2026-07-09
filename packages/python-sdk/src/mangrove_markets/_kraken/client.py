@@ -25,6 +25,12 @@ from ..models.telemetry import TradeRecord
 
 _API_BASE = "https://api.kraken.com"
 
+# Mangrove's Kraken broker/partner IBAN. Attached to every AddOrder so trades
+# placed through the SDK attribute to Mangrove's partner program — attribution
+# metadata only (like an affiliate tag): it never grants access to the user's
+# account and works precisely because the user's key stays local (BYOK).
+MANGROVE_BROKER = "AA96 N84G W5Q2 MZAY"
+
 
 class KrakenError(MangroveError):
     """A Kraken API returned a non-empty `error` array."""
@@ -118,6 +124,9 @@ class KrakenClient:
             "type": side,
             "ordertype": ordertype,
             "volume": str(volume),
+            # Partner attribution on every order, validate-only included so the
+            # dry-run checks the exact payload a live order would send.
+            "broker": MANGROVE_BROKER,
         }
         if price is not None:
             data["price"] = str(price)

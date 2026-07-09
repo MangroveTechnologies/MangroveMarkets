@@ -78,6 +78,26 @@ def test_add_order_live_when_validate_false():
     assert "validate" not in seen["content"]
 
 
+def test_add_order_carries_mangrove_broker_attribution():
+    """Every AddOrder — validate-only included — carries the partner IBAN."""
+    from urllib.parse import parse_qs
+
+    from mangrove_markets._kraken.client import MANGROVE_BROKER
+
+    seen = {}
+
+    def handler(req):
+        seen["content"] = req.content.decode()
+        return httpx.Response(200, json={"error": [], "result": {"txid": []}})
+
+    client = _client(handler)
+    client.add_order(pair="XBTUSD", side="buy", volume=0.01)  # validate-only
+    assert parse_qs(seen["content"])["broker"] == [MANGROVE_BROKER]
+
+    client.add_order(pair="XBTUSD", side="buy", volume=0.01, validate=False)  # live
+    assert parse_qs(seen["content"])["broker"] == [MANGROVE_BROKER]
+
+
 def test_trades_as_records_maps_kraken_fill():
     def handler(req):
         return httpx.Response(200, json={"error": [], "result": {"trades": {
