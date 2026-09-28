@@ -11,6 +11,7 @@ from ..exceptions import (
     STATUS_CODE_EXCEPTIONS,
     APIError,
     ConnectionError,
+    MalformedResponseError,
     ServerError,
     TimeoutError,
 )
@@ -69,14 +70,28 @@ class HttpTransport:
                 raise TimeoutError(f"Request timed out: {e}") from e
 
             if response.status_code < 400:
+                try:
+                    data = response.json() if response.content else None
+                except ValueError:
+                    raise MalformedResponseError(
+                        "Invalid JSON response",
+                        status_code=response.status_code,
+                        response_headers=dict(response.headers),
+                        response_body=response.text,
+                    ) from None
                 return TransportResponse(
                     status_code=response.status_code,
                     headers=dict(response.headers),
-                    data=response.json() if response.content else None,
+                    data=data,
                     text=response.text,
                 )
 
-            if self._retry.should_retry(response.status_code, attempt):
+            # Full-result calls may perform writes. Never replay them merely
+            # because an intermediary reports an uncertain 502/503/504 outcome.
+            full_result = any(
+                key.lower() == "x-mangrove-result-format" for key in (headers or {})
+            )
+            if not full_result and self._retry.should_retry(response.status_code, attempt):
                 last_error = self._build_error(response)
                 retry_after = self._parse_retry_after(response)
                 self._retry.wait(attempt, retry_after)
@@ -92,6 +107,7 @@ class HttpTransport:
         self._client.close()
 
     def _build_error(self, response: httpx.Response) -> APIError:
+        body = None
         try:
             body = response.json()
             error = body.get("error", "unknown_error")
@@ -100,7 +116,7 @@ class HttpTransport:
             suggestion = body.get("suggestion")
         except Exception:
             error = "unknown_error"
-            message = response.text or "Unknown error"
+            message = "Invalid error response"
             code = "UNKNOWN"
             suggestion = None
         exc_class = STATUS_CODE_EXCEPTIONS.get(response.status_code)
@@ -112,6 +128,8 @@ class HttpTransport:
             message=message,
             code=code,
             suggestion=suggestion,
+            response_headers=dict(response.headers),
+            response_body=body,
         )
 
     def _parse_retry_after(self, response: httpx.Response) -> int | None:

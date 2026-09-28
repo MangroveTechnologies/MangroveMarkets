@@ -214,3 +214,15 @@ See the [examples directory](https://github.com/MangroveTechnologies/MangroveMar
 ## License
 
 MIT
+
+## Complete responses and local wallet creation (unreleased)
+
+`client.callToolResult(name, arguments)` preserves MCP content, structured data,
+error flags and metadata. REST requires a server supporting the `mcp-v1` result
+format. Existing business methods retain their successful return shapes.
+
+`client.wallet.create()` generates an **unfunded local** XRPL wallet; EVM creation
+uses optional `ethers@^6`. It never calls hosted `wallet_create`. Funding is separate.
+Never log or transmit the returned secret material.
+
+See [the response contract and migration notes](../../docs/t17-client-results.md).

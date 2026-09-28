@@ -28,6 +28,8 @@ class BaseService:
                 message=str(data.get("message", "Unknown tool error")),
                 code=str(data.get("code", "TOOL_ERROR")),
                 suggestion=data.get("suggestion"),
+                response_headers=response.headers,
+                response_body=data,
             )
         return data
 

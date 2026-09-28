@@ -4,6 +4,18 @@ All notable changes to the `mangrove-markets` Python SDK are documented here.
 
 ## Unreleased
 
+- Added `client.call_tool_result(name, arguments)` for complete MCP results over
+  the opt-in REST format, including content, errors, metadata and HTTP headers.
+  Requires a server supporting `X-Mangrove-Result-Format: mcp-v1`.
+- HTTP and domain exceptions retain response metadata; full-result calls do not
+  automatically replay on transient HTTP status codes. Existing business methods
+  retain their successful data/model return types.
+- Wallet secrets are excluded from model representations (explicit serialization
+  still includes them). Wallet creation remains local and does not fund a wallet.
+- Corrected release instructions: the actual distribution is `mangrovemarkets`;
+  `mangrove_markets` is the Python import. The historical 1.0.0 rename entry below
+  does not describe the published package name verified on 2026-09-26.
+
 ### Added
 
 - **`client.cex.*` — keyless CEX (Kraken) service surface.** Connect, balances,

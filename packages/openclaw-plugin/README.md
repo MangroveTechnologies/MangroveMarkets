@@ -13,8 +13,8 @@ OpenClaw plugin for MangroveMarkets. Exposes DEX aggregation, marketplace, walle
 | `mangrove_marketplace_get` | Get details for a specific listing |
 | `mangrove_marketplace_create` | Create a new marketplace listing |
 | `mangrove_wallet_info` | Get chain configuration info |
-| `mangrove_wallet_create` | Create a new wallet |
-| `mangrove_wallet_balance` | Check wallet balance |
+| `mangrove_wallet_create` | Compatibility handler returns `LOCAL_CUSTODY_REQUIRED`; omitted from supported manifest |
+| `mangrove_wallet_balance` | Compatibility-only generic balance call; server returns unsupported |
 | `mangrove_portfolio_value` | Get total portfolio value across chains |
 | `mangrove_portfolio_pnl` | Get portfolio profit and loss |
 | `mangrove_portfolio_balances` | Get token balances for a wallet |

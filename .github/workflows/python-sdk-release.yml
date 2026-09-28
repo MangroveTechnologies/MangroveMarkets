@@ -101,11 +101,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: mangrove-markets ${{ steps.version.outputs.version }}
+          name: mangrovemarkets ${{ steps.version.outputs.version }}
           generate_release_notes: true
           body: |
-            ## mangrove-markets ${{ steps.version.outputs.version }}
+            ## mangrovemarkets ${{ steps.version.outputs.version }}
 
             ```bash
-            pip install mangrove-markets==${{ steps.version.outputs.version }}
+            pip install mangrovemarkets==${{ steps.version.outputs.version }}
             ```

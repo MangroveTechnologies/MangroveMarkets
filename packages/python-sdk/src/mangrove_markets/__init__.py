@@ -15,6 +15,7 @@ from .exceptions import (
     AuthenticationError,
     ConfigurationError,
     ConnectionError,
+    MalformedResponseError,
     MangroveError,
     NotFoundError,
     NotImplementedOnServer,
@@ -24,6 +25,7 @@ from .exceptions import (
     ValidationError,
 )
 from .models.telemetry import TradeRecord
+from .results import ToolResponse, ToolResult
 
 __all__ = [
     "__version__",
@@ -32,6 +34,9 @@ __all__ = [
     "KrakenError",
     "TradeRecord",
     "MangroveError",
+    "MalformedResponseError",
+    "ToolResponse",
+    "ToolResult",
     "APIError",
     "AuthenticationError",
     "ConfigurationError",

@@ -29,6 +29,7 @@ describe('RestTransport', () => {
           'Authorization': 'Bearer test-key',
         },
         body: JSON.stringify({ src: '0xa', dst: '0xb' }),
+        signal: expect.any(AbortSignal),
       },
     );
     expect(result).toEqual({ quoteId: 'q-1' });

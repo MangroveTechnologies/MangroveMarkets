@@ -162,3 +162,13 @@ This SDK wraps the MangroveMarkets MCP Server REST API. For full tool documentat
 ## License
 
 MIT
+
+## Complete tool responses (unreleased)
+
+Use `client.call_tool_result(name, arguments)` for content, structured data, tool
+error flags, metadata and HTTP response headers. Existing service methods retain
+successful return types. Full results require the server's opt-in `mcp-v1` format;
+unsupported format errors must not cause automatic replay.
+
+Install the distribution `mangrovemarkets`; import from `mangrove_markets`.
+See [the response contract and migration notes](../../docs/t17-client-results.md).

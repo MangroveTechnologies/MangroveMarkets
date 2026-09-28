@@ -8,7 +8,7 @@ Claude Code plugin for MangroveMarkets. Provides skills and commands for interac
 |-------|---------|-------------|
 | Swap | `/swap` | Get quotes, execute swaps, and check transaction status across DEX venues |
 | Marketplace | `/marketplace` | Search listings, get listing details, and create new listings |
-| Wallet | `/wallet` | Get chain info, create wallets, and check balances |
+| Wallet | `/wallet` | Get chain info and chain-specific balances; creation requires a local wallet manager |
 | Portfolio | `/portfolio` | View portfolio value, PnL, and token balances across chains |
 
 ## Commands
@@ -32,7 +32,7 @@ Environment variables:
 
 This plugin is a thin wrapper around `@mangrove-ai/sdk`. It translates Claude Code skill/command invocations into SDK client calls. No business logic lives here -- all transport, signing, and API orchestration is handled by the SDK.
 
-The swap skill uses `MangroveClient.dex.*` methods from the SDK directly. The marketplace, wallet, and portfolio skills use `transport.callTool()` directly since those SDK services are not yet implemented.
+The swap skill uses `MangroveClient.dex.*`. Wallet creation actions return `LOCAL_CUSTODY_REQUIRED` without generating keys or making a server request. The plugin has no secure local key-storage integration. Legacy wallet info/balance and other existing raw actions use `transport.callTool()`. Generic wallet balance remains unsupported; use the XRPL-specific action where appropriate. New wallets are unfunded. Never send returned wallet secrets into chat or telemetry.
 
 ## Development
 

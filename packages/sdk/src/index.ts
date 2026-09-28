@@ -59,6 +59,8 @@ export { OneInchService } from './oneinch';
 export { WalletService } from './wallet';
 export { MarketplaceService } from './marketplace';
 
+export { LocalWalletCustodyRequiredError } from './wallet/errors';
+
 // Signers
 export { EthersSigner } from './signer/ethers';
 export { XrplSigner } from './signer/xrpl';
@@ -68,5 +70,7 @@ export { EscrowMonitor } from './marketplace/escrow-monitor';
 export type { EscrowState } from './marketplace/escrow-monitor';
 
 // Transports
+export type { ToolResponse } from './types/transport';
+export { ToolCallError } from './transport/results';
 export { McpTransport } from './transport/mcp';
 export { RestTransport } from './transport/rest';
