@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { Wallet } from 'xrpl';
 import { WalletService } from '../service.js';
 import type { Transport } from '../../types/transport.js';
 
@@ -18,6 +19,10 @@ describe('WalletService XRPL', () => {
     expect(result.address).toMatch(/^r/);
     expect(typeof result.seed).toBe('string');
     expect(typeof result.publicKey).toBe('string');
+    const restored = Wallet.fromSeed(result.seed);
+    expect(restored.classicAddress).toBe(result.address);
+    expect(restored.publicKey).toBe(result.publicKey);
+    expect(t.callTool).not.toHaveBeenCalled();
   });
 
   it('xrplBalance calls wallet_xrpl_balance and normalizes response', async () => {

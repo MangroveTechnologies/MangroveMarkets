@@ -1,4 +1,5 @@
-import type { Transport, ToolCallResult } from '@mangrove-ai/sdk';
+import { LocalWalletCustodyRequiredError } from '@mangrove-ai/sdk';
+import type { Transport } from '@mangrove-ai/sdk';
 
 export interface WalletInfoParams { action: 'info'; chain: string; }
 export interface WalletCreateParams { action: 'create'; chain: string; chain_id?: number; network?: string; }
@@ -22,7 +23,7 @@ export type WalletParams =
 
 /**
  * Handle a /wallet skill invocation.
- * Legacy actions (info, create, balance) use transport directly.
+ * Legacy info/balance actions use transport directly; creation requires a local custody integration before it can be exposed as an AI tool.
  * XRPL actions use the client.wallet service.
  */
 export async function handleWallet(
@@ -30,12 +31,13 @@ export async function handleWallet(
   params: WalletParams,
 ): Promise<unknown> {
   switch (params.action) {
-    case 'info':
     case 'create':
+    case 'xrpl_create':
+      throw new LocalWalletCustodyRequiredError();
+    case 'info':
     case 'balance': {
       const transport = clientOrTransport as Transport;
       if (params.action === 'info') return transport.callTool('wallet_chain_info', { chain: params.chain });
-      if (params.action === 'create') return transport.callTool('wallet_create', { chain: params.chain, chain_id: params.chain_id, network: params.network });
       return transport.callTool('wallet_balance', { address: params.address, chain_id: params.chain_id });
     }
     case 'xrpl_balance': {
@@ -49,10 +51,6 @@ export async function handleWallet(
     case 'xrpl_transactions': {
       const client = clientOrTransport as { wallet: any };
       return client.wallet.xrplTransactions(params.address, { limit: params.limit, network: params.network });
-    }
-    case 'xrpl_create': {
-      const client = clientOrTransport as { wallet: any };
-      return client.wallet.createXrplWallet();
     }
     case 'xrpl_faucet': {
       const client = clientOrTransport as { wallet: any };

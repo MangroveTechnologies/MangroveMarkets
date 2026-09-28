@@ -1,4 +1,5 @@
-import type { Transport, ToolCallResult } from '../types/transport';
+import type { Transport, ToolCallResult, ToolResponse } from '../types/transport';
+import { dataFromResponse, parseResult } from './results';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
@@ -36,19 +37,15 @@ export class McpTransport implements Transport {
   }
 
   async callTool(name: string, params: Record<string, unknown>): Promise<ToolCallResult> {
+    return dataFromResponse(await this.callToolResult(name, params));
+  }
+
+  async callToolResult(name: string, params: Record<string, unknown>): Promise<ToolResponse> {
     if (!this.client) {
       throw new Error('Not connected. Call connect() first.');
     }
     const result = await this.client.callTool({ name, arguments: params });
-    const textContent = (result.content as any[])?.find((c: any) => c.type === 'text');
-    if (!textContent) {
-      throw new Error(`No text content in response for tool: ${name}`);
-    }
-    try {
-      return JSON.parse(textContent.text);
-    } catch {
-      throw new Error(`Invalid JSON in MCP response for tool '${name}'`);
-    }
+    return { result: parseResult(result) };
   }
 
   async disconnect(): Promise<void> {

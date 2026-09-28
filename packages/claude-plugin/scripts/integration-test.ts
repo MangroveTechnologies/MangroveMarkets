@@ -73,26 +73,22 @@ async function testWalletHandler() {
 }
 
 async function testWalletCreateHandler() {
-  header('3. /wallet skill -- create XRPL wallet via real server');
+  header('3. /wallet skill -- local custody boundary');
+  const { handleWallet } = await import('../src/skills/wallet.js');
+  let called = false;
+  const transport = {
+    callTool: async () => { called = true; throw new Error('Unexpected network'); },
+    connect: async () => {}, disconnect: async () => {},
+  };
   try {
-    const { RestTransport } = await import('../../sdk/src/transport/rest.js');
-    const { handleWallet } = await import('../src/skills/wallet.js');
-    const transport = new RestTransport(SERVER_URL);
-
-    const result = await handleWallet(transport, {
-      action: 'create',
-      chain: 'xrpl',
-      network: 'testnet',
-    }) as any;
-    if (result.address || result.classic_address) {
-      ok(`XRPL wallet created: ${result.address || result.classic_address}`);
-    } else if (result.error) {
-      skip(`XRPL faucet: ${result.message}`);
+    await handleWallet(transport, { action: 'create', chain: 'xrpl', network: 'testnet' });
+    fail('Plugin must not generate or return wallet secrets without local custody');
+  } catch (error: unknown) {
+    if (!called && error instanceof Error && error.name === 'LocalWalletCustodyRequiredError') {
+      ok('Wallet creation refused locally; no network call or secret output');
     } else {
-      ok(`Response: ${JSON.stringify(result).slice(0, 100)}`);
+      fail('Unexpected wallet creation outcome');
     }
-  } catch (e: any) {
-    fail(`wallet create: ${e.message}`);
   }
 }
 
@@ -137,7 +133,7 @@ async function main() {
 HONEST STATUS:
   - Marketplace search handler proven against real server
   - Wallet chain info handler proven against real server
-  - XRPL wallet create depends on testnet faucet availability
+  - Wallet creation requires a local wallet manager; plugin actions never return secrets
   - Portfolio/1inch handlers depend on 1inch API key being configured on server
   - /swap skill NOT tested here (requires full MangroveClient with DexService)
   - SwapOrchestrator has NEVER been tested end-to-end

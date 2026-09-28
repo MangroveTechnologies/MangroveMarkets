@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 
 class MangroveError(Exception):
     """Base exception for all MangroveMarkets SDK errors."""
@@ -19,11 +21,16 @@ class APIError(MangroveError):
         message: str,
         code: str,
         suggestion: str | None = None,
+        *,
+        response_headers: dict[str, str] | None = None,
+        response_body: Any = None,
     ) -> None:
         self.status_code = status_code
         self.error = error
         self.code = code
         self.suggestion = suggestion
+        self.response_headers = dict(response_headers or {})
+        self.response_body = response_body
         super().__init__(message)
 
     def __str__(self) -> str:
@@ -63,6 +70,23 @@ class TimeoutError(MangroveError):
 
 class ConfigurationError(MangroveError):
     """Invalid SDK configuration."""
+
+
+class MalformedResponseError(MangroveError):
+    """A response cannot satisfy the requested contract. Do not blindly replay."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        status_code: int | None = None,
+        response_headers: dict[str, str] | None = None,
+        response_body: Any = None,
+    ) -> None:
+        self.status_code = status_code
+        self.response_headers = dict(response_headers or {})
+        self.response_body = response_body
+        super().__init__(message)
 
 
 class NotImplementedOnServer(MangroveError):

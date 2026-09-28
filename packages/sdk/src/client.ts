@@ -1,5 +1,5 @@
 import type { MangroveConfig } from './types/config';
-import type { Transport } from './types/transport';
+import type { Transport, ToolResponse } from './types/transport';
 import type { SwapParams, SwapResult } from './types/dex';
 import { McpTransport } from './transport/mcp';
 import { RestTransport } from './transport/rest';
@@ -99,6 +99,14 @@ export class MangroveClient {
   /** Open the transport connection. Must be called before making any tool calls. */
   async connect(): Promise<void> {
     await this.transport.connect();
+  }
+
+  /** Full wire result for a tool, including tool errors and receipt metadata.
+   * REST requires a server supporting the mcp-v1 result format.
+   */
+  async callToolResult(name: string, params: Record<string, unknown>): Promise<ToolResponse> {
+    if (!this.transport.callToolResult) throw new Error('Transport does not support full results');
+    return this.transport.callToolResult(name, params);
   }
 
   /** Close the transport connection and release resources. */

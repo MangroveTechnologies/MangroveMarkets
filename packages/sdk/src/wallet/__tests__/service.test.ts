@@ -71,54 +71,43 @@ describe('WalletService', () => {
     });
   });
 
-  describe('create', () => {
-    it('calls wallet_create with defaults and normalizes XRPL response', async () => {
-      (transport.callTool as ReturnType<typeof vi.fn>).mockResolvedValue({
-        address: 'rXRPLAddress123',
-        secret: 'sXRPLSecret',
-        seed_phrase: null,
-        chain: 'xrpl',
-        network: 'testnet',
-        is_funded: true,
-        warnings: ['Save your secret'],
+  describe('create locally', () => {
+    it('creates an unfunded XRPL wallet without a request or the legacy helper', async () => {
+      const { Wallet } = await import('xrpl');
+      const legacyCreate = vi.spyOn(wallet, 'createXrplWallet').mockImplementation(() => {
+        throw new Error('Legacy helper must not be used');
       });
-
       const result = await wallet.create();
-
-      expect(transport.callTool).toHaveBeenCalledWith('wallet_create', {
-        chain: 'xrpl',
-        network: 'testnet',
-      });
-      expect(result.address).toBe('rXRPLAddress123');
       expect(result.chain).toBe('xrpl');
       expect(result.network).toBe('testnet');
-      expect(result.isFunded).toBe(true);
-      expect(result.secret).toBe('sXRPLSecret');
-      expect(result.warnings).toContain('Save your secret');
+      expect(result.isFunded).toBe(false);
+      expect(Wallet.fromSeed(result.secret!).classicAddress).toBe(result.address);
+      expect(transport.callTool).not.toHaveBeenCalled();
+      expect(legacyCreate).not.toHaveBeenCalled();
     });
 
-    it('passes chain_id for EVM wallet creation', async () => {
-      (transport.callTool as ReturnType<typeof vi.fn>).mockResolvedValue({
-        address: '0xEvmAddress',
-        private_key: '0xprivkey',
-        chain: 'evm',
-        chain_id: 8453,
-        network: 'evm',
-        is_funded: false,
-        warnings: ['Save your private key'],
-      });
-
+    it('creates a valid EVM wallet without a request', async () => {
+      const { Wallet } = await import('ethers');
       const result = await wallet.create({ chain: 'evm', chainId: 8453 });
-
-      expect(transport.callTool).toHaveBeenCalledWith('wallet_create', {
-        chain: 'evm',
-        network: 'testnet',
-        chain_id: 8453,
-      });
-      expect(result.address).toBe('0xEvmAddress');
-      expect(result.privateKey).toBe('0xprivkey');
+      expect(new Wallet(result.privateKey!).address).toBe(result.address);
       expect(result.chainId).toBe(8453);
       expect(result.isFunded).toBe(false);
+      expect(transport.callTool).not.toHaveBeenCalled();
+    });
+
+    it('generates different keys per invocation', async () => {
+      const a = await wallet.create();
+      const b = await wallet.create();
+      expect(a.address).not.toBe(b.address);
+      expect(a.secret).not.toBe(b.secret);
+    });
+
+    it.each([
+      { chain: 'solana' }, { chain: 'xrpl', network: 'invalid' },
+      { chain: 'evm', chainId: -1 }, { chain: 'xrpl', chainId: 1 },
+    ])('rejects unsupported input locally: %j', async params => {
+      await expect(wallet.create(params)).rejects.toThrow();
+      expect(transport.callTool).not.toHaveBeenCalled();
     });
   });
 

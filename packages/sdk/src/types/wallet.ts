@@ -28,7 +28,7 @@ export interface ChainInfo {
   sdkMethod?: string;
 }
 
-/** Result from wallet_create (XRPL faucet or EVM keypair). */
+/** Locally generated, unfunded wallet. Secret fields must not be logged or transmitted. */
 export interface WalletCreateResult {
   address: string;
   chain: string;
@@ -67,7 +67,7 @@ export interface ChainInfoParams {
   chain?: string;
 }
 
-/** Parameters for wallet_create. */
+/** Parameters for local wallet creation. No remote key generation. */
 export interface CreateWalletParams {
   /** Chain family: 'xrpl', 'evm', or 'solana'. Defaults to 'xrpl'. */
   chain?: string;

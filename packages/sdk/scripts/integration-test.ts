@@ -11,7 +11,7 @@
  *   1. RestTransport talks to the real FastAPI server
  *   2. Tool list endpoint returns all 37 registered tools (auto-bridged from MCP)
  *   3. wallet_chain_info returns real chain config
- *   4. wallet_create generates a real EVM keypair (server-side)
+ *   4. WalletService.create generates an EVM keypair locally
  *   5. DEX, marketplace, and 1inch tools all work via REST (auto-bridged)
  *   6. McpTransport connects via Streamable HTTP and calls tools
  *
@@ -120,32 +120,25 @@ async function testWalletChainInfoViaSDK() {
 }
 
 // ---------------------------------------------------------------------------
-// 4. SDK RestTransport -- wallet_create (EVM)
+// 4. SDK WalletService -- local wallet creation (EVM)
 // ---------------------------------------------------------------------------
 
 async function testWalletCreateViaSDK() {
-  header('4. SDK RestTransport -- wallet_create (EVM keypair)');
+  header('4. SDK WalletService -- local EVM keypair');
   try {
-    const { RestTransport } = await import('../src/transport/rest.js');
-    const transport = new RestTransport(SERVER_URL);
-
-    const result = await transport.callTool('wallet_create', {
-      chain: 'evm',
-      chain_id: 8453,
-    }) as any;
-
-    if (result.address && result.address.startsWith('0x')) {
-      ok(`Address: ${result.address}`);
-      ok(`Chain ID: ${result.chain_id}`);
-      ok(`Private key returned: ${result.private_key ? 'yes (not displayed)' : 'NO'}`);
-      ok(`Is funded: ${result.is_funded}`);
-    } else if (result.error) {
-      fail(`Server returned error: ${result.code} -- ${result.message}`);
-    } else {
-      fail(`Unexpected response: ${JSON.stringify(result).slice(0, 200)}`);
+    const { WalletService } = await import('../src/wallet/service.js');
+    const wallet = new WalletService({
+      callTool: async () => { throw new Error('Wallet creation must not contact the server'); },
+      connect: async () => {}, disconnect: async () => {},
+    });
+    const result = await wallet.create({ chain: 'evm', chainId: 8453 });
+    if (!result.address.startsWith('0x') || !result.privateKey || result.isFunded) {
+      fail('Local wallet result did not satisfy its contract');
+      return;
     }
-  } catch (e: any) {
-    fail(`SDK RestTransport wallet_create: ${e.message}`);
+    ok('Local EVM wallet created; private key retained locally and not displayed');
+  } catch {
+    fail('Local EVM wallet creation failed');
   }
 }
 

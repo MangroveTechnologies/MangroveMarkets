@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from pydantic import Field
+
 from ._base import MangroveModel
 
 
@@ -21,9 +23,9 @@ class WalletCreateResult(MangroveModel):
     """Result of wallet_create. Secrets returned once at creation only."""
 
     address: str
-    secret: str | None = None
-    private_key: str | None = None
-    seed_phrase: str | None = None
+    secret: str | None = Field(default=None, repr=False)
+    private_key: str | None = Field(default=None, repr=False)
+    seed_phrase: str | None = Field(default=None, repr=False)
     chain: str = "xrpl"
     chain_id: int | None = None
     network: str = "testnet"

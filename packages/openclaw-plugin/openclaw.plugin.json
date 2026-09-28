@@ -54,14 +54,6 @@
       }
     },
     {
-      "name": "mangrove_wallet_create",
-      "description": "Create a new wallet",
-      "parameters": {
-        "chain": { "type": "string", "enum": ["evm", "xrpl", "solana"] },
-        "chainId": { "type": "number" }
-      }
-    },
-    {
       "name": "mangrove_portfolio_value",
       "description": "Get portfolio value across chains",
       "parameters": {

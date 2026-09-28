@@ -42,20 +42,38 @@ export class WalletService {
   }
 
   /**
-   * Create a new wallet. XRPL wallets are funded via testnet/devnet faucet.
-   * EVM wallets generate a random keypair. Solana is Phase 3.
+   * Create an unfunded wallet locally. No network call or automatic faucet funding.
+   * EVM requires optional ethers v6; XRPL uses the bundled xrpl library.
    * @param params - Chain, network, and optional chain ID.
    */
   async create(params: CreateWalletParams = {}): Promise<WalletCreateResult> {
-    const toolParams: Record<string, unknown> = {
-      chain: params.chain ?? 'xrpl',
-      network: params.network ?? 'testnet',
-    };
-    if (params.chainId !== undefined) {
-      toolParams.chain_id = params.chainId;
+    const chain = (params.chain ?? 'xrpl').toLowerCase();
+    const network = params.network ?? 'testnet';
+    if (!['xrpl', 'evm'].includes(chain)) {
+      throw new Error(`Unsupported local wallet chain: ${chain}`);
     }
-    const result = await this.transport.callTool('wallet_create', toolParams);
-    return normalizeCreateResult(result as Record<string, unknown>);
+    if (chain === 'xrpl' && !['mainnet', 'testnet', 'devnet'].includes(network)) {
+      throw new Error('XRPL network must be mainnet, testnet or devnet');
+    }
+    if (params.chainId !== undefined &&
+        (!Number.isSafeInteger(params.chainId) || params.chainId <= 0 || chain !== 'evm')) {
+      throw new Error('chainId must be a positive safe integer for EVM wallets only');
+    }
+    const base = {
+      chain, network, isFunded: false,
+      warnings: ['Save your wallet secret securely. It is generated locally and is not stored by Mangrove.'],
+    };
+    if (chain === 'xrpl') {
+      const wallet = Wallet.generate();
+      return { ...base, address: wallet.classicAddress, secret: wallet.seed!, seedPhrase: null };
+    }
+    let ethers: typeof import('ethers');
+    try { ethers = await import('ethers'); } catch {
+      throw new Error('Local EVM wallet creation requires the optional ethers dependency: install ethers@^6');
+    }
+    const wallet = ethers.Wallet.createRandom();
+    return { ...base, address: wallet.address, privateKey: wallet.privateKey,
+      ...(params.chainId !== undefined ? { chainId: params.chainId } : {}) };
   }
 
   /**
@@ -174,19 +192,5 @@ function normalizeChainInfo(raw: Record<string, unknown>): ChainInfo {
     networks: raw.networks as Record<string, any>,
     supportedChainIds: (raw.supported_chain_ids as number[]) ?? (raw.supportedChainIds as number[]),
     sdkMethod: (raw.sdk_method as string) ?? (raw.sdkMethod as string),
-  };
-}
-
-function normalizeCreateResult(raw: Record<string, unknown>): WalletCreateResult {
-  return {
-    address: raw.address as string,
-    chain: raw.chain as string,
-    network: raw.network as string,
-    isFunded: (raw.is_funded as boolean) ?? (raw.isFunded as boolean) ?? false,
-    warnings: (raw.warnings as string[]) ?? [],
-    secret: raw.secret as string | undefined,
-    seedPhrase: (raw.seed_phrase as string | null) ?? (raw.seedPhrase as string | null),
-    privateKey: (raw.private_key as string) ?? (raw.privateKey as string),
-    chainId: (raw.chain_id as number) ?? (raw.chainId as number),
   };
 }

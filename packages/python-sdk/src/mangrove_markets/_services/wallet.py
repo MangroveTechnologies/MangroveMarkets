@@ -4,10 +4,8 @@ KEYGEN IS CLIENT-SIDE. All keypairs are generated locally inside this SDK
 process; secrets never traverse the wire. The remote MCP server plays NO
 role in keypair generation — EVM via eth_account, XRPL via xrpl-py.
 
-The only server interaction during wallet creation is for XRPL
-testnet/devnet, where the server is asked to request faucet funding
-for a locally-generated address. Even then, only the address (public
-data) is sent — secrets stay local.
+Wallet creation makes no network requests, including on XRPL testnet/devnet.
+Funding is a separate, explicit action using only the public address.
 
 This is the SDK 0.2.0 architecture. SDK 0.1.x sent the chain/network
 to the server's `wallet_create` tool, which generated the keypair
@@ -55,8 +53,7 @@ class WalletService(BaseService):
 
         The private key, secret, or seed phrase NEVER touches the wire.
 
-        For XRPL testnet/devnet, the server is contacted only to request
-        faucet funding for the locally-generated address.
+        No faucet request is made. Newly created wallets are unfunded.
 
         Args:
             chain: ``"evm"`` (default), ``"xrpl"``, or ``"solana"``.
