@@ -50,7 +50,7 @@ describe('MarketplaceService', () => {
           title: 'Data Feed',
           description: 'Prices',
           category: 'data',
-          price_xrp: 5,
+          price: { amount: 5, currency: 'USDC', chain: 'base' },
           listing_type: 'static',
           tags: ['crypto'],
           created_at: '2026-03-12T10:00:00Z',
@@ -73,7 +73,8 @@ describe('MarketplaceService', () => {
     expect(result.listings).toHaveLength(1);
     expect(result.listings[0].listingId).toBe('lst-001');
     expect(result.listings[0].sellerAddress).toBe('rAddr1');
-    expect(result.listings[0].priceXrp).toBe(5);
+    expect(result.listings[0].price).toEqual({ amount: 5, currency: 'USDC', chain: 'base', network: null });
+    expect(result.listings[0]).not.toHaveProperty('priceXrp');
 
     const call = transport.calls[0];
     expect(call.name).toBe('marketplace_search');
@@ -91,7 +92,7 @@ describe('MarketplaceService', () => {
       description: 'GPU inference',
       category: 'compute',
       subcategory: 'gpu',
-      price_xrp: 25.0,
+      price: { amount: 25, currency: 'XRP', chain: 'xrpl' },
       listing_type: 'service',
       status: 'active',
       tags: ['gpu', 'inference'],
@@ -108,7 +109,7 @@ describe('MarketplaceService', () => {
     expect(listing.sellerAddress).toBe('rSeller');
     expect(listing.category).toBe('compute');
     expect(listing.subcategory).toBe('gpu');
-    expect(listing.priceXrp).toBe(25.0);
+    expect(listing.price).toEqual({ amount: 25, currency: 'XRP', chain: 'xrpl', network: null });
     expect(listing.listingType).toBe('service');
     expect(listing.storageUri).toBe('ipfs://Qm123');
     expect(listing.contentHash).toBe('sha256:abc');
@@ -116,6 +117,34 @@ describe('MarketplaceService', () => {
 
     expect(transport.calls[0].name).toBe('marketplace_get_listing');
     expect(transport.calls[0].params.listing_id).toBe('lst-002');
+  });
+
+  it('uses the qualified price even when a legacy amount is present', async () => {
+    transport.addResponse('marketplace_get_listing', {
+      listing_id: 'lst-003',
+      price: { amount: 2, currency: 'USDC', chain: 'base' },
+      price_xrp: 99,
+    } as any);
+
+    const listing = await marketplace.getListing('lst-003');
+
+    expect(listing.price).toEqual({ amount: 2, currency: 'USDC', chain: 'base', network: null });
+    expect(listing).not.toHaveProperty('priceXrp');
+  });
+
+  it.each([
+    {},
+    { price_xrp: 2 },
+    { price: null },
+    { price: { amount: 2, currency: 'USDC' } },
+    { price: { amount: '2', currency: 'USDC', chain: 'base' } },
+    { price: { amount: NaN, currency: 'USDC', chain: 'base' } },
+    { price: { amount: Infinity, currency: 'USDC', chain: 'base' } },
+    { price: { amount: 2, currency: '', chain: 'base' } },
+    { price: { amount: 2, currency: 'USDC', chain: ' ' } },
+  ])('rejects missing or malformed price instead of inventing a price: %j', async (raw) => {
+    transport.addResponse('marketplace_get_listing', raw as any);
+    await expect(marketplace.getListing('lst-003')).rejects.toThrow(TypeError);
   });
 
   it('makeOffer sends listing_id and buyer_address', async () => {
@@ -196,5 +225,18 @@ describe('MarketplaceService', () => {
     expect(transport.calls[0].params.score).toBe(5);
     expect(transport.calls[0].params.comment).toBe('Great service!');
     expect((result as any).code).toBe('NOT_IMPLEMENTED');
+  });
+});
+
+
+describe('settlement network normalization', () => {
+  it.each(['eip155:8453', 'eip155:84532', 'xrpl:testnet', null])('preserves %s', async (network) => {
+    const { normalizeListing } = await import('../../utils/normalize');
+    const listing = normalizeListing({ price: { amount: 1, currency: 'USDC', chain: 'base', network } });
+    expect(listing.price.network).toBe(network);
+  });
+  it.each(['', ' ', 8453, {}])('rejects malformed network %j', async (network) => {
+    const { normalizeListing } = await import('../../utils/normalize');
+    expect(() => normalizeListing({ price: { amount: 1, currency: 'USDC', chain: 'base', network } })).toThrow(TypeError);
   });
 });

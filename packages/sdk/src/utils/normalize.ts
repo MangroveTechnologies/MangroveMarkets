@@ -184,11 +184,27 @@ export function normalizeCreateListingResult(raw: ServerResponse): CreateListing
   };
 }
 
+function normalizeListingPrice(value: unknown): Listing['price'] {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new TypeError('Marketplace listing is missing a currency-qualified price');
+  }
+  const { amount, currency, chain, network } = value as Record<string, unknown>;
+  if (
+    typeof amount !== 'number' || !Number.isFinite(amount) ||
+    typeof currency !== 'string' || !currency.trim() ||
+    typeof chain !== 'string' || !chain.trim() ||
+    (network != null && (typeof network !== 'string' || !network.trim()))
+  ) {
+    throw new TypeError('Marketplace listing has an invalid currency-qualified price');
+  }
+  return { amount, currency, chain, network: network == null ? null : network as string };
+}
+
 /**
  * Normalize a server listing response to SDK Listing type.
  *
  * Server fields: listing_id, seller_address, title, description, category,
- * subcategory, price_xrp, listing_type, status, tags, storage_uri,
+ * subcategory, price, listing_type, status, tags, storage_uri,
  * content_hash, created_at, updated_at, expires_at
  */
 export function normalizeListing(raw: ServerResponse): Listing {
@@ -199,7 +215,7 @@ export function normalizeListing(raw: ServerResponse): Listing {
     description: (raw.description ?? '') as string,
     category: (raw.category ?? 'other') as Listing['category'],
     subcategory: (raw.subcategory ?? null) as string | null,
-    priceXrp: (raw.price_xrp ?? raw.priceXrp ?? 0) as number,
+    price: normalizeListingPrice(raw.price),
     listingType: (raw.listing_type ?? raw.listingType ?? 'static') as Listing['listingType'],
     status: (raw.status ?? 'active') as Listing['status'],
     tags: (raw.tags ?? []) as string[],
