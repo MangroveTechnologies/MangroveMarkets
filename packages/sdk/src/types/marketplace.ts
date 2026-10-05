@@ -35,6 +35,13 @@ export type Category =
 
 // -- Domain objects --
 
+export interface ListingPrice {
+  network: string | null;
+  amount: number;
+  currency: string;
+  chain: string;
+}
+
 /** A marketplace listing as returned by the server. */
 export interface Listing {
   listingId: string;
@@ -43,7 +50,7 @@ export interface Listing {
   description: string;
   category: Category;
   subcategory?: string | null;
-  priceXrp: number;
+  price: ListingPrice;
   listingType: ListingType;
   status: ListingStatus;
   tags: string[];

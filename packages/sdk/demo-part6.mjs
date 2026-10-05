@@ -108,7 +108,7 @@ console.log(`${SEP}\nStep 9 — Marketplace search`);
 const searchResult = await marketplaceService.search({ query: 'GPU compute' });
 console.log(`Found ${searchResult.totalCount} listing(s):`);
 for (const l of searchResult.listings) {
-  console.log(`  ${l.listingId} — ${l.title} — ${l.priceXrp} XRP`);
+  console.log(`  ${l.listingId} — ${l.title} — ${l.price.amount} ${l.price.currency} (${l.price.chain})`);
 }
 
 // ── Step 10: Make offer with XRP escrow path ──────────────────────────────────

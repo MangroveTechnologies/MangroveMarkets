@@ -39,6 +39,7 @@ export type {
   XrplTransactionHistory,
   XrplFaucetResult,
   Listing,
+  ListingPrice,
   Offer,
   Rating,
   SearchResult,
