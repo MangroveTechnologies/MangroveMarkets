@@ -110,8 +110,15 @@ class MangroveMarkets:
                     json.dumps(value, separators=(",", ":"), allow_nan=False).encode()
                 ).decode("ascii")
             elif namespace in {"mangrove/payment", "mangrove/quota"}:
-                fields = ({"operation_id": "X-Payment-Operation-Id", "recovery_token": "X-Payment-Recovery-Token", "action_id": "X-Payment-Action-Id"}
-                          if namespace == "mangrove/payment" else {"operation_id": "X-Quota-Operation-Id"})
+                fields = (
+                    {
+                        "operation_id": "X-Payment-Operation-Id",
+                        "recovery_token": "X-Payment-Recovery-Token",
+                        "action_id": "X-Payment-Action-Id",
+                    }
+                    if namespace == "mangrove/payment"
+                    else {"operation_id": "X-Quota-Operation-Id"}
+                )
                 if not isinstance(value, dict) or set(value) - fields.keys():
                     raise ValueError("Unsupported recovery metadata")
                 for field, item in value.items():
