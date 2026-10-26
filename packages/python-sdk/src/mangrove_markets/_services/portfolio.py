@@ -45,9 +45,11 @@ class PortfolioService(BaseService):
             params["chain_id"] = chain_id
         return self._call_tool_model("oneinch_portfolio_defi", PortfolioDefi, params)
 
-    def history(self, address: str, limit: int = 50) -> list[TxHistoryEntry]:
+    def history(self, address: str, limit: int = 50) -> dict[str, Any] | list[TxHistoryEntry]:
         """Get transaction history for an address."""
         data = self._call_tool("oneinch_history", {"address": address, "limit": limit})
+        if "history" in data:
+            return data["history"]
         return [
             TxHistoryEntry.model_validate(tx)
             for tx in data.get("transactions", [])

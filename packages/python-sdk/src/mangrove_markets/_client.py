@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import json
 import re
 from functools import cached_property
 from typing import Any
@@ -88,7 +90,10 @@ class MangroveMarkets:
     def close(self) -> None:
         self._http.close()
 
-    def call_tool_result(self, name: str, arguments: dict[str, Any] | None = None) -> ToolResponse:
+    def call_tool_result(
+        self, name: str, arguments: dict[str, Any] | None = None, *,
+        meta: dict[str, Any] | None = None,
+    ) -> ToolResponse:
         """Get a complete tool result. Tool failures are returned in result.is_error.
 
         Requires a server supporting mcp-v1. A missing acknowledgement must not
@@ -98,11 +103,28 @@ class MangroveMarkets:
             raise ValueError("Invalid tool name")
         if arguments is not None and not isinstance(arguments, dict):
             raise ValueError("Tool arguments must be a dictionary")
+        request_headers = {RESULT_FORMAT_HEADER: RESULT_FORMAT}
+        for namespace, value in (meta or {}).items():
+            if namespace == "x402/payment":
+                request_headers["PAYMENT-SIGNATURE"] = base64.b64encode(
+                    json.dumps(value, separators=(",", ":"), allow_nan=False).encode()
+                ).decode("ascii")
+            elif namespace in {"mangrove/payment", "mangrove/quota"}:
+                fields = ({"operation_id": "X-Payment-Operation-Id", "recovery_token": "X-Payment-Recovery-Token", "action_id": "X-Payment-Action-Id"}
+                          if namespace == "mangrove/payment" else {"operation_id": "X-Quota-Operation-Id"})
+                if not isinstance(value, dict) or set(value) - fields.keys():
+                    raise ValueError("Unsupported recovery metadata")
+                for field, item in value.items():
+                    if not isinstance(item, str):
+                        raise ValueError("Recovery metadata must contain strings")
+                    request_headers[fields[field]] = item
+            else:
+                raise ValueError("Unsupported tool metadata namespace")
         response = self._transport.request(
             "POST",
             f"/tools/{name}",
             json=arguments or {},
-            headers={RESULT_FORMAT_HEADER: RESULT_FORMAT},
+            headers=request_headers,
             timeout=self._config.timeout,
         )
         headers = {key.lower(): value for key, value in response.headers.items()}
@@ -122,6 +144,8 @@ class MangroveMarkets:
                 response_headers=headers,
                 response_body=response.json(),
             ) from None
+        if response.status_code >= 400:
+            result.is_error = True
         data = result.data()
         if any(isinstance(item, dict) and item.get("error") is True for item in (data, result.structured_content)):
             result.is_error = True

@@ -375,3 +375,10 @@ class TestChart:
         assert len(result) == 1
         assert isinstance(result[0], ChartCandle)
         assert result[0].close == 1.05
+
+
+def test_chart_preserves_canonical_wallet_value_series():
+    mock, svc = _make_service()
+    points = [{"timestamp": 1700000000, "value_usd": "123.45"}]
+    mock.add_response("POST", "/tools/oneinch_chart", json={"chain_id": 8453, "chart": points})
+    assert svc.chart(8453, "0xpublic") == points

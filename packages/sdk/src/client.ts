@@ -1,3 +1,4 @@
+import type { ToolCallOptions } from './types/transport';
 import type { MangroveConfig } from './types/config';
 import type { Transport, ToolResponse } from './types/transport';
 import type { SwapParams, SwapResult } from './types/dex';
@@ -104,9 +105,9 @@ export class MangroveClient {
   /** Full wire result for a tool, including tool errors and receipt metadata.
    * REST requires a server supporting the mcp-v1 result format.
    */
-  async callToolResult(name: string, params: Record<string, unknown>): Promise<ToolResponse> {
+  async callToolResult(name: string, params: Record<string, unknown>, options?: ToolCallOptions): Promise<ToolResponse> {
     if (!this.transport.callToolResult) throw new Error('Transport does not support full results');
-    return this.transport.callToolResult(name, params);
+    return this.transport.callToolResult(name, params, options);
   }
 
   /** Close the transport connection and release resources. */

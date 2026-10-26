@@ -71,7 +71,7 @@ export { EscrowMonitor } from './marketplace/escrow-monitor';
 export type { EscrowState } from './marketplace/escrow-monitor';
 
 // Transports
-export type { ToolResponse } from './types/transport';
+export type { ToolResponse, ToolCallOptions } from './types/transport';
 export { ToolCallError } from './transport/results';
 export { McpTransport } from './transport/mcp';
 export { RestTransport } from './transport/rest';

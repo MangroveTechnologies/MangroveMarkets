@@ -120,3 +120,10 @@ class TestHistory:
         )
         result = svc.history(address="0xbf5...")
         assert result == []
+
+
+def test_history_preserves_canonical_provider_events():
+    mock, svc = _make_service()
+    history = {"events": [{"id": "event-1", "details": {"txHash": "0xabc"}}]}
+    mock.add_response("POST", "/tools/oneinch_history", json={"address": "0xpublic", "history": history})
+    assert svc.history("0xpublic") == history

@@ -1,5 +1,9 @@
 import type { CallToolResult as McpCallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
+export interface ToolCallOptions {
+  meta?: Record<string, unknown>;
+}
+
 /** Complete result of one invocation; never stored in shared last-response state. */
 export interface ToolResponse {
   result: McpCallToolResult;
@@ -28,7 +32,7 @@ export interface Transport {
   callTool(name: string, params: Record<string, unknown>): Promise<ToolCallResult>;
 
   /** Optional for custom transports. Returns tool errors in result.isError. */
-  callToolResult?(name: string, params: Record<string, unknown>): Promise<ToolResponse>;
+  callToolResult?(name: string, params: Record<string, unknown>, options?: ToolCallOptions): Promise<ToolResponse>;
 
   /** Open the transport connection to the server. */
   connect(): Promise<void>;

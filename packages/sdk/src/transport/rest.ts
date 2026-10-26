@@ -1,6 +1,8 @@
-import type { Transport, ToolCallResult, ToolResponse } from '../types/transport';
+import type { Transport, ToolCallResult, ToolResponse, ToolCallOptions } from '../types/transport';
 
 import { RESULT_FORMAT, RESULT_FORMAT_HEADER, ToolCallError, dataFromResponse, legacyResponse, parseResult } from './results';
+
+import { metadataHeaders } from './metadata';
 
 const TOOL_NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
 
@@ -34,17 +36,18 @@ export class RestTransport implements Transport {
     return dataFromResponse(await this.invoke(name, params, false));
   }
 
-  async callToolResult(name: string, params: Record<string, unknown>): Promise<ToolResponse> {
-    return this.invoke(name, params, true);
+  async callToolResult(name: string, params: Record<string, unknown>, options?: ToolCallOptions): Promise<ToolResponse> {
+    return this.invoke(name, params, true, options);
   }
 
-  private async invoke(name: string, params: Record<string, unknown>, full: boolean): Promise<ToolResponse> {
+  private async invoke(name: string, params: Record<string, unknown>, full: boolean, options?: ToolCallOptions): Promise<ToolResponse> {
     if (!TOOL_NAME_PATTERN.test(name)) {
       throw new Error(`Invalid tool name: ${name}`);
     }
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      ...metadataHeaders(options?.meta),
     };
     if (full) headers[RESULT_FORMAT_HEADER] = RESULT_FORMAT;
     if (this.apiKey) {
@@ -53,6 +56,7 @@ export class RestTransport implements Transport {
 
     const response = await fetch(`${this.baseUrl}/api/v1/tools/${name}`, {
       method: 'POST',
+      redirect: 'error',
       headers,
       body: JSON.stringify(params),
       signal: AbortSignal.timeout(this.timeoutMs),
@@ -65,7 +69,8 @@ export class RestTransport implements Transport {
         { result: { content: [], isError: true }, status: response.status, headers: responseHeaders });
     }
     const legacy = legacyResponse(body, response.status, responseHeaders);
-    if (!response.ok) {
+    const acknowledged = full && response.headers?.get(RESULT_FORMAT_HEADER) === RESULT_FORMAT;
+    if (!response.ok && !acknowledged) {
       const data = legacy.result.structuredContent;
       throw new ToolCallError(
         `REST call failed (${response.status}): ${typeof data?.message === 'string' ? data.message : 'HTTP error'}`,
@@ -80,7 +85,9 @@ export class RestTransport implements Transport {
         'UNSUPPORTED_RESULT_FORMAT', legacy);
     }
     try {
-      return { result: parseResult(body), status: response.status, headers: responseHeaders };
+      const result = parseResult(body);
+      if (!response.ok) result.isError = true;
+      return { result, status: response.status, headers: responseHeaders };
     } catch (error) {
       if (!(error instanceof ToolCallError)) throw error;
       // Preserve HTTP evidence without presenting invalid data as a validated result.
