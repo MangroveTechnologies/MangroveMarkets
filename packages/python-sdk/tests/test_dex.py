@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import pytest
+
 from mangrove_markets._services.dex import DexService
 from mangrove_markets._transport._auth import NoAuth
 from mangrove_markets._transport._mock import MockTransport
 from mangrove_markets._transport._service import ServiceTransport
+from mangrove_markets.exceptions import MalformedResponseError
 from mangrove_markets.models.dex import (
     BroadcastResult,
     Quote,
@@ -375,3 +378,19 @@ class TestChart:
         assert len(result) == 1
         assert isinstance(result[0], ChartCandle)
         assert result[0].close == 1.05
+
+
+def test_chart_preserves_canonical_wallet_value_series():
+    mock, svc = _make_service()
+    points = [{"timestamp": 1700000000, "value_usd": "123.45"}]
+    mock.add_response("POST", "/tools/oneinch_chart", json={"chain_id": 8453, "chart": points})
+    assert svc.chart(8453, "0xpublic") == points
+
+
+@pytest.mark.parametrize("chart", [None, {}, "invalid", [123]])
+def test_chart_rejects_malformed_canonical_series(chart):
+    mock, svc = _make_service()
+    mock.add_response("POST", "/tools/oneinch_chart", json={"chart": chart})
+    with pytest.raises(MalformedResponseError, match="list of objects"):
+        svc.chart(8453, "0xpublic")
+    assert len(mock.requests) == 1

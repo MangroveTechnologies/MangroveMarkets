@@ -183,3 +183,33 @@ def test_format_failures_preserve_receipt_without_replay_or_message_leak(failure
     assert exc.value.response_body == ("fixture-private-payload" if failure == "invalid_json" else body)
     assert "fixture-private-payload" not in str(exc.value)
     assert "fixture-receipt" not in repr(exc.value)
+
+
+def test_paid_read_metadata_and_402_envelope_are_preserved_once():
+    import base64
+    import json
+
+    calls = []
+    proof = {"x402Version": 2, "accepted": {"network": "eip155:84532"}, "payload": {}}
+    operation = "12345678-1234-1234-1234-123456789abc"
+
+    def handler(request):
+        calls.append(request)
+        assert json.loads(base64.b64decode(request.headers['PAYMENT-SIGNATURE'])) == proof
+        assert request.headers['X-Payment-Operation-Id'] == operation
+        assert request.headers['X-Payment-Recovery-Token'] == 'r' * 43
+        assert json.loads(request.content) == {'chain_id': 8453}
+        return httpx.Response(402, headers={**HEADER, 'PAYMENT-REQUIRED': 'challenge'}, json={
+            'content': [], 'isError': True,
+            'structuredContent': {'x402Version': 2, 'accepts': []},
+            '_meta': {'mangrove/payment': {'idempotency': 'v1'}},
+        })
+
+    with client_for(handler) as client:
+        response = client.call_tool_result('oneinch_gas_price', {'chain_id': 8453}, meta={
+            'x402/payment': proof,
+            'mangrove/payment': {'operation_id': operation, 'recovery_token': 'r' * 43},
+        })
+    assert response.status == 402 and response.result.is_error
+    assert response.result.meta['mangrove/payment']['idempotency'] == 'v1'
+    assert len(calls) == 1

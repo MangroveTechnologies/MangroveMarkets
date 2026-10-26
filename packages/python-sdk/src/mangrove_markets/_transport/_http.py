@@ -69,7 +69,11 @@ class HttpTransport:
             except httpx.TimeoutException as e:
                 raise TimeoutError(f"Request timed out: {e}") from e
 
-            if response.status_code < 400:
+            full_result = any(
+                key.lower() == "x-mangrove-result-format" for key in (headers or {})
+            )
+            acknowledged = response.headers.get("X-Mangrove-Result-Format") == "mcp-v1"
+            if response.status_code < 400 or (full_result and acknowledged):
                 try:
                     data = response.json() if response.content else None
                 except ValueError:
@@ -88,9 +92,6 @@ class HttpTransport:
 
             # Full-result calls may perform writes. Never replay them merely
             # because an intermediary reports an uncertain 502/503/504 outcome.
-            full_result = any(
-                key.lower() == "x-mangrove-result-format" for key in (headers or {})
-            )
             if not full_result and self._retry.should_retry(response.status_code, attempt):
                 last_error = self._build_error(response)
                 retry_after = self._parse_retry_after(response)

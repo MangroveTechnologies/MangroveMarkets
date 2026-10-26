@@ -51,3 +51,16 @@ describe('McpTransport', () => {
     expect(mockClose).toHaveBeenCalled();
   });
 });
+
+it('forwards payment metadata without adding it to business arguments', async () => {
+  mockCallTool.mockClear();
+  const transport = new McpTransport('https://markets.test/mcp');
+  await transport.connect();
+  const meta = { 'x402/payment': { x402Version: 2, accepted: {}, payload: {} },
+    'mangrove/payment': { operation_id: 'operation', recovery_token: 'private-token' } };
+  await transport.callToolResult('oneinch_gas_price', { chain_id: 8453 }, { meta });
+  expect(mockCallTool).toHaveBeenCalledTimes(1);
+  expect(mockCallTool).toHaveBeenCalledWith({
+    name: 'oneinch_gas_price', arguments: { chain_id: 8453 }, _meta: meta,
+  });
+});

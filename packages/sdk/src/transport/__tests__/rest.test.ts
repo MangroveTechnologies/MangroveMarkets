@@ -24,6 +24,7 @@ describe('RestTransport', () => {
       'https://api.mangrovemarkets.com/api/v1/tools/dex_get_quote',
       {
         method: 'POST',
+        redirect: 'error',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer test-key',
@@ -82,4 +83,28 @@ describe('RestTransport', () => {
 
     await expect(transport.callTool('dex_broadcast', {})).rejects.toThrow('tx failed');
   });
+});
+
+it('preserves paid-read recovery headers and a full 402 result without retry', async () => {
+  mockFetch.mockReset();
+  const result = { content: [], isError: true,
+    structuredContent: { x402Version: 2, accepts: [] },
+    _meta: { 'mangrove/payment': { idempotency: 'v1' } } };
+  mockFetch.mockResolvedValue({ ok: false, status: 402,
+    headers: new Headers({ 'X-Mangrove-Result-Format': 'mcp-v1', 'PAYMENT-REQUIRED': 'challenge' }),
+    json: async () => result });
+  const proof = { x402Version: 2, accepted: {}, payload: {} };
+  const transport = new RestTransport('https://markets.test');
+  const response = await transport.callToolResult('oneinch_gas_price', { chain_id: 8453 }, {
+    meta: { 'x402/payment': proof, 'mangrove/payment': {
+      operation_id: '12345678-1234-1234-1234-123456789abc', recovery_token: 'r'.repeat(43),
+    } },
+  });
+  expect(response.status).toBe(402);
+  expect(response.result).toEqual(result);
+  expect(mockFetch).toHaveBeenCalledTimes(1);
+  const request = mockFetch.mock.calls[0][1];
+  expect(JSON.parse(atob(request.headers['PAYMENT-SIGNATURE']))).toEqual(proof);
+  expect(request.headers['X-Payment-Recovery-Token']).toBe('r'.repeat(43));
+  expect(JSON.parse(request.body)).toEqual({ chain_id: 8453 });
 });

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
+from ..exceptions import MalformedResponseError
 from ..models.dex import (
     BroadcastResult,
     Quote,
@@ -167,7 +168,7 @@ class DexService(BaseService):
         chain_id: int,
         address: str,
         timerange: str = "1month",
-    ) -> list[ChartCandle]:
+    ) -> list[dict[str, Any]] | list[ChartCandle]:
         # 1inch removed the pair-based OHLCV endpoint; the `oneinch_chart`
         # server tool now takes a single `address` and a `timerange`
         # (issue #63). Old token0/token1/period kwargs are gone on purpose:
@@ -181,4 +182,9 @@ class DexService(BaseService):
                 "timerange": timerange,
             },
         )
+        if "chart" in data:
+            chart = data["chart"]
+            if not isinstance(chart, list) or not all(isinstance(point, dict) for point in chart):
+                raise MalformedResponseError("Expected chart data to be a list of objects")
+            return cast(list[dict[str, Any]], chart)
         return [ChartCandle.model_validate(c) for c in data.get("candles", [])]

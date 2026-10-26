@@ -1,4 +1,4 @@
-import type { Transport, ToolCallResult, ToolResponse } from '../types/transport';
+import type { Transport, ToolCallResult, ToolResponse, ToolCallOptions } from '../types/transport';
 import { dataFromResponse, parseResult } from './results';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
@@ -29,7 +29,7 @@ export class McpTransport implements Transport {
 
     const mcpTransport = new StreamableHTTPClientTransport(
       new URL(this.url),
-      { requestInit: { headers } },
+      { requestInit: { headers, redirect: 'error' } },
     );
 
     this.client = new Client({ name: 'mangrove-sdk', version: '0.1.0' });
@@ -40,11 +40,11 @@ export class McpTransport implements Transport {
     return dataFromResponse(await this.callToolResult(name, params));
   }
 
-  async callToolResult(name: string, params: Record<string, unknown>): Promise<ToolResponse> {
+  async callToolResult(name: string, params: Record<string, unknown>, options?: ToolCallOptions): Promise<ToolResponse> {
     if (!this.client) {
       throw new Error('Not connected. Call connect() first.');
     }
-    const result = await this.client.callTool({ name, arguments: params });
+    const result = await this.client.callTool({ name, arguments: params, ...(options?.meta ? { _meta: options.meta } : {}) });
     return { result: parseResult(result) };
   }
 
