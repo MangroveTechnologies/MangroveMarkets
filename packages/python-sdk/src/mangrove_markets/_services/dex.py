@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
+from ..exceptions import MalformedResponseError
 from ..models.dex import (
     BroadcastResult,
     Quote,
@@ -182,5 +183,8 @@ class DexService(BaseService):
             },
         )
         if "chart" in data:
-            return data["chart"]
+            chart = data["chart"]
+            if not isinstance(chart, list) or not all(isinstance(point, dict) for point in chart):
+                raise MalformedResponseError("Expected chart data to be a list of objects")
+            return cast(list[dict[str, Any]], chart)
         return [ChartCandle.model_validate(c) for c in data.get("candles", [])]

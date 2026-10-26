@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import pytest
+
 from mangrove_markets._services.portfolio import PortfolioService
 from mangrove_markets._transport._auth import NoAuth
 from mangrove_markets._transport._mock import MockTransport
 from mangrove_markets._transport._service import ServiceTransport
+from mangrove_markets.exceptions import MalformedResponseError
 from mangrove_markets.models.portfolio import (
     PortfolioDefi,
     PortfolioPnL,
@@ -127,3 +130,12 @@ def test_history_preserves_canonical_provider_events():
     history = {"events": [{"id": "event-1", "details": {"txHash": "0xabc"}}]}
     mock.add_response("POST", "/tools/oneinch_history", json={"address": "0xpublic", "history": history})
     assert svc.history("0xpublic") == history
+
+
+@pytest.mark.parametrize("history", [None, [], "invalid", 123])
+def test_history_rejects_malformed_canonical_envelope(history):
+    mock, svc = _make_service()
+    mock.add_response("POST", "/tools/oneinch_history", json={"history": history})
+    with pytest.raises(MalformedResponseError, match="an object"):
+        svc.history("0xpublic")
+    assert len(mock.requests) == 1

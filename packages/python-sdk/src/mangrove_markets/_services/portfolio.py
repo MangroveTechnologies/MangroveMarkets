@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
+from ..exceptions import MalformedResponseError
 from ..models.portfolio import (
     PortfolioDefi,
     PortfolioPnL,
@@ -49,7 +50,10 @@ class PortfolioService(BaseService):
         """Get transaction history for an address."""
         data = self._call_tool("oneinch_history", {"address": address, "limit": limit})
         if "history" in data:
-            return data["history"]
+            history = data["history"]
+            if not isinstance(history, dict):
+                raise MalformedResponseError("Expected history data to be an object")
+            return cast(dict[str, Any], history)
         return [
             TxHistoryEntry.model_validate(tx)
             for tx in data.get("transactions", [])
