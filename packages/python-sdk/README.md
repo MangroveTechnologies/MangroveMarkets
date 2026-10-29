@@ -124,6 +124,12 @@ swap_tx = client.dex.prepare_swap(
 client.close()
 ```
 
+For EVM status reads, `status.raw` contains the original RPC receipt when one is
+available, including logs, gas fields, and chain-specific fees. Pending reads have
+`raw=None`. Verify its transaction hash, sender, destination, execution status,
+and token transfers before treating a swap as filled. The response does not
+convert native gas fees to quote currency or establish internal native transfers.
+
 ## Configuration
 
 | Parameter | Env var | Default | Description |

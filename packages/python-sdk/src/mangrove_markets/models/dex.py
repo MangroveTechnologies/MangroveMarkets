@@ -62,6 +62,7 @@ class BroadcastResult(MangroveModel):
 
 
 class TransactionStatus(MangroveModel):
+    """Normalized status and the original chain receipt, when one is available."""
     tx_hash: str
     chain_family: str
     chain_id: int | None = None
@@ -70,3 +71,4 @@ class TransactionStatus(MangroveModel):
     confirmations: int | None = None
     gas_used: str | None = None
     error_message: str | None = None
+    raw: dict[str, Any] | None = None
