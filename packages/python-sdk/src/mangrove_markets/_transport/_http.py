@@ -58,14 +58,14 @@ class HttpTransport:
         max_attempts = self._retry.max_retries + 1 if retryable else 1
         for attempt in range(max_attempts):
             try:
-                response = self._client.request(
-                    method,
-                    url,
-                    headers=headers,
-                    params=params,
-                    json=json,
-                    timeout=timeout,
-                )
+                request_kwargs: dict[str, Any] = {
+                    "headers": headers,
+                    "params": params,
+                    "json": json,
+                }
+                if timeout is not None:
+                    request_kwargs["timeout"] = timeout
+                response = self._client.request(method, url, **request_kwargs)
             except httpx.ConnectError as e:
                 raise ConnectionError(f"Connection failed: {e}") from e
             except httpx.TimeoutException as e:

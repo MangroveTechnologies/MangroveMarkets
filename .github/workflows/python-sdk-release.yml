@@ -69,6 +69,23 @@ jobs:
           sed -i "s/^version = .*/version = \"${NEW_VERSION}\"/" pyproject.toml
           sed -i "s/^__version__ = .*/__version__ = \"${NEW_VERSION}\"/" src/mangrove_markets/_version.py
 
+      - name: Commit versioned release source
+        id: source
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git add pyproject.toml src/mangrove_markets/_version.py
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore(python-sdk): release ${NEW_VERSION}"
+          fi
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Release source tree is not clean after stamping the version" >&2
+            exit 1
+          fi
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Build
         run: |
           pip install build
@@ -84,6 +101,12 @@ jobs:
           [ "$BUILT" = "$EXPECTED" ] || exit 1
           [ "$SDIST_BUILT" = "$EXPECTED" ] || exit 1
 
+          SOURCE_VERSION=$(git show HEAD:pyproject.toml | grep '^version = ' | head -1 | sed 's/version = "\(.*\)"/\1/')
+          MODULE_VERSION=$(git show HEAD:src/mangrove_markets/_version.py | sed -n 's/^__version__ = "\(.*\)"/\1/p')
+          echo "Tagged source versions: pyproject=${SOURCE_VERSION}, module=${MODULE_VERSION}"
+          [ "$SOURCE_VERSION" = "$EXPECTED" ] || exit 1
+          [ "$MODULE_VERSION" = "$EXPECTED" ] || exit 1
+
           INSTALL_DIR=$(mktemp -d)
           python -m pip install --no-deps --target "$INSTALL_DIR" dist/*.whl
           INSTALLED=$(PYTHONPATH="$INSTALL_DIR" python -c 'import mangrove_markets; print(mangrove_markets.__version__)')
@@ -93,10 +116,24 @@ jobs:
       - name: Tag release after artifact validation
         env:
           VERSION_TAG: ${{ steps.version.outputs.tag }}
+          SOURCE_COMMIT: ${{ steps.source.outputs.commit }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ "$(git rev-parse HEAD)" != "$SOURCE_COMMIT" ]; then
+            echo "Release source changed after artifact build" >&2
+            exit 1
+          fi
+          if ! git diff --quiet || ! git diff --cached --quiet; then
+            echo "Release source tree changed after artifact build" >&2
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/${VERSION_TAG}" >/dev/null; then
+            echo "Tag ${VERSION_TAG} already exists" >&2
+            exit 1
+          fi
           git tag -a "$VERSION_TAG" -m "Release $VERSION_TAG"
+          echo "Tagging source commit $(git rev-parse HEAD)"
+          # Push the tag only. The versioned source commit is reachable from
+          # this tag and the release artifacts were built from that exact tree.
           git push origin "$VERSION_TAG"
 
       - name: Publish to PyPI
