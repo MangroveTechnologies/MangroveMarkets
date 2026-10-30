@@ -62,26 +62,20 @@ jobs:
           echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag=python-sdk-v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Stamp version into build files
-        env:
-          NEW_VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          sed -i "s/^version = .*/version = \"${NEW_VERSION}\"/" pyproject.toml
-          sed -i "s/^__version__ = .*/__version__ = \"${NEW_VERSION}\"/" src/mangrove_markets/_version.py
-
-      - name: Commit versioned release source
+      - name: Validate prepared release source
         id: source
         env:
           NEW_VERSION: ${{ steps.version.outputs.version }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
-          git add pyproject.toml src/mangrove_markets/_version.py
-          if ! git diff --cached --quiet; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git commit -m "chore(python-sdk): release ${NEW_VERSION}"
-          fi
+          SOURCE_VERSION=$(grep '^version = ' pyproject.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+          MODULE_VERSION=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' src/mangrove_markets/_version.py)
+          echo "Expected release: ${NEW_VERSION}; source: ${SOURCE_VERSION}; module: ${MODULE_VERSION}"
+          [ "$SOURCE_VERSION" = "$NEW_VERSION" ] || exit 1
+          [ "$MODULE_VERSION" = "$NEW_VERSION" ] || exit 1
+          [ "$(git rev-parse HEAD)" = "$GITHUB_SHA" ] || exit 1
           if [ -n "$(git status --porcelain)" ]; then
-            echo "Release source tree is not clean after stamping the version" >&2
+            echo "Release source tree must be clean before building" >&2
             exit 1
           fi
           echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
@@ -132,8 +126,8 @@ jobs:
           fi
           git tag -a "$VERSION_TAG" -m "Release $VERSION_TAG"
           echo "Tagging source commit $(git rev-parse HEAD)"
-          # Push the tag only. The versioned source commit is reachable from
-          # this tag and the release artifacts were built from that exact tree.
+          # The release version is already committed by a reviewed source PR.
+          # Tag the exact clean commit from which these artifacts were built.
           git push origin "$VERSION_TAG"
 
       - name: Publish to PyPI
