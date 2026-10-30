@@ -43,6 +43,7 @@ class MockTransport:
         params: dict[str, Any] | None = None,
         json: Any | None = None,
         timeout: float | None = None,
+        retryable: bool = True,
     ) -> TransportResponse:
         self.requests.append(
             RecordedRequest(

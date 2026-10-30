@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
+import httpx
 import pytest
 
 from mangrove_markets import MangroveMarkets
@@ -74,6 +75,37 @@ def test_cancel_order_is_delete_on_txid_path():
 def test_proxy_error_maps_to_apierror():
     mock = MockTransport()
     mock.add_response("POST", "/exchanges/kraken/orders", status_code=403,
-                      json={"detail": "connection is view-only; reconnect in execute mode"})
-    with pytest.raises(APIError, match="view-only"):
+                      json={"detail": "connection is view-only; reconnect in execute mode",
+                            "code": "EXECUTE_SCOPE_REQUIRED"},
+                      headers={"X-Request-Id": "fixture-request"})
+    with pytest.raises(APIError, match="view-only") as exc_info:
         _client(mock).cex.place_order(base="XRP", quote="USDC", side="buy", volume="5")
+
+    error = exc_info.value
+    assert error.status_code == 403
+    assert error.code == "EXECUTE_SCOPE_REQUIRED"
+    assert error.response_headers == {"X-Request-Id": "fixture-request"}
+    assert error.response_body == {
+        "detail": "connection is view-only; reconnect in execute mode",
+        "code": "EXECUTE_SCOPE_REQUIRED",
+    }
+
+
+def test_ambiguous_order_failure_is_not_automatically_replayed():
+    requests = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(503, json={"detail": "upstream outcome is unknown"})
+
+    http_client = httpx.Client(transport=httpx.MockTransport(handler))
+    client = MangroveMarkets(
+        base_url="https://fixture.invalid",
+        api_key="fixture-market-key",
+        max_retries=3,
+        auto_retry=True,
+        httpx_client=http_client,
+    )
+    with client, pytest.raises(APIError, match="outcome is unknown"):
+        client.cex.place_order(base="XRP", quote="USDC", side="buy", volume="5")
+    assert len(requests) == 1

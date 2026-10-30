@@ -59,6 +59,8 @@ export { DexService } from './dex';
 export { OneInchService } from './oneinch';
 export { WalletService } from './wallet';
 export { MarketplaceService } from './marketplace';
+export { CexService, CexProxyError } from './cex';
+export type { CexResponse, KrakenConnectionMode, KrakenOrderParams } from './cex';
 
 export { LocalWalletCustodyRequiredError } from './wallet/errors';
 

@@ -25,6 +25,7 @@ class ServiceTransport:
         json: Any | None = None,
         headers: dict[str, str] | None = None,
         timeout: float | None = None,
+        retryable: bool = True,
     ) -> TransportResponse:
         url = f"{self._base_url}{path}"
         merged_headers = dict(headers) if headers else {}
@@ -36,6 +37,7 @@ class ServiceTransport:
             params=params,
             json=json,
             timeout=timeout,
+            retryable=retryable,
         )
 
     @property

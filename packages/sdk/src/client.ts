@@ -9,6 +9,7 @@ import { SwapOrchestrator } from './dex/swap';
 import { OneInchService } from './oneinch/service';
 import { WalletService } from './wallet/service';
 import { MarketplaceService } from './marketplace/service';
+import { CexService } from './cex/service';
 
 /** Combined DEX API surface exposing both low-level tools and high-level swap(). */
 interface DexClientApi extends DexService {
@@ -25,6 +26,7 @@ export class MangroveClient {
   private _oneinch: OneInchService;
   private _wallet: WalletService;
   private _marketplace: MarketplaceService;
+  private _cex: CexService;
   private _swapOrchestrator?: SwapOrchestrator;
   private config: MangroveConfig;
 
@@ -45,6 +47,7 @@ export class MangroveClient {
     this._oneinch = new OneInchService(this.transport);
     this._wallet = new WalletService(this.transport);
     this._marketplace = new MarketplaceService(this.transport);
+    this._cex = new CexService(config.url, config.apiKey);
 
     if (config.signer) {
       this._swapOrchestrator = new SwapOrchestrator(this._dex, config.signer, this.transport);
@@ -95,6 +98,15 @@ export class MangroveClient {
    */
   get marketplace(): MarketplaceService {
     return this._marketplace;
+  }
+
+  /**
+   * Access the keyless Kraken OAuth proxy (connect, status, balances and spot orders).
+   * These calls use the Mangrove API key and REST routes, independently of the
+   * selected MCP/tool transport. The user's Kraken grant remains platform-held.
+   */
+  get cex(): CexService {
+    return this._cex;
   }
 
   /** Open the transport connection. Must be called before making any tool calls. */

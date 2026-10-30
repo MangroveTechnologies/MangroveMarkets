@@ -18,6 +18,7 @@ sent by this client.
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 
 from ..exceptions import APIError
 from ._base import BaseService
@@ -27,22 +28,31 @@ class CexService(BaseService):
     _BASE = "/exchanges/kraken"
 
     def _request(self, method: str, path: str, *, json: Any | None = None) -> dict[str, Any]:
-        resp = self._transport.request(method, f"{self._BASE}{path}", json=json)
+        # OAuth connect and order calls have externally visible effects. A 5xx
+        # or lost response is ambiguous, so never replay any CEX proxy request.
+        resp = self._transport.request(
+            method, f"{self._BASE}{path}", json=json, retryable=False
+        )
         data = resp.json()
         if resp.status_code >= 400:
             detail = data.get("detail") if isinstance(data, dict) else None
+            code = data.get("code") if isinstance(data, dict) else None
             raise APIError(
                 status_code=resp.status_code,
                 error="cex_proxy_error",
                 message=str(detail or f"CEX proxy returned HTTP {resp.status_code}"),
-                code="CEX_PROXY_ERROR",
+                code=str(code or "CEX_PROXY_ERROR"),
                 suggestion=None,
+                response_headers=resp.headers,
+                response_body=data,
             )
         return data if isinstance(data, dict) else {"data": data}
 
     def connect_start(self, *, mode: str = "view") -> dict[str, Any]:
         """Begin an OAuth connect. Returns {authorize_url, state}; the user opens
         the URL and consents. mode = 'view' (read-only) or 'execute' (+trading)."""
+        if mode not in {"view", "execute"}:
+            raise ValueError("mode must be 'view' or 'execute'")
         return self._request("POST", "/connect", json={"mode": mode})
 
     def status(self) -> dict[str, Any]:
@@ -86,4 +96,6 @@ class CexService(BaseService):
         return self._request("GET", "/orders")
 
     def cancel_order(self, tx_id: str) -> dict[str, Any]:
-        return self._request("DELETE", f"/orders/{tx_id}")
+        if not tx_id:
+            raise ValueError("tx_id is required")
+        return self._request("DELETE", f"/orders/{quote(tx_id, safe='')}")

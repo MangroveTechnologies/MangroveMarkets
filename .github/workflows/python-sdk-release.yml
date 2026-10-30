@@ -69,15 +69,6 @@ jobs:
           sed -i "s/^version = .*/version = \"${NEW_VERSION}\"/" pyproject.toml
           sed -i "s/^__version__ = .*/__version__ = \"${NEW_VERSION}\"/" src/mangrove_markets/_version.py
 
-      - name: Tag release
-        env:
-          VERSION_TAG: ${{ steps.version.outputs.tag }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$VERSION_TAG" -m "Release $VERSION_TAG"
-          git push origin "$VERSION_TAG"
-
       - name: Build
         run: |
           pip install build
@@ -88,8 +79,25 @@ jobs:
           EXPECTED: ${{ steps.version.outputs.version }}
         run: |
           BUILT=$(unzip -p dist/*.whl '*/METADATA' | grep '^Version:' | cut -d' ' -f2)
-          echo "Expected: ${EXPECTED}, Built: ${BUILT}"
+          SDIST_BUILT=$(tar -xOf dist/*.tar.gz --wildcards '*/PKG-INFO' | grep '^Version:' | cut -d' ' -f2)
+          echo "Expected: ${EXPECTED}, wheel: ${BUILT}, sdist: ${SDIST_BUILT}"
           [ "$BUILT" = "$EXPECTED" ] || exit 1
+          [ "$SDIST_BUILT" = "$EXPECTED" ] || exit 1
+
+          INSTALL_DIR=$(mktemp -d)
+          python -m pip install --no-deps --target "$INSTALL_DIR" dist/*.whl
+          INSTALLED=$(PYTHONPATH="$INSTALL_DIR" python -c 'import mangrove_markets; print(mangrove_markets.__version__)')
+          echo "Installed module version: ${INSTALLED}"
+          [ "$INSTALLED" = "$EXPECTED" ] || exit 1
+
+      - name: Tag release after artifact validation
+        env:
+          VERSION_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$VERSION_TAG" -m "Release $VERSION_TAG"
+          git push origin "$VERSION_TAG"
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

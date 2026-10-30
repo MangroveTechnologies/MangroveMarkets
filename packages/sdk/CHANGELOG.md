@@ -4,6 +4,27 @@ All notable changes to the MangroveMarkets SDK will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - Unreleased
+
+### Added
+- `client.cex` provides the Kraken OAuth proxy lifecycle: start consent, inspect
+  status, read balances, validate/place spot orders, list open orders, and cancel.
+- `CexProxyError` retains HTTP status, response headers, response body, and a
+  safe message. CEX requests are not automatically retried after ambiguous results.
+
+### Changed
+- Wallet creation is local and unfunded. EVM keys require optional `ethers@^6`;
+  XRPL keys use the bundled XRPL library. This differs from the published 0.3.0
+  artifact, which delegated wallet creation to the server. Treat returned key
+  material as a secret and store it in the caller's custody.
+- The release candidate includes the post-0.3.0 complete MCP result contract,
+  payment/recovery metadata handling, XRPL signer and escrow support present in
+  current source. `callToolResult` never retries an unacknowledged write.
+
+### Scope
+- The Markets SDK remains distinct from the MangroveAI API clients. The Kraken
+  OAuth proxy is not a generic brokerage API and exposes no positions endpoint.
+
 ## [0.1.0] - 2026-03-12
 
 ### Added

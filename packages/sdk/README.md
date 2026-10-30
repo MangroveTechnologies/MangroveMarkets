@@ -4,6 +4,40 @@ TypeScript SDK for [MangroveMarkets](https://mangrovemarkets.com) -- DEX aggrega
 
 **Proven on mainnet**: real USDC-to-USDT swap on Base ([block 43280998](https://basescan.org/tx/0x1fe4e3bcf0a30db0a13eaa774d52f41fac164099bcec6fa3dba562dfaaa8b48f)).
 
+## Supported workflow matrix
+
+| Workflow | Python entry point | TypeScript entry point | Boundary |
+| --- | --- | --- | --- |
+| DEX, wallet, and marketplace tools | `client.dex`, `client.wallet`, `client.marketplace` | `client.dex`, `client.wallet`, `client.marketplace` | Both use the Markets MCP/tool surface. Wallet creation is local and unfunded. |
+| Kraken OAuth account access | `client.cex` | `client.cex` | Hosted Markets REST proxy: connect, status, balances, validate/place spot orders, list open orders, cancel. It does not expose broker positions. |
+| MangroveAI strategies/backtests | Not included | Not included | Use the separate MangroveAI API clients. |
+
+The SDK sends requested operations and returns Mangrove's result. Deterministic
+risk management uses live market and account conditions and is owned by Mangrove;
+the SDK and calling agent do not implement that policy. Order outcomes can be
+ambiguous after a timeout, so CEX requests are not automatically retried. Inspect
+connection and order state before deciding whether to submit another request.
+See the [full capability and artifact matrix](../../docs/markets-sdk-capability-matrix.md).
+
+### Kraken OAuth lifecycle
+
+Configure a Mangrove API key, request `view` access for read-only account access
+or `execute` access when order placement is needed, then open the returned
+`authorizeUrl` for the user. Poll `client.cex.status()` after consent and read
+balances. Use `validateOnly: true` before requesting a live order. Mangrove holds
+the OAuth grant; this API does not accept a caller-supplied Kraken key or user ID.
+The available account surface has no positions method.
+
+```typescript
+import { MangroveClient } from '@mangrove-ai/sdk';
+
+const client = new MangroveClient({ url: 'https://mangrovemarkets.com', apiKey: 'prod_...' });
+const consent = await client.cex.connectStart('view');
+console.log(consent.authorize_url); // show/open this URL for the account owner
+const status = await client.cex.status(); // poll after consent
+const balances = await client.cex.balances();
+```
+
 ## Installation
 
 ```bash
