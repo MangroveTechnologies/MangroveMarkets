@@ -12,7 +12,7 @@ it does not describe MangroveAI strategy or backtesting APIs.
 | MCP tool calls | `call_tool()` and `call_tool_result()` | `callTool()` and `callToolResult()` | Full result mode preserves content, structured data, tool errors, metadata, and response headers when the server supports `mcp-v1`. Legacy methods retain their existing success return shapes. |
 | DEX | `client.dex` | `client.dex` | Quote, prepare, approval, broadcast, status, and high-level swap workflows available in current source. Swaps require caller-side signing. |
 | Wallet | `client.wallet` | `client.wallet` | Key creation occurs locally and does not fund a wallet. Python includes XRPL support; TypeScript includes XRPL and escrow support from current source. These additions are not in the older published npm artifact. |
-| Marketplace | `client.marketplace` | `client.marketplace` | Listings, offers, escrow and ratings supported by the respective service methods. |
+| Marketplace methods (under construction) | `client.marketplace` methods exist | `client.marketplace` methods exist | Marketplace products, listings, offers and escrow are under construction; client methods or published schemas do not establish workflow availability. |
 | Kraken OAuth connect | `client.cex.connect_start(mode=...)` | `client.cex.connectStart(mode)` | `POST /api/v1/exchanges/kraken/connect`. Returns a consent URL/state; the user completes browser consent. Modes are `view` or `execute`. |
 | Kraken connection status | `client.cex.status()` | `client.cex.status()` | `GET /api/v1/exchanges/kraken/status`. Caller polls after consent. |
 | Kraken balances | `client.cex.balances()` | `client.cex.balances()` | `GET /api/v1/exchanges/kraken/balances`. Uses the platform-held OAuth grant. |

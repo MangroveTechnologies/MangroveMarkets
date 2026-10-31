@@ -8,7 +8,7 @@ Python SDK for MangroveMarkets -- DEX aggregation, wallet management, and portfo
 
 | Workflow | Python entry point | TypeScript entry point | Boundary |
 | --- | --- | --- | --- |
-| DEX, wallet, and marketplace tools | `client.dex`, `client.wallet`, `client.marketplace` | `client.dex`, `client.wallet`, `client.marketplace` | Both use the Markets MCP/tool surface. Wallet creation is local and unfunded. |
+| DEX and wallet tools | `client.dex`, `client.wallet` | `client.dex`, `client.wallet` | Marketplace products, listings, offers and escrow are under construction even where client methods or schemas exist. Wallet creation is local and unfunded. |
 | Kraken OAuth account access | `client.cex` | `client.cex` | Hosted Markets REST proxy: connect, status, balances, validate/place spot orders, list open orders, cancel. It does not expose broker positions. |
 | MangroveAI strategies/backtests | Not included | Not included | Use the separate MangroveAI API clients. |
 
@@ -61,8 +61,8 @@ import os
 from mangrove_markets import MangroveMarkets
 
 client = MangroveMarkets(
-    base_url="https://mangrovemarkets-pcqgpciucq-uc.a.run.app",
-    api_key="prod_...",  # or rely on MANGROVE_API_KEY env var
+    base_url=os.environ["MANGROVE_BASE_URL"],  # deployment-owner-confirmed API origin
+    api_key=os.environ["MANGROVE_API_KEY"],
 )
 
 # Chain info
@@ -120,8 +120,8 @@ import os
 from mangrove_markets import MangroveMarkets
 
 client = MangroveMarkets(
-    base_url="https://mangrovemarkets-pcqgpciucq-uc.a.run.app",
-    api_key=os.getenv("MANGROVE_API_KEY"),
+    base_url=os.environ["MANGROVE_BASE_URL"],  # deployment-owner-confirmed API origin
+    api_key=os.environ["MANGROVE_API_KEY"],
 )
 
 # 1. Get a quote
@@ -167,7 +167,7 @@ client.close()
 
 | Parameter | Env var | Default | Description |
 |-----------|---------|---------|-------------|
-| `base_url` | `MANGROVE_BASE_URL` | `https://mangrovemarkets-pcqgpciucq-uc.a.run.app` | MCP server URL (use `http://localhost:8080` for local dev) |
+| `base_url` | `MANGROVE_BASE_URL` | `http://localhost:8080` | Markets API/MCP server URL. For a hosted service, set the origin confirmed for that deployment. |
 | `api_key` | `MANGROVE_API_KEY` | `None` | API key for authenticated endpoints |
 | `timeout` | -- | `30.0` | Request timeout in seconds |
 | `max_retries` | -- | `3` | Max retries on 429/5xx |
