@@ -17,7 +17,7 @@ from mangrove_markets.exceptions import APIError
 
 
 def _client(mock: MockTransport) -> MangroveMarkets:
-    return MangroveMarkets(base_url="http://x", api_key="prod_abc", httpx_client=mock)
+    return MangroveMarkets(base_url="https://markets.test", api_key="prod_abc", httpx_client=mock)
 
 
 def test_connect_start_posts_with_bearer_and_mode():
@@ -32,7 +32,7 @@ def test_connect_start_posts_with_bearer_and_mode():
     assert (parsed.scheme, parsed.netloc) == ("https", "id.kraken.com")
     req = mock.requests[-1]
     assert req.method == "POST"
-    assert req.url.endswith("/api/v1/exchanges/kraken/connect")
+    assert req.url == "https://markets.test/api/v1/exchanges/kraken/connect"
     assert req.headers.get("Authorization") == "Bearer prod_abc"  # Mangrove key, not a venue key
     assert req.json == {"mode": "execute"}
     assert req.json.get("user_id") is None  # never client-supplied

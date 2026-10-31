@@ -31,7 +31,11 @@ The available account surface has no positions method.
 ```typescript
 import { MangroveClient } from '@mangrove-ai/sdk';
 
-const client = new MangroveClient({ url: 'https://mangrovemarkets.com', apiKey: 'prod_...' });
+const apiOrigin = process.env.MANGROVE_BASE_URL;
+const apiKey = process.env.MANGROVE_API_KEY;
+if (!apiOrigin || !apiKey) throw new Error('Set MANGROVE_BASE_URL and MANGROVE_API_KEY');
+
+const client = new MangroveClient({ url: apiOrigin, apiKey });
 const consent = await client.cex.connectStart('view');
 console.log(consent.authorize_url); // show/open this URL for the account owner
 const status = await client.cex.status(); // poll after consent

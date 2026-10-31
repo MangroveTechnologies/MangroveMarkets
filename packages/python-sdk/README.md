@@ -29,9 +29,14 @@ the OAuth grant; this API does not accept a caller-supplied Kraken key or user I
 The available account surface has no positions method.
 
 ```python
+import os
 from mangrove_markets import MangroveMarkets
 
-with MangroveMarkets(api_key="prod_...") as client:
+# Set both variables to your configured Markets API origin and Mangrove API key.
+with MangroveMarkets(
+    base_url=os.environ["MANGROVE_BASE_URL"],
+    api_key=os.environ["MANGROVE_API_KEY"],
+) as client:
     consent = client.cex.connect_start(mode="view")
     print(consent["authorize_url"])  # show/open this URL for the account owner
     status = client.cex.status()     # poll until connected after consent
