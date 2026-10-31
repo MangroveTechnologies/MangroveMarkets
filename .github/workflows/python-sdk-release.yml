@@ -97,8 +97,8 @@ jobs:
           [ "$BUILT" = "$EXPECTED" ] || exit 1
           [ "$SDIST_BUILT" = "$EXPECTED" ] || exit 1
 
-          SOURCE_VERSION=$(git show HEAD:pyproject.toml | grep '^version = ' | head -1 | sed 's/version = "\(.*\)"/\1/')
-          MODULE_VERSION=$(git show HEAD:src/mangrove_markets/_version.py | sed -n 's/^__version__ = "\(.*\)"/\1/p')
+          SOURCE_VERSION=$(git show HEAD:packages/python-sdk/pyproject.toml | grep '^version = ' | head -1 | sed 's/version = "\(.*\)"/\1/')
+          MODULE_VERSION=$(git show HEAD:packages/python-sdk/src/mangrove_markets/_version.py | sed -n 's/^__version__ = "\(.*\)"/\1/p')
           echo "Tagged source versions: pyproject=${SOURCE_VERSION}, module=${MODULE_VERSION}"
           [ "$SOURCE_VERSION" = "$EXPECTED" ] || exit 1
           [ "$MODULE_VERSION" = "$EXPECTED" ] || exit 1
