@@ -2,7 +2,7 @@
 
 All notable changes to the `mangrove-markets` Python SDK are documented here.
 
-## Unreleased
+## 1.1.1 - Unreleased
 
 - Added `client.call_tool_result(name, arguments)` for complete MCP results over
   the opt-in REST format, including content, errors, metadata and HTTP headers.
@@ -15,6 +15,9 @@ All notable changes to the `mangrove-markets` Python SDK are documented here.
 - Corrected release instructions: the actual distribution is `mangrovemarkets`;
   `mangrove_markets` is the Python import. The historical 1.0.0 rename entry below
   does not describe the published package name verified on 2026-09-26.
+- Kraken OAuth connect and order requests are not automatically retried after
+  ambiguous failures. Inspect connection/order state before deciding whether to
+  submit another request.
 
 ### Added
 

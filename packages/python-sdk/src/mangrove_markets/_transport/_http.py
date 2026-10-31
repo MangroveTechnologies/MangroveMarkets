@@ -52,18 +52,20 @@ class HttpTransport:
         params: dict[str, Any] | None = None,
         json: Any | None = None,
         timeout: float | None = None,
+        retryable: bool = True,
     ) -> TransportResponse:
         last_error: Exception | None = None
-        for attempt in range(self._retry.max_retries + 1):
+        max_attempts = self._retry.max_retries + 1 if retryable else 1
+        for attempt in range(max_attempts):
             try:
-                response = self._client.request(
-                    method,
-                    url,
-                    headers=headers,
-                    params=params,
-                    json=json,
-                    timeout=timeout,
-                )
+                request_kwargs: dict[str, Any] = {
+                    "headers": headers,
+                    "params": params,
+                    "json": json,
+                }
+                if timeout is not None:
+                    request_kwargs["timeout"] = timeout
+                response = self._client.request(method, url, **request_kwargs)
             except httpx.ConnectError as e:
                 raise ConnectionError(f"Connection failed: {e}") from e
             except httpx.TimeoutException as e:
@@ -92,7 +94,7 @@ class HttpTransport:
 
             # Full-result calls may perform writes. Never replay them merely
             # because an intermediary reports an uncertain 502/503/504 outcome.
-            if not full_result and self._retry.should_retry(response.status_code, attempt):
+            if retryable and not full_result and self._retry.should_retry(response.status_code, attempt):
                 last_error = self._build_error(response)
                 retry_after = self._parse_retry_after(response)
                 self._retry.wait(attempt, retry_after)

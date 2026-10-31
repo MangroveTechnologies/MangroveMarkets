@@ -23,10 +23,12 @@ permissions:
 
 jobs:
   release:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
           fetch-tags: true
 
@@ -62,21 +64,23 @@ jobs:
           echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag=python-sdk-v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Stamp version into build files
+      - name: Validate prepared release source
+        id: source
         env:
           NEW_VERSION: ${{ steps.version.outputs.version }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
-          sed -i "s/^version = .*/version = \"${NEW_VERSION}\"/" pyproject.toml
-          sed -i "s/^__version__ = .*/__version__ = \"${NEW_VERSION}\"/" src/mangrove_markets/_version.py
-
-      - name: Tag release
-        env:
-          VERSION_TAG: ${{ steps.version.outputs.tag }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$VERSION_TAG" -m "Release $VERSION_TAG"
-          git push origin "$VERSION_TAG"
+          SOURCE_VERSION=$(grep '^version = ' pyproject.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+          MODULE_VERSION=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' src/mangrove_markets/_version.py)
+          echo "Expected release: ${NEW_VERSION}; source: ${SOURCE_VERSION}; module: ${MODULE_VERSION}"
+          [ "$SOURCE_VERSION" = "$NEW_VERSION" ] || exit 1
+          [ "$MODULE_VERSION" = "$NEW_VERSION" ] || exit 1
+          [ "$(git rev-parse HEAD)" = "$GITHUB_SHA" ] || exit 1
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Release source tree must be clean before building" >&2
+            exit 1
+          fi
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Build
         run: |
@@ -88,8 +92,45 @@ jobs:
           EXPECTED: ${{ steps.version.outputs.version }}
         run: |
           BUILT=$(unzip -p dist/*.whl '*/METADATA' | grep '^Version:' | cut -d' ' -f2)
-          echo "Expected: ${EXPECTED}, Built: ${BUILT}"
+          SDIST_BUILT=$(tar -xOf dist/*.tar.gz --wildcards '*/PKG-INFO' | grep '^Version:' | cut -d' ' -f2)
+          echo "Expected: ${EXPECTED}, wheel: ${BUILT}, sdist: ${SDIST_BUILT}"
           [ "$BUILT" = "$EXPECTED" ] || exit 1
+          [ "$SDIST_BUILT" = "$EXPECTED" ] || exit 1
+
+          SOURCE_VERSION=$(git show HEAD:packages/python-sdk/pyproject.toml | grep '^version = ' | head -1 | sed 's/version = "\(.*\)"/\1/')
+          MODULE_VERSION=$(git show HEAD:packages/python-sdk/src/mangrove_markets/_version.py | sed -n 's/^__version__ = "\(.*\)"/\1/p')
+          echo "Tagged source versions: pyproject=${SOURCE_VERSION}, module=${MODULE_VERSION}"
+          [ "$SOURCE_VERSION" = "$EXPECTED" ] || exit 1
+          [ "$MODULE_VERSION" = "$EXPECTED" ] || exit 1
+
+          INSTALL_DIR=$(mktemp -d)
+          python -m pip install --no-deps --target "$INSTALL_DIR" dist/*.whl
+          INSTALLED=$(PYTHONPATH="$INSTALL_DIR" python -c 'import mangrove_markets; print(mangrove_markets.__version__)')
+          echo "Installed module version: ${INSTALLED}"
+          [ "$INSTALLED" = "$EXPECTED" ] || exit 1
+
+      - name: Tag release after artifact validation
+        env:
+          VERSION_TAG: ${{ steps.version.outputs.tag }}
+          SOURCE_COMMIT: ${{ steps.source.outputs.commit }}
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$SOURCE_COMMIT" ]; then
+            echo "Release source changed after artifact build" >&2
+            exit 1
+          fi
+          if ! git diff --quiet || ! git diff --cached --quiet; then
+            echo "Release source tree changed after artifact build" >&2
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/${VERSION_TAG}" >/dev/null; then
+            echo "Tag ${VERSION_TAG} already exists" >&2
+            exit 1
+          fi
+          git tag -a "$VERSION_TAG" -m "Release $VERSION_TAG"
+          echo "Tagging source commit $(git rev-parse HEAD)"
+          # The release version is already committed by a reviewed source PR.
+          # Tag the exact clean commit from which these artifacts were built.
+          git push origin "$VERSION_TAG"
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

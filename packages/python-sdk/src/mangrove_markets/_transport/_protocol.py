@@ -34,6 +34,7 @@ class Transport(Protocol):
         params: dict[str, Any] | None = None,
         json: Any | None = None,
         timeout: float | None = None,
+        retryable: bool = True,
     ) -> TransportResponse: ...
 
     def close(self) -> None: ...

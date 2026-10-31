@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import httpx
+
 from mangrove_markets._transport._auth import ApiKeyAuth, NoAuth
+from mangrove_markets._transport._http import HttpTransport
 from mangrove_markets._transport._mock import MockTransport
 from mangrove_markets._transport._retry import RetryConfig
 from mangrove_markets._transport._service import ServiceTransport
@@ -66,6 +69,46 @@ class TestMockTransport:
         mock = MockTransport()
         resp = mock.request("GET", "http://localhost/unknown")
         assert resp.status_code == 404
+
+
+class TestHttpTransportTimeout:
+    def test_default_timeout_uses_configured_httpx_client_timeout(self) -> None:
+        received_timeouts: list[dict[str, float | None]] = []
+
+        def handle(request: httpx.Request) -> httpx.Response:
+            received_timeouts.append(request.extensions["timeout"])
+            return httpx.Response(200, json={"status": "ok"})
+
+        client = httpx.Client(
+            timeout=4.25,
+            transport=httpx.MockTransport(handle),
+        )
+        transport = HttpTransport(httpx_client=client)
+
+        transport.request("GET", "https://example.test/health")
+
+        assert received_timeouts == [
+            {"connect": 4.25, "read": 4.25, "write": 4.25, "pool": 4.25}
+        ]
+
+    def test_explicit_timeout_overrides_configured_httpx_client_timeout(self) -> None:
+        received_timeouts: list[dict[str, float | None]] = []
+
+        def handle(request: httpx.Request) -> httpx.Response:
+            received_timeouts.append(request.extensions["timeout"])
+            return httpx.Response(200, json={"status": "ok"})
+
+        client = httpx.Client(
+            timeout=4.25,
+            transport=httpx.MockTransport(handle),
+        )
+        transport = HttpTransport(httpx_client=client)
+
+        transport.request("GET", "https://example.test/health", timeout=1.5)
+
+        assert received_timeouts == [
+            {"connect": 1.5, "read": 1.5, "write": 1.5, "pool": 1.5}
+        ]
 
 
 class TestServiceTransport:
