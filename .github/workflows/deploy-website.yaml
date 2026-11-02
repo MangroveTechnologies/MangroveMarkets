@@ -8,8 +8,18 @@ on:
       - 'firebase.json'
   workflow_dispatch:
 
+# Public resource identifiers, not credentials. The existing WIF member must
+# independently authorize this repository's exact main-branch OIDC subject.
+env:
+  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/483282138591/locations/global/workloadIdentityPools/github-actions/providers/github
+  GCP_SERVICE_ACCOUNT_EMAIL: github-actions-deployer@mangrove-markets.iam.gserviceaccount.com
+
 jobs:
   deploy:
+    if: >-
+      github.repository == 'MangroveTechnologies/MangroveMarkets' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -39,8 +49,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT_EMAIL }}
 
       - name: Deploy to Firebase Hosting
         run: npx firebase-tools deploy --only hosting --project mangrove-markets
