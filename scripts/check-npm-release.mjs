@@ -2,7 +2,7 @@ import { appendFileSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export const PACKAGE_NAME = '@mangrove-ai/sdk';
+export const PACKAGE_NAME = '@mangrove-ai/markets';
 
 /** Only a genuine 404 means an unpublished version. Registry/auth outages stop release. */
 export async function versionExists(metadata, fetchVersion = globalThis.fetch) {
@@ -28,7 +28,7 @@ async function main() {
   if (process.env.GITHUB_OUTPUT) {
     appendFileSync(process.env.GITHUB_OUTPUT, `version=${metadata.version}\nexists=${exists}\n`);
   }
-  console.log(exists ? 'Markets version already published; skip release.' : 'Markets version absent; publication prerequisites still required.');
+  console.log(exists ? 'Markets version already published; verify exact artifact before completing release.' : 'Markets version absent; publication prerequisites still required.');
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

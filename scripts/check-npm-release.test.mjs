@@ -11,7 +11,7 @@ test('200 requires the exact published package and version', async () => {
     request = { url, options };
     return { status: 200, json: async () => metadata };
   }), true);
-  assert.equal(request.url, 'https://registry.npmjs.org/%40mangrove-ai%2Fsdk/0.4.0');
+  assert.equal(request.url, 'https://registry.npmjs.org/%40mangrove-ai%2Fmarkets/0.4.0');
   assert.equal(request.options.redirect, 'error');
   assert.ok(request.options.signal instanceof AbortSignal);
 });
@@ -34,6 +34,7 @@ test('network errors and redirects stop publication', async () => {
 });
 
 for (const body of [null, [], {}, { name: '@mangrove-ai/client', version: '0.4.0' },
+  { name: '@mangrove-ai/sdk', version: '1.0.0' },
   { name: PACKAGE_NAME, version: '0.3.0' }]) {
   test(`200 with invalid identity ${JSON.stringify(body)} stops publication`, async () => {
     await assert.rejects(versionExists(metadata, reply(200, body)));
@@ -50,6 +51,7 @@ test('a foreign package or output-injection version is rejected before any reque
   let requests = 0;
   const fetchVersion = async () => { requests++; return { status: 404 }; };
   await assert.rejects(versionExists({ name: '@mangrove-ai/client', version: '0.4.0' }, fetchVersion));
+  await assert.rejects(versionExists({ name: '@mangrove-ai/sdk', version: '1.0.0' }, fetchVersion));
   await assert.rejects(versionExists({ name: PACKAGE_NAME, version: '0.4.0\nexists=false' }, fetchVersion));
   assert.equal(requests, 0);
 });

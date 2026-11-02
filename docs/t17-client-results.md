@@ -88,7 +88,13 @@ retired and hidden; its compatibility error remains unchanged. Generic unsupport
 balance/transaction tools are not silently aliased to chain-specific operations.
 Local BYOK `KrakenClient` and platform OAuth `client.cex` remain separate contracts.
 
-## Package and rollout order
+## Current npm product identity
+
+Markets moves to `@mangrove-ai/markets` 0.4.0. Historical `@mangrove-ai/sdk`
+0.x packages are Markets; the new 1.0.0 API under that name is MangroveAI.
+See [the migration guide](npm-product-migration.md). Python identities do not change.
+
+## Historical package and rollout order (September 26)
 
 - Python distribution: `mangrovemarkets`; import: `mangrove_markets`.
 - TypeScript distribution: `@mangrove-ai/sdk`.

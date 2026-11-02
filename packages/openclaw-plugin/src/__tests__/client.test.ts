@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { getMangroveClient, resetClient } from '../lib/client';
 
-vi.mock('@mangrove-ai/sdk', () => ({
+vi.mock('@mangrove-ai/markets', () => ({
   MangroveClient: class MockMangroveClient {
     constructor(public config: any) {}
     async connect() {}

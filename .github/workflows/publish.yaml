@@ -9,9 +9,15 @@ on:
 
 jobs:
   publish:
+    # Only the native main push publishes; historical GitHub release events are inert.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    concurrency:
+      group: markets-typescript-release
+      cancel-in-progress: false
     permissions:
-      contents: read
+      contents: write
+      actions: read
       id-token: write
     steps:
       - uses: actions/checkout@v4
@@ -29,12 +35,18 @@ jobs:
         id: check
         run: node scripts/check-npm-release.mjs
 
-      - if: steps.check.outputs.exists == 'false'
-        run: pnpm --filter @mangrove-ai/sdk lint
-      - if: steps.check.outputs.exists == 'false'
-        run: pnpm --filter @mangrove-ai/sdk test -- --run
-      - if: steps.check.outputs.exists == 'false'
-        run: pnpm --filter @mangrove-ai/sdk build
+      - name: Verify native main release source or immutable published-source recovery
+        run: node scripts/complete-npm-release.mjs preflight "${{ steps.check.outputs.exists }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - run: pnpm --filter @mangrove-ai/markets lint
+      - run: pnpm --filter @mangrove-ai/markets test -- --run
+      - run: pnpm --filter @mangrove-ai/markets build
+      - name: Pack the exact reviewed build once
+        run: npm pack --ignore-scripts --json --pack-destination "$RUNNER_TEMP" > "$RUNNER_TEMP/markets-pack.json"
+        working-directory: packages/sdk
+
       - name: Verify npm publishing authentication
         if: steps.check.outputs.exists == 'false'
         run: |
@@ -50,9 +62,18 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Recheck native main immediately before publication
+        if: steps.check.outputs.exists == 'false'
+        run: node scripts/complete-npm-release.mjs preflight
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - if: steps.check.outputs.exists == 'false'
-        run: cd packages/sdk && npm publish --provenance --access public
+        run: npm publish --ignore-scripts --provenance --access public
+        working-directory: packages/sdk
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - if: steps.check.outputs.exists == 'true'
-        run: echo "Version ${{ steps.check.outputs.version }} already published, skipping."
+      - name: Verify registry archive and complete the exact tagged release
+        run: node scripts/complete-npm-release.mjs complete "$RUNNER_TEMP/markets-pack.json"
+        env:
+          GH_TOKEN: ${{ github.token }}

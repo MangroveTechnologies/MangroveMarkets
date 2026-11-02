@@ -1,4 +1,4 @@
-import { EscrowMonitor } from '@mangrove-ai/sdk';
+import { EscrowMonitor } from '@mangrove-ai/markets';
 
 /**
  * Create escrow tool handlers delegating to the MangroveClient's marketplace service.

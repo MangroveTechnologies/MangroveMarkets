@@ -10,13 +10,20 @@ escrow are under construction.
 
 | Product | Python | TypeScript | Use it for |
 | --- | --- | --- | --- |
-| **MangroveMarkets** (this repo) | [`mangrovemarkets` 1.1.1](https://pypi.org/project/mangrovemarkets/1.1.1/), import `mangrove_markets` | [`@mangrove-ai/sdk` 0.3.0](https://www.npmjs.com/package/@mangrove-ai/sdk/v/0.3.0) is published; 0.4.0 is source-only | Markets DEX, wallet and venue account workflows; check version-specific capabilities below. |
-| **MangroveAI** ([separate SDK repo](https://github.com/MangroveTechnologies/MangroveAI-SDK)) | [`mangroveai` 2.1.0](https://pypi.org/project/mangroveai/2.1.0/), import `mangrove_ai` | `@mangrove-ai/client` 0.1.0 is implemented in [source](https://github.com/MangroveTechnologies/MangroveAI-SDK/tree/main/packages/typescript), not published on npm | AI strategy, backtesting and execution APIs. |
+| **MangroveMarkets** (this repo) | [`mangrovemarkets` 1.1.1](https://pypi.org/project/mangrovemarkets/1.1.1/), import `mangrove_markets` | [`@mangrove-ai/markets` 0.4.0](https://www.npmjs.com/package/@mangrove-ai/markets/v/0.4.0) (verify the registry release) | Markets DEX, wallet and venue account workflows. |
+| **MangroveAI** ([separate SDK repo](https://github.com/MangroveTechnologies/MangroveAI-SDK)) | [`mangroveai` 2.1.0](https://pypi.org/project/mangroveai/2.1.0/), import `mangrove_ai` | [`@mangrove-ai/sdk` 1.0.0](https://www.npmjs.com/package/@mangrove-ai/sdk/v/1.0.0) (verify the registry release) | AI strategy, backtesting and execution APIs. |
 
-The `@mangrove-ai` npm scope contains distinct products. The existing
-`@mangrove-ai/sdk` name belongs to **MangroveMarkets** and remains compatible.
-Registry checkpoint: November 1, 2026 (America/Chicago). See the [capability and release
-matrix](docs/markets-sdk-capability-matrix.md) for source versus published coverage.
+**Breaking product boundary:** published `@mangrove-ai/sdk` versions 0.1.2,
+0.2.0 and 0.3.0 are the legacy **Markets** client. Version 1.0.0 of that name is
+reserved for **MangroveAI** and is not a compatible Markets upgrade. Markets
+callers move to `@mangrove-ai/markets` 0.4.0; the unpublished AI
+`@mangrove-ai/client` implementation moves to `@mangrove-ai/sdk` 1.0.0.
+See the [npm product migration and release order](docs/npm-product-migration.md).
+
+Registry checkpoint: November 1, 2026 (America/Chicago): legacy `@mangrove-ai/sdk`
+0.3.0 is published; the new Markets and AI identities above are source candidates.
+The [capability matrix](docs/markets-sdk-capability-matrix.md) separates this from
+publication and live acceptance.
 
 ## What Is This?
 
@@ -25,7 +32,7 @@ This repo contains the **client-side packages** for MangroveMarkets:
 | Package | Path | Description |
 |---------|------|-------------|
 | **Python SDK** | `packages/python-sdk` | `mangrovemarkets` -- published Python Markets client |
-| **TypeScript SDK** | `packages/sdk` | `@mangrove-ai/sdk` -- typed client for MCP server + REST API |
+| **TypeScript SDK** | `packages/sdk` | `@mangrove-ai/markets` -- typed client for MCP server + REST API |
 | **Claude Plugin** | `packages/claude-plugin` | `@mangrove-ai/claude-plugin` -- private source package, unpublished |
 | **OpenClaw Plugin** | `packages/openclaw-plugin` | `@mangrove-ai/openclaw-plugin` -- private source package, unpublished |
 | **Website** | `packages/website` | Next.js marketing site for mangrovemarkets.com |
@@ -74,17 +81,18 @@ See the [Python Markets guide](packages/python-sdk/README.md).
 
 ### TypeScript Markets SDK
 
-At the November 1 registry checkpoint, npm published **0.3.0** and source
-**0.4.0 was unpublished**. Verify the installed version before using 0.4.0
-examples; its Kraken OAuth, full-result and local-wallet additions are not in
-0.3.0. The older 0.3.0 wallet method uses the hosted-wallet path.
+The new package is `@mangrove-ai/markets` **0.4.0**. At the November 1
+checkpoint it is a source candidate, not a verified npm release. After registry
+publication is verified, install it with the command below. Until then use the
+reviewed local tarball described in the [TypeScript guide](packages/sdk/README.md).
+Do not install unqualified `@mangrove-ai/sdk` for Markets; its 1.x API is MangroveAI.
 
 ```bash
-pnpm add @mangrove-ai/sdk
+pnpm add @mangrove-ai/markets
 ```
 
 ```typescript
-import { MangroveClient as MangroveMarketsClient } from "@mangrove-ai/sdk";
+import { MangroveClient as MangroveMarketsClient } from "@mangrove-ai/markets";
 
 // Replace with the API origin confirmed by your Markets deployment owner.
 const marketsApiOrigin = "https://markets-api.example";
@@ -227,7 +235,7 @@ This repo uses Claude Code's orchestrator pattern with domain-specific agent def
 ```
 packages/
   python-sdk/                    # mangrovemarkets (import mangrove_markets)
-  sdk/                           # @mangrove-ai/sdk -- Markets TypeScript client
+  sdk/                           # @mangrove-ai/markets -- Markets TypeScript client
     src/
       index.ts                   # Main exports
       client/                    # MangroveClient (HTTP wrapper)
@@ -268,7 +276,7 @@ pnpm build
 pnpm test
 
 # Run SDK tests only
-pnpm --filter @mangrove-ai/sdk test
+pnpm --filter @mangrove-ai/markets test
 
 # Start the website locally
 pnpm --filter website dev

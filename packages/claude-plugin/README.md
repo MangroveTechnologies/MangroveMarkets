@@ -30,7 +30,7 @@ Environment variables:
 
 ## Architecture
 
-This plugin is a thin wrapper around `@mangrove-ai/sdk`. It translates Claude Code skill/command invocations into SDK client calls. No business logic lives here -- all transport, signing, and API orchestration is handled by the SDK.
+This plugin is a thin wrapper around `@mangrove-ai/markets`. It translates Claude Code skill/command invocations into SDK client calls. No business logic lives here -- all transport, signing, and API orchestration is handled by the SDK.
 
 The swap skill uses `MangroveClient.dex.*`. Wallet creation actions return `LOCAL_CUSTODY_REQUIRED` without generating keys or making a server request. The plugin has no secure local key-storage integration. Legacy wallet info/balance and other existing raw actions use `transport.callTool()`. Generic wallet balance remains unsupported; use the XRPL-specific action where appropriate. New wallets are unfunded. Never send returned wallet secrets into chat or telemetry.
 
