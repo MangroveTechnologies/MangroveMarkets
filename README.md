@@ -11,19 +11,21 @@ escrow are under construction.
 | Product | Python | TypeScript | Use it for |
 | --- | --- | --- | --- |
 | **MangroveMarkets** (this repo) | [`mangrovemarkets` 1.1.1](https://pypi.org/project/mangrovemarkets/1.1.1/), import `mangrove_markets` | [`@mangrove-ai/markets` 0.4.0](https://www.npmjs.com/package/@mangrove-ai/markets/v/0.4.0) (verify the registry release) | Markets DEX, wallet and venue account workflows. |
-| **MangroveAI** ([separate SDK repo](https://github.com/MangroveTechnologies/MangroveAI-SDK)) | [`mangroveai` 2.1.0](https://pypi.org/project/mangroveai/2.1.0/), import `mangrove_ai` | [`@mangrove-ai/sdk` 1.0.0](https://www.npmjs.com/package/@mangrove-ai/sdk/v/1.0.0) (verify the registry release) | AI strategy, backtesting and execution APIs. |
+| **MangroveAI** ([separate SDK repo](https://github.com/MangroveTechnologies/MangroveAI-SDK)) | [`mangroveai` 2.2.0](https://pypi.org/project/mangroveai/2.2.0/), import `mangrove_ai` | [`@mangrove-ai/sdk` 1.1.0](https://www.npmjs.com/package/@mangrove-ai/sdk/v/1.1.0) (verify the registry release) | AI strategy, backtesting and execution APIs. |
 
 **Breaking product boundary:** published `@mangrove-ai/sdk` versions 0.1.2,
-0.2.0 and 0.3.0 are the legacy **Markets** client. Version 1.0.0 of that name is
-reserved for **MangroveAI** and is not a compatible Markets upgrade. Markets
-callers move to `@mangrove-ai/markets` 0.4.0; the unpublished AI
-`@mangrove-ai/client` implementation moves to `@mangrove-ai/sdk` 1.0.0.
+0.2.0 and 0.3.0 are the legacy **Markets** client. Version 1.x of that name is
+published as **MangroveAI** and is not a compatible Markets upgrade. Markets
+callers use `@mangrove-ai/markets` 0.4.0; `@mangrove-ai/client` was an
+unpublished AI candidate and is not a published alias.
 See the [npm product migration and release order](docs/npm-product-migration.md).
 
-Registry checkpoint: November 1, 2026 (America/Chicago): legacy `@mangrove-ai/sdk`
-0.3.0 is published; the new Markets and AI identities above are source candidates.
-The [capability matrix](docs/markets-sdk-capability-matrix.md) separates this from
-publication and live acceptance.
+Registry checkpoint: November 2, 2026: Markets Python 1.1.1 and npm 0.4.0,
+plus AI Python 2.2.0 and npm 1.1.0, are published. This branch prepares Markets
+Python 1.1.2 and npm 0.4.1 with the complete MIT notice in both distributions;
+those patch versions are release candidates until registry verification.
+The [capability matrix](docs/markets-sdk-capability-matrix.md) separates
+publication from live acceptance.
 
 ## What Is This?
 
@@ -81,10 +83,8 @@ See the [Python Markets guide](packages/python-sdk/README.md).
 
 ### TypeScript Markets SDK
 
-The new package is `@mangrove-ai/markets` **0.4.0**. At the November 1
-checkpoint it is a source candidate, not a verified npm release. After registry
-publication is verified, install it with the command below. Until then use the
-reviewed local tarball described in the [TypeScript guide](packages/sdk/README.md).
+The published package is `@mangrove-ai/markets` **0.4.0**. The prepared 0.4.1
+patch adds license payload and release checks without changing the client API.
 Do not install unqualified `@mangrove-ai/sdk` for Markets; its 1.x API is MangroveAI.
 
 ```bash

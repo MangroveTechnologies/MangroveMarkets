@@ -5,7 +5,7 @@
 Python SDK for MangroveMarkets -- DEX aggregation, wallet management, and portfolio analytics for agents.
 
 This is the **Markets** client. For MangroveAI strategy/backtesting APIs, use
-[`mangroveai` 2.1.0](https://pypi.org/project/mangroveai/2.1.0/) from the
+[`mangroveai` 2.2.0](https://pypi.org/project/mangroveai/2.2.0/) from the
 [separate MangroveAI SDK repo](https://github.com/MangroveTechnologies/MangroveAI-SDK).
 Markets TypeScript moves to `@mangrove-ai/markets` 0.4.0. The historical
 `@mangrove-ai/sdk` 0.x artifacts are Markets, while the new 1.0.0 SDK under that
@@ -54,7 +54,8 @@ with MangroveMarkets(
 ## Installation
 
 Published on PyPI: **1.1.1**, including the full tool-response API and Kraken
-OAuth client described here. Registry checkpoint: November 1, 2026 (America/Chicago).
+OAuth client described here. Registry checkpoint: November 2, 2026. The prepared
+1.1.2 patch adds the complete MIT license payload; it is not published yet.
 
 ```bash
 pip install mangrovemarkets==1.1.1

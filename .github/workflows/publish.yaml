@@ -32,6 +32,9 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: pnpm install --frozen-lockfile
 
+      - name: Exercise release completion offline before registry writes
+        run: node --test scripts/check-npm-release.test.mjs scripts/complete-npm-release.test.mjs scripts/complete-npm-cli.test.mjs
+
       # Anonymous registry metadata: only 404 proves this exact version is absent.
       - name: Check exact Markets version on npm
         id: check
@@ -48,6 +51,9 @@ jobs:
       - name: Pack the exact reviewed build once
         run: npm pack --ignore-scripts --json --pack-destination "$RUNNER_TEMP" > "$RUNNER_TEMP/markets-pack.json"
         working-directory: packages/sdk
+
+      - name: Verify the complete license in the exact archive
+        run: python3 scripts/verify_sdk_licenses.py "$RUNNER_TEMP"/mangrove-ai-markets-*.tgz
 
       - name: Verify npm publishing authentication
         if: steps.check.outputs.exists == 'false'
