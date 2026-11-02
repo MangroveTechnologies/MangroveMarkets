@@ -79,3 +79,21 @@ jobs:
         run: node scripts/complete-npm-release.mjs complete "$RUNNER_TEMP/markets-pack.json"
         env:
           GH_TOKEN: ${{ github.token }}
+
+  diagnose-auth:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/codex/markets-npm-auth-diagnostics'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+      - name: Read-only effective npm credential and scope diagnostics
+        run: node scripts/diagnose-npm-auth.mjs
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
