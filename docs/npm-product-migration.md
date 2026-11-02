@@ -52,8 +52,9 @@ construction. See the [capability matrix](markets-sdk-capability-matrix.md).
    `main` that changes `packages/sdk/package.json`; this rename changes that file.
    Unlike the earlier docs-only scope, merging this PR will automatically attempt
    `@mangrove-ai/markets` 0.4.0 publication. Its release-published trigger remains declared for compatibility, but that
-   event is inert: only the native `main` push can publish or finalize. No
-   manual dispatch or feature-branch publication is added.
+   event is inert. The automatic native `main` push remains the normal release
+   path; a manual current-main recovery path is also available. No feature-branch
+   publication or arbitrary package/version input is accepted.
 3. Bind the successful run to the actual merged `main` SHA, not just the PR head.
    The workflow requires exact Markets metadata, accepts only HTTP 200 with the
    expected name/version or a genuine 404, and checks npm authentication before
@@ -84,9 +85,20 @@ npm view @mangrove-ai/markets@0.4.0 name version dist.integrity dist.tarball --j
 ```
 
 A failed publish is not publication. After correcting an actual failure, retry
-the failed jobs of that original official main-push run. An absent npm version
-requires its source to remain current main. If npm publication already succeeded,
-the workflow may finish missing tag/release objects after main advances only when
+the failed jobs of the original official main-push or current-main manual run while its source remains
+current main. If npm upload never happened and main has since advanced, run the
+reviewed publisher from **current main** instead:
+
+```bash
+gh workflow run publish.yaml --repo MangroveTechnologies/MangroveMarkets --ref main
+```
+
+This native recovery operation reads the exact package/version from committed
+main, verifies the actual dispatch run and current-main source, and rebuilds and
+qualifies that source before any upload. It takes no package/version inputs and
+cannot publish from a feature ref. An absent npm version always requires its
+publication source to remain current main. If npm publication already succeeded,
+the original native main-source workflow may finish missing tag/release objects after main advances only when
 the original native run is intact, its source is an ancestor of current main, and
 the registry `gitHead`, repository, archive bytes and integrity match that exact
 source build. Conflicting existing tags/releases stop without overwrite. An

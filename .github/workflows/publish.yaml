@@ -1,5 +1,6 @@
 name: Publish SDK
 on:
+  workflow_dispatch:
   release:
     types: [published]
   push:
@@ -9,8 +10,9 @@ on:
 
 jobs:
   publish:
-    # Only the native main push publishes; historical GitHub release events are inert.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Publish from native main push, or recover from reviewed current main manually.
+    # Historical GitHub release events remain inert.
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     concurrency:
       group: markets-typescript-release
@@ -69,7 +71,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
       - if: steps.check.outputs.exists == 'false'
-        run: npm publish --ignore-scripts --provenance --access public
+        run: npm publish --ignore-scripts --provenance --access public --registry=https://registry.npmjs.org --tag=latest
         working-directory: packages/sdk
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

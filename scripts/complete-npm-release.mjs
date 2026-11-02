@@ -21,13 +21,13 @@ export const integrity = (bytes) => `sha512-${createHash('sha512').update(bytes)
 export function validateContext(env, head, gitDirectory, clean, run, main, metadata, resume = false, comparison = null) {
   if (metadata?.name !== PACKAGE_NAME || !releaseVersion(metadata.version) ||
       metadata.repository?.url !== REPOSITORY_URL || metadata.repository?.directory !== 'packages/sdk' ||
-      env.GITHUB_REPOSITORY !== REPOSITORY || env.GITHUB_EVENT_NAME !== 'push' ||
+      env.GITHUB_REPOSITORY !== REPOSITORY || !['push', 'workflow_dispatch'].includes(env.GITHUB_EVENT_NAME) ||
       env.GITHUB_REF !== 'refs/heads/main' ||
       env.GITHUB_WORKFLOW_REF !== `${REPOSITORY}/${WORKFLOW}@refs/heads/main` ||
       !/^[a-f0-9]{40}$/.test(env.GITHUB_SHA ?? '') || head !== env.GITHUB_SHA || !gitDirectory || !clean ||
       !/^\d+$/.test(env.GITHUB_RUN_ID ?? '') || !/^\d+$/.test(env.GITHUB_RUN_ATTEMPT ?? '') ||
       String(run?.id) !== env.GITHUB_RUN_ID || String(run.run_attempt) !== env.GITHUB_RUN_ATTEMPT ||
-      run.repository?.full_name !== REPOSITORY || run.event !== 'push' || run.path !== WORKFLOW ||
+      run.repository?.full_name !== REPOSITORY || run.event !== env.GITHUB_EVENT_NAME || run.path !== WORKFLOW ||
       run.head_branch !== 'main' || run.head_sha !== head || run.status !== 'in_progress' ||
       !/^[a-f0-9]{40}$/.test(main?.sha ?? '') ||
       (main.sha !== head && (!resume || comparison?.status !== 'ahead' ||

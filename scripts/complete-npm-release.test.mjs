@@ -206,3 +206,25 @@ test('later reviewed Markets versions do not need a hardcoded workflow edit', ()
   }
   for (const version of ['0.3.0', '0.04.0', '0.4.0\n', '0.4.0-beta', 'foreign']) assert.equal(releaseVersion(version), false);
 });
+
+test('current-main manual recovery uses committed identity and actual workflow_dispatch run', () => {
+  const manualEnv = { ...env, GITHUB_EVENT_NAME: 'workflow_dispatch' };
+  const manualRun = { ...run, event: 'workflow_dispatch' };
+  assert.deepEqual(validateContext(manualEnv, source, true, true, manualRun, { sha: source }, metadata), context);
+  assert.throws(() => validateContext(manualEnv, source, true, true, run, { sha: source }, metadata));
+  assert.throws(() => validateContext(env, source, true, true, manualRun, { sha: source }, metadata));
+});
+test('manual feature refs and spoofed source fail; advanced main permits only verified-artifact recovery', () => {
+  const manualEnv = { ...env, GITHUB_EVENT_NAME: 'workflow_dispatch' };
+  const manualRun = { ...run, event: 'workflow_dispatch' };
+  for (const patch of [{ GITHUB_REF: 'refs/heads/feature' },
+    { GITHUB_WORKFLOW_REF: `${REPOSITORY}/.github/workflows/publish.yaml@refs/heads/feature` },
+    { GITHUB_SHA: 'c'.repeat(40) }]) {
+    assert.throws(() => validateContext({ ...manualEnv, ...patch }, source, true, true, manualRun, { sha: source }, metadata));
+  }
+  const proof = { status: 'ahead', base_commit: { sha: source }, merge_base_commit: { sha: source } };
+  assert.throws(() => validateContext(manualEnv, source, true, true, manualRun, { sha: 'c'.repeat(40) }, metadata, false, proof));
+  assert.deepEqual(validateContext(manualEnv, source, true, true, manualRun, { sha: 'c'.repeat(40) }, metadata, true, proof), context);
+  assert.throws(() => validateContext(manualEnv, source, true, true, manualRun, { sha: 'c'.repeat(40) }, metadata, true,
+    { ...proof, merge_base_commit: { sha: 'd'.repeat(40) } }));
+});
