@@ -4,10 +4,14 @@ on:
   pull_request:
     paths:
       - "packages/python-sdk/**"
+      - "scripts/verify_sdk_licenses.py"
+      - "LICENSE"
   push:
     branches: [main]
     paths:
       - "packages/python-sdk/**"
+      - "scripts/verify_sdk_licenses.py"
+      - "LICENSE"
 
 defaults:
   run:
@@ -28,3 +32,8 @@ jobs:
       - run: ruff check src/ tests/
       - run: mypy src/mangrove_markets/
       - run: pytest tests/ -v --cov=mangrove_markets --cov-report=term-missing
+      - name: Verify complete license in wheel and source archives
+        run: |
+          python -m pip install build
+          python -m build --outdir "$RUNNER_TEMP/python-sdk-dist"
+          python ../../scripts/verify_sdk_licenses.py "$RUNNER_TEMP"/python-sdk-dist/*

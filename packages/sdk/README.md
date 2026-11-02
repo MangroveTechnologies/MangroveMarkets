@@ -53,8 +53,8 @@ const balances = await client.cex.balances();
 
 ## Installation
 
-After verifying the new-name 0.4.0 publication, install the Markets SDK. Until
-then, use the reviewed local tarball below:
+Markets 0.4.0 is published. The 0.4.1 source candidate includes the full MIT
+license and copyright notice; verify its registry publication before pinning it.
 
 ```bash
 npm install @mangrove-ai/markets ethers
@@ -66,15 +66,12 @@ Check the installed/published version before using version 0.4.0 features:
 npm view @mangrove-ai/markets version
 ```
 
-**Registry checkpoint - November 1, 2026 (America/Chicago):** the published
-Markets artifact was `@mangrove-ai/sdk` 0.3.0. This checkout renames the 0.4.0
-candidate to `@mangrove-ai/markets`; publication of the new name is still pending.
-The older 0.3.0 hosted-wallet path lacks the 0.4.0 Kraken OAuth, full-result and
-local-wallet additions. Until the new-name registry release is verified, install
-a reviewed local tarball for these examples:
+**Registry checkpoint - November 2, 2026:** `@mangrove-ai/markets` 0.4.0
+is published. AI's separate `@mangrove-ai/sdk` 1.1.0 is also published. For the
+unpublished 0.4.1 patch, build and review the local archive before installation:
 
 ```bash
-npm install /absolute/path/to/mangrove-ai-markets-0.4.0.tgz ethers
+npm install /absolute/path/to/mangrove-ai-markets-0.4.1.tgz ethers
 ```
 
 Build and pack that tarball from the reviewed checkout using the repository's

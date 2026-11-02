@@ -4,7 +4,15 @@ All notable changes to the MangroveMarkets SDK will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-## [0.4.0] - Unreleased
+## [0.4.1] - Unreleased
+
+- Include the complete source MIT license and copyright notice in the npm archive.
+- Check actual packed archive license bytes before publication. Public exports and
+  runtime behavior are unchanged.
+- After an accepted upload, wait only for temporary registry HTTP 404 responses
+  under one bounded metadata/archive visibility deadline; never retry an upload.
+
+## [0.4.0] - 2026-11-02
 
 ### Added
 - `client.cex` provides the Kraken OAuth proxy lifecycle: start consent, inspect

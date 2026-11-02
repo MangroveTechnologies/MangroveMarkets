@@ -1,8 +1,14 @@
 # Changelog
 
-All notable changes to the `mangrove-markets` Python SDK are documented here.
+All notable changes to the `mangrovemarkets` Python SDK are documented here.
 
-## 1.1.1 - Unreleased
+## 1.1.2 - Unreleased
+
+- Include the complete source MIT license and copyright notice in the wheel
+  and source archive. Runtime methods, imports and package identity are unchanged.
+- Validate the exact license payload in built archives before release.
+
+## 1.1.1 - 2026-10-31
 
 - Added `client.call_tool_result(name, arguments)` for complete MCP results over
   the opt-in REST format, including content, errors, metadata and HTTP headers.

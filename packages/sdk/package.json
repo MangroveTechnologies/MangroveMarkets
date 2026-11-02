@@ -1,6 +1,6 @@
 {
   "name": "@mangrove-ai/markets",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "TypeScript SDK for MangroveMarkets -- DEX aggregation and agent marketplace with pluggable signing",
   "type": "module",
   "main": "dist/index.cjs",
@@ -14,7 +14,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
