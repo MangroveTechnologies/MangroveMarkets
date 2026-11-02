@@ -1,8 +1,14 @@
-# mangrovemarkets
+# MangroveMarkets Python SDK (`mangrovemarkets`)
 
 [![PyPI Downloads](https://static.pepy.tech/badge/mangrovemarkets)](https://pepy.tech/projects/mangrovemarkets)
 
 Python SDK for MangroveMarkets -- DEX aggregation, wallet management, and portfolio analytics for agents.
+
+This is the **Markets** client. For MangroveAI strategy/backtesting APIs, use
+[`mangroveai` 2.1.0](https://pypi.org/project/mangroveai/2.1.0/) from the
+[separate MangroveAI SDK repo](https://github.com/MangroveTechnologies/MangroveAI-SDK).
+Markets TypeScript uses the existing `@mangrove-ai/sdk` package name; npm 0.3.0
+was published at the November 1 checkpoint, while 0.4.0 was a source candidate.
 
 ## Supported workflow matrix
 
@@ -45,8 +51,11 @@ with MangroveMarkets(
 
 ## Installation
 
+Published on PyPI: **1.1.1**, including the full tool-response API and Kraken
+OAuth client described here. Registry checkpoint: November 1, 2026 (America/Chicago).
+
 ```bash
-pip install mangrovemarkets
+pip install mangrovemarkets==1.1.1
 ```
 
 > The package imports as `mangrove_markets` (e.g. `from mangrove_markets import MangroveMarkets`).
@@ -81,7 +90,11 @@ print(f"Total portfolio: ${value.total_value_usd:,.2f}")
 client.close()
 ```
 
-The client also works as a context manager (and picks up `MANGROVE_API_KEY` / `MANGROVE_BASE_URL` from the environment):
+The client also works as a context manager and can read `MANGROVE_API_KEY` /
+`MANGROVE_BASE_URL` from the environment. Markets expects an origin, without
+`/api/v1`; the SDK appends that path. MangroveAI's Python client also reads
+`MANGROVE_BASE_URL` but expects its versioned `/api/v1` API base. When using both,
+pass distinct explicit `base_url` arguments as shown in the [product selector](../../README.md#using-both-python-products).
 
 ```python
 with MangroveMarkets() as client:
@@ -202,7 +215,7 @@ This SDK wraps the MangroveMarkets MCP Server REST API. For full tool documentat
 
 MIT
 
-## Complete tool responses (unreleased)
+## Complete tool responses (published in 1.1.1)
 
 Use `client.call_tool_result(name, arguments)` for content, structured data, tool
 error flags, metadata and HTTP response headers. Existing service methods retain

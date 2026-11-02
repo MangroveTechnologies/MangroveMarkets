@@ -35,7 +35,17 @@ account conditions. The SDK and agent do not implement or execute that policy.
 Neither client retries a CEX request automatically: after a timeout or ambiguous
 server failure, inspect connection/order state before deciding what to request.
 
-## Artifact provenance
+## Current publication checkpoint: November 1, 2026 (America/Chicago)
+
+- **Markets Python:** [`mangrovemarkets` 1.1.1](https://pypi.org/project/mangrovemarkets/1.1.1/) is published; import `mangrove_markets`. It includes the Python surface described above.
+- **Markets TypeScript:** [`@mangrove-ai/sdk` 0.3.0](https://www.npmjs.com/package/@mangrove-ai/sdk/v/0.3.0) is public. Reviewed 0.4.0 source is still unpublished; its Kraken OAuth, full-result and local-wallet additions are not in 0.3.0. The older npm wallet method uses the hosted-wallet path.
+- **Separate AI product:** [`mangroveai` 2.1.0](https://pypi.org/project/mangroveai/2.1.0/) is published. Its TypeScript client is `@mangrove-ai/client` 0.1.0 in [MangroveAI-SDK source](https://github.com/MangroveTechnologies/MangroveAI-SDK/tree/main/packages/typescript), not an npm release.
+- **Plugins:** the Markets Claude and OpenClaw workspace packages are private and unpublished. Source methods and schemas do not prove hosted marketplace availability or funded live acceptance.
+
+The following October 30 record is preserved as historical build evidence. Its
+publication and consumer-pin statements describe that audit, not current status.
+
+## Artifact provenance (October 30 history)
 
 | Distribution | Last published artifact checked in the October 30 audit | Source value before this change | Local release candidate |
 | --- | --- | --- | --- |
