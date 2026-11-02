@@ -1,10 +1,22 @@
-# MangroveMarkets
+# MangroveMarkets SDKs
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/xUcn4R6zJR)
 
-**The world's first decentralized marketplace for agents.**
+Clients for MangroveMarkets DEX aggregation, wallet workflows and hosted Kraken
+OAuth account access. Agent-to-agent marketplace products, listings, offers and
+escrow are under construction.
 
-An open, decentralized marketplace where agents buy and sell digital assets, information, compute, and resources -- plus multi-chain DEX aggregation. No accounts. No KYC. No intermediaries. Settled on Base, XRPL, and Solana via x402.
+## Choose a product and language
+
+| Product | Python | TypeScript | Use it for |
+| --- | --- | --- | --- |
+| **MangroveMarkets** (this repo) | [`mangrovemarkets` 1.1.1](https://pypi.org/project/mangrovemarkets/1.1.1/), import `mangrove_markets` | [`@mangrove-ai/sdk` 0.3.0](https://www.npmjs.com/package/@mangrove-ai/sdk/v/0.3.0) is published; 0.4.0 is source-only | Markets DEX, wallet and venue account workflows; check version-specific capabilities below. |
+| **MangroveAI** ([separate SDK repo](https://github.com/MangroveTechnologies/MangroveAI-SDK)) | [`mangroveai` 2.1.0](https://pypi.org/project/mangroveai/2.1.0/), import `mangrove_ai` | `@mangrove-ai/client` 0.1.0 is implemented in [source](https://github.com/MangroveTechnologies/MangroveAI-SDK/tree/main/packages/typescript), not published on npm | AI strategy, backtesting and execution APIs. |
+
+The `@mangrove-ai` npm scope contains distinct products. The existing
+`@mangrove-ai/sdk` name belongs to **MangroveMarkets** and remains compatible.
+Registry checkpoint: November 1, 2026 (America/Chicago). See the [capability and release
+matrix](docs/markets-sdk-capability-matrix.md) for source versus published coverage.
 
 ## What Is This?
 
@@ -12,9 +24,10 @@ This repo contains the **client-side packages** for MangroveMarkets:
 
 | Package | Path | Description |
 |---------|------|-------------|
+| **Python SDK** | `packages/python-sdk` | `mangrovemarkets` -- published Python Markets client |
 | **TypeScript SDK** | `packages/sdk` | `@mangrove-ai/sdk` -- typed client for MCP server + REST API |
-| **Claude Plugin** | `packages/claude-plugin` | `@mangrove-ai/claude-plugin` -- Claude Code plugin with /swap, /marketplace, /wallet, /portfolio skills |
-| **OpenClaw Plugin** | `packages/openclaw-plugin` | `@mangrove-ai/openclaw-plugin` -- OpenClaw plugin with tool definitions, dashboard, agent hooks |
+| **Claude Plugin** | `packages/claude-plugin` | `@mangrove-ai/claude-plugin` -- private source package, unpublished |
+| **OpenClaw Plugin** | `packages/openclaw-plugin` | `@mangrove-ai/openclaw-plugin` -- private source package, unpublished |
 | **Website** | `packages/website` | Next.js marketing site for mangrovemarkets.com |
 
 For the **MCP server** (backend), see [MangroveMarkets-MCP-Server](https://github.com/MangroveTechnologies/MangroveMarkets-MCP-Server).
@@ -24,7 +37,7 @@ For the **MCP server** (backend), see [MangroveMarkets-MCP-Server](https://githu
 ```mermaid
 flowchart TD
     Agent[Your Agent] -->|"MCP (Streamable HTTP)"| Server[MangroveMarkets MCP Server]
-    Server --> MP[Marketplace tools]
+    Server --> MP[Marketplace tools under construction]
     Server --> DEX[DEX tools]
     Server --> W[Wallet tools]
     Server --> INT[Integration tools]
@@ -36,39 +49,78 @@ flowchart TD
 
 ## Quick Start
 
-### Using the SDK
+### Python Markets SDK
+
+Published package: `mangrovemarkets` 1.1.1. The import is `mangrove_markets`.
+
+```bash
+pip install mangrovemarkets==1.1.1
+```
+
+```python
+import os
+from mangrove_markets import MangroveMarkets
+
+# Replace with the API origin confirmed by your Markets deployment owner.
+markets_api_origin = "https://markets-api.example"
+with MangroveMarkets(
+    base_url=markets_api_origin,
+    api_key=os.environ["MANGROVE_API_KEY"],
+) as markets:
+    print(markets.dex.supported_venues())
+```
+
+See the [Python Markets guide](packages/python-sdk/README.md).
+
+### TypeScript Markets SDK
+
+At the November 1 registry checkpoint, npm published **0.3.0** and source
+**0.4.0 was unpublished**. Verify the installed version before using 0.4.0
+examples; its Kraken OAuth, full-result and local-wallet additions are not in
+0.3.0. The older 0.3.0 wallet method uses the hosted-wallet path.
 
 ```bash
 pnpm add @mangrove-ai/sdk
 ```
 
 ```typescript
-import { MangroveClient } from "@mangrove-ai/sdk";
+import { MangroveClient as MangroveMarketsClient } from "@mangrove-ai/sdk";
 
-const client = new MangroveClient({
-  url: "https://api.mangrovemarkets.com",
-  signer,              // implements Signer interface -- keys never leave your machine
-  transport: "mcp",    // "mcp" (default) or "rest"
+// Replace with the API origin confirmed by your Markets deployment owner.
+const marketsApiOrigin = "https://markets-api.example";
+const markets = new MangroveMarketsClient({
+  url: marketsApiOrigin,
+  apiKey: process.env.MANGROVE_API_KEY,
+  transport: "rest",
 });
-
-await client.connect();
-
-// One-call swap -- handles approval, signing, broadcast, polling
-const result = await client.dex.swap({
-  src: "0xA0b8...",    // USDC on Base
-  dst: "0xEeee...",    // ETH
-  amount: "1000000000",
-  chainId: 8453,
-  slippage: 0.5,
-  mode: "standard",    // "standard" (fee in swap) or "x402" (separate payment)
-});
-
-// Search the marketplace
-const listings = await client.marketplace.search({ query: "GPU compute" });
-
-// Create a wallet
-const wallet = await client.wallet.create({ chain: "evm", chainId: 8453 });
+await markets.connect();
+console.log(await markets.dex.supportedVenues());
+await markets.disconnect();
 ```
+
+See the [TypeScript Markets guide](packages/sdk/README.md) for version-specific
+capabilities. These examples make read requests; they do not sign, fund or place
+an order and do not establish live funded acceptance.
+
+### Using both Python products
+
+Pass each product's base explicitly. Both clients otherwise read
+`MANGROVE_BASE_URL`, but **Markets expects an origin** and appends `/api/v1`,
+while **MangroveAI expects its versioned `/api/v1` API base**. The local variable
+names below are examples, not additional SDK environment-variable settings.
+
+```python
+from mangrove_markets import MangroveMarkets
+from mangrove_ai import MangroveAI
+
+markets_api_origin = "https://markets-api.example"
+ai_api_base = "https://ai-api.example/api/v1"
+markets = MangroveMarkets(base_url=markets_api_origin, api_key=markets_api_key)
+ai = MangroveAI(base_url=ai_api_base, api_key=ai_api_key, load_dotenv=False)
+```
+
+`markets_api_key` and `ai_api_key` come from your private configuration. The
+marketing website `mangrovemarkets.com` is not a substitute for an API origin.
 
 ### Using the MCP SDK Directly
 
@@ -76,9 +128,13 @@ const wallet = await client.wallet.create({ chain: "evm", chainId: 8453 });
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
+const marketsApiOrigin = "https://markets-api.example"; // deployment-owner-confirmed origin
+const marketsApiKey = process.env.MANGROVE_API_KEY; // private process configuration
+if (!marketsApiKey) throw new Error("Configure the Markets API key");
 const client = new Client({ name: "my-agent", version: "1.0.0" });
 const transport = new StreamableHTTPClientTransport(
-  new URL("https://api.mangrovemarkets.com/mcp")
+  new URL(`${marketsApiOrigin}/mcp`),
+  { requestInit: { headers: { Authorization: `Bearer ${marketsApiKey}` } } }
 );
 await client.connect(transport);
 
@@ -88,22 +144,12 @@ const result = await client.callTool({
 });
 ```
 
-### Using Claude Code
+### Plugin source
 
-Install the Claude Plugin, then use skills directly:
-
-```
-/swap quote USDC ETH 1000 --chain base
-/marketplace search "GPU compute"
-/wallet create --chain evm --chainId 8453
-/portfolio value --addresses 0xabc
-```
-
-### Using OpenClaw
-
-```bash
-openclaw plugins install @mangrove-ai/openclaw-plugin
-```
+The [Claude plugin](packages/claude-plugin) and [OpenClaw plugin](packages/openclaw-plugin)
+are private, unpublished workspace packages. They are source integrations, not
+npm installation targets. Their marketplace skills do not make the marketplace
+workflows available.
 
 ## Documentation
 
@@ -111,7 +157,7 @@ openclaw plugins install @mangrove-ai/openclaw-plugin
 
 | Document | Purpose |
 |----------|---------|
-| **[Product Roadmap](../MangroveMarkets-MCP-Server/docs/plans/2026-02-28-mangrove-roadmap-design.md)** | High-level roadmap: 4 phases, work streams, completion criteria |
+| **[Product Roadmap](https://github.com/MangroveTechnologies/MangroveMarkets-MCP-Server/blob/main/docs/plans/2026-02-28-mangrove-roadmap-design.md)** | High-level roadmap: 4 phases, work streams, completion criteria |
 | [SDK Design](docs/plans/2026-02-23-client-sdk-design.md) | SDK architecture: transports, signer interface, API surface |
 | [Plugins Design](docs/plans/2026-02-28-plugins-design.md) | Claude Plugin + OpenClaw Plugin architecture |
 
@@ -164,7 +210,7 @@ This repo uses Claude Code's orchestrator pattern with domain-specific agent def
 
 ### For Contributors
 
-1. Read the **[Product Roadmap](../MangroveMarkets-MCP-Server/docs/plans/2026-02-28-mangrove-roadmap-design.md)** to understand the current phase
+1. Read the **[Product Roadmap](https://github.com/MangroveTechnologies/MangroveMarkets-MCP-Server/blob/main/docs/plans/2026-02-28-mangrove-roadmap-design.md)** to understand the current phase
 2. Check which **server-side tools** are available (SDK/plugins depend on the server)
 3. Open the **implementation plan** for your work stream -- it has TDD tasks with exact steps
 4. Use Claude Code to execute: each plan includes a header directing Claude to use `superpowers:executing-plans`
@@ -180,7 +226,8 @@ This repo uses Claude Code's orchestrator pattern with domain-specific agent def
 
 ```
 packages/
-  sdk/                           # @mangrove-ai/sdk
+  python-sdk/                    # mangrovemarkets (import mangrove_markets)
+  sdk/                           # @mangrove-ai/sdk -- Markets TypeScript client
     src/
       index.ts                   # Main exports
       client/                    # MangroveClient (HTTP wrapper)
@@ -230,14 +277,17 @@ pnpm --filter website dev
 ## Key Principles
 
 1. **Agents are the users, not humans.** Every API decision optimizes for agent ergonomics.
-2. **Open marketplace.** No accounts, no KYC, no gatekeeping.
+2. **Open marketplace.** Open participation is the design goal; marketplace workflows remain under construction.
 3. **Mangrove facilitates, it doesn't intermediate.** Tools for access, not middleman services.
 4. **Start simple.** Ship working tools before building complex systems.
 5. **Money is a means, not an end.** Agents use Mangrove to get what they need.
 
 ## x402 Payments
 
-MangroveMarkets uses the [x402 protocol](https://www.x402.org/) for agent payments. The SDK handles the 402 handshake automatically -- your agent calls tools, payments happen transparently.
+MangroveMarkets includes [x402](https://www.x402.org/) payment support for supported
+operations. Payment support differs by client and version; the Python SDK does
+not include an automatic payer. Consult the capability matrix and the configured
+server before using a payment or transaction workflow.
 
 | Token | Network | Facilitator |
 |-------|---------|-------------|

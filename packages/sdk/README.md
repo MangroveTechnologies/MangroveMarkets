@@ -1,10 +1,16 @@
-# @mangrove-ai/sdk
+# MangroveMarkets TypeScript SDK (`@mangrove-ai/sdk`)
 
 TypeScript SDK for [MangroveMarkets](https://mangrovemarkets.com) -- DEX aggregation and wallet workflows; marketplace products are under construction.
 
-**Proven on mainnet**: real USDC-to-USDT swap on Base ([block 43280998](https://basescan.org/tx/0x1fe4e3bcf0a30db0a13eaa774d52f41fac164099bcec6fa3dba562dfaaa8b48f)).
+Package identity: `@mangrove-ai/sdk` is the **Markets** client. For MangroveAI
+strategy/backtesting APIs, use the [separate MangroveAI SDKs](https://github.com/MangroveTechnologies/MangroveAI-SDK)
+(Python package `mangroveai`; TypeScript package `@mangrove-ai/client`).
 
-## Supported workflow matrix
+Historical Base swap evidence: [prior USDC-to-USDT transaction](https://basescan.org/tx/0x1fe4e3bcf0a30db0a13eaa774d52f41fac164099bcec6fa3dba562dfaaa8b48f).
+That record does not validate the current build or establish funded acceptance
+for this release.
+
+## Version 0.4.0 workflow matrix
 
 | Workflow | Python entry point | TypeScript entry point | Boundary |
 | --- | --- | --- | --- |
@@ -19,7 +25,7 @@ ambiguous after a timeout, so CEX requests are not automatically retried. Inspec
 connection and order state before deciding whether to submit another request.
 See the [full capability and artifact matrix](../../docs/markets-sdk-capability-matrix.md).
 
-### Kraken OAuth lifecycle
+### Kraken OAuth lifecycle (0.4.0)
 
 Configure a Mangrove API key, request `view` access for read-only account access
 or `execute` access when order placement is needed, then open the returned
@@ -44,13 +50,36 @@ const balances = await client.cex.balances();
 
 ## Installation
 
+Install a published Markets SDK release:
+
 ```bash
 npm install @mangrove-ai/sdk ethers
 ```
 
+Check the installed/published version before using version 0.4.0 features:
+
+```bash
+npm view @mangrove-ai/sdk version
+```
+
+**Historical registry checkpoint - November 1, 2026 (America/Chicago):** npm
+reported 0.3.0, while this checkout's 0.4.0 candidate was not yet published.
+Version 0.3.0 uses the hosted-wallet path and lacks the 0.4.0 Kraken OAuth,
+full-result and local-wallet additions. See the [release matrix](../../docs/markets-sdk-capability-matrix.md).
+Until a 0.4.0 registry release is verified, use a reviewed local 0.4.0 tarball
+for the 0.4.0 examples, rather than assuming the registry install contains them:
+
+```bash
+npm install /absolute/path/to/mangrove-ai-sdk-0.4.0.tgz ethers
+```
+
+Build and pack that tarball from the reviewed checkout using the repository's
+[development instructions](../../README.md#development). A local tarball is not
+a registry publication or live deployment.
+
 `ethers` is an optional peer dependency -- only needed if you use the built-in `EthersSigner`.
 
-## Quick Start
+## Version 0.4.0 quick start
 
 ```typescript
 import { MangroveClient, EthersSigner } from '@mangrove-ai/sdk';
@@ -194,7 +223,7 @@ const status = await client.dex.txStatus({
 | Chain | ID | Status |
 |-------|----|--------|
 | Ethereum | 1 | Supported |
-| Base | 8453 | Supported (primary, proven) |
+| Base | 8453 | Supported (primary) |
 | Arbitrum | 42161 | Supported |
 | Polygon | 137 | Supported |
 | Optimism | 10 | Supported |
@@ -255,7 +284,7 @@ See the [examples directory](https://github.com/MangroveTechnologies/MangroveMar
 
 MIT
 
-## Complete responses and local wallet creation (unreleased)
+## Complete responses and local wallet creation (0.4.0)
 
 `client.callToolResult(name, arguments)` preserves MCP content, structured data,
 error flags and metadata. REST requires a server supporting the `mcp-v1` result

@@ -29,6 +29,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
 
+      - name: Test npm registry release guard
+        run: node --test scripts/check-npm-release.test.mjs
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
