@@ -13,6 +13,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   safe message. CEX requests are not automatically retried after ambiguous results.
 
 ### Changed
+- The npm package is now `@mangrove-ai/markets` 0.4.0. Historical
+  `@mangrove-ai/sdk` 0.x artifacts stay unchanged; `@mangrove-ai/sdk` 1.0.0 is
+  the separate MangroveAI product. Public Markets export names are unchanged.
+  See [the migration and release order](../../docs/npm-product-migration.md).
 - Wallet creation is local and unfunded. EVM keys require optional `ethers@^6`;
   XRPL keys use the bundled XRPL library. This differs from the published 0.3.0
   artifact, which delegated wallet creation to the server. Treat returned key

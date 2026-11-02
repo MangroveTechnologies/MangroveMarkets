@@ -7,7 +7,7 @@ it does not describe MangroveAI strategy or backtesting APIs.
 
 ## Supported client surface
 
-| Capability | Python (`mangrove_markets`) | TypeScript (`@mangrove-ai/sdk`) | Contract and limits |
+| Capability | Python (`mangrove_markets`) | TypeScript (`@mangrove-ai/markets` 0.4.0) | Contract and limits |
 | --- | --- | --- | --- |
 | MCP tool calls | `call_tool()` and `call_tool_result()` | `callTool()` and `callToolResult()` | Full result mode preserves content, structured data, tool errors, metadata, and response headers when the server supports `mcp-v1`. Legacy methods retain their existing success return shapes. |
 | DEX | `client.dex` | `client.dex` | Quote, prepare, approval, broadcast, status, and high-level swap workflows available in current source. Swaps require caller-side signing. |
@@ -35,7 +35,22 @@ account conditions. The SDK and agent do not implement or execute that policy.
 Neither client retries a CEX request automatically: after a timeout or ambiguous
 server failure, inspect connection/order state before deciding what to request.
 
-## Artifact provenance
+## Current product identities: November 1, 2026 (America/Chicago)
+
+- **Markets Python:** [`mangrovemarkets` 1.1.1](https://pypi.org/project/mangrovemarkets/1.1.1/) is published; import `mangrove_markets`.
+- **Markets TypeScript:** `@mangrove-ai/markets` 0.4.0 is the renamed source candidate, not yet a verified registry release. It retains the 0.4.0 workflow implementation above.
+- **Legacy npm history:** published `@mangrove-ai/sdk` versions 0.1.2, 0.2.0 and 0.3.0 are Markets artifacts. They are not rewritten. The older 0.3.0 hosted-wallet path lacks the 0.4.0 Kraken OAuth, full-result and local-wallet additions.
+- **Separate AI product:** [`mangroveai` 2.1.0](https://pypi.org/project/mangroveai/2.1.0/) is published. The separate TypeScript client becomes `@mangrove-ai/sdk` 1.0.0 in [MangroveAI-SDK source](https://github.com/MangroveTechnologies/MangroveAI-SDK/tree/main/packages/typescript); it is not a compatible upgrade of legacy Markets 0.x.
+- **Plugins:** the Markets Claude and OpenClaw workspace packages stay private and unpublished, with dependencies/imports updated to `@mangrove-ai/markets`. Source methods and schemas do not prove hosted marketplace availability or funded live acceptance.
+
+See the [migration and ordered publication plan](npm-product-migration.md).
+Markets publication must be verified before AI 1.0.0 takes the old name's `latest`
+tag; deprecation is prepared only for the three exact legacy versions.
+
+The following October 30 record is preserved as historical build evidence. Its
+publication and consumer-pin statements describe that audit, not current status.
+
+## Artifact provenance (October 30 history)
 
 | Distribution | Last published artifact checked in the October 30 audit | Source value before this change | Local release candidate |
 | --- | --- | --- | --- |

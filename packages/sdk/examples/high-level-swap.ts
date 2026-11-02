@@ -1,4 +1,4 @@
-import { MangroveClient, EthersSigner } from '@mangrove-ai/sdk';
+import { MangroveClient, EthersSigner } from '@mangrove-ai/markets';
 import { Wallet } from 'ethers';
 
 async function main() {

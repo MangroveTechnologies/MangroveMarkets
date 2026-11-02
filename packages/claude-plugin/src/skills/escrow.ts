@@ -68,7 +68,7 @@ export async function handleEscrow(
         network: params.network,
       });
     case 'monitor': {
-      const { EscrowMonitor } = await import('@mangrove-ai/sdk');
+      const { EscrowMonitor } = await import('@mangrove-ai/markets');
       const monitor = new EscrowMonitor(
         client.wallet,
         params.buyerAddress,

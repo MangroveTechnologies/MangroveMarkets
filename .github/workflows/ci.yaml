@@ -29,20 +29,23 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
 
+      - name: Test npm registry release guard
+        run: node --test scripts/check-npm-release.test.mjs scripts/complete-npm-release.test.mjs
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build SDK
-        run: pnpm --filter @mangrove-ai/sdk build
+        run: pnpm --filter @mangrove-ai/markets build
 
       - name: Type check (SDK)
-        run: pnpm --filter @mangrove-ai/sdk lint
+        run: pnpm --filter @mangrove-ai/markets lint
 
       - name: Type check (Claude Plugin)
         run: pnpm --filter @mangrove-ai/claude-plugin lint
 
       - name: Test SDK
-        run: pnpm --filter @mangrove-ai/sdk test -- --run
+        run: pnpm --filter @mangrove-ai/markets test -- --run
 
       - name: Test Claude Plugin
         run: pnpm --filter @mangrove-ai/claude-plugin test -- --run
