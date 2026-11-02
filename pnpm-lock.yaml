@@ -19,7 +19,7 @@ importers:
 
   packages/claude-plugin:
     dependencies:
-      '@mangrove-ai/sdk':
+      '@mangrove-ai/markets':
         specifier: workspace:*
         version: link:../sdk
       ethers:
@@ -41,7 +41,7 @@ importers:
 
   packages/openclaw-plugin:
     dependencies:
-      '@mangrove-ai/sdk':
+      '@mangrove-ai/markets':
         specifier: workspace:*
         version: link:../sdk
     devDependencies:

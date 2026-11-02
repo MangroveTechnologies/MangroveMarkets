@@ -1,4 +1,4 @@
-import type { Transport, ToolCallResult } from '@mangrove-ai/sdk';
+import type { Transport, ToolCallResult } from '@mangrove-ai/markets';
 
 export interface MarketplaceSearchParams {
   action: 'search';

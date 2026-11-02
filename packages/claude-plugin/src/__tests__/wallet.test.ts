@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { handleWallet } from '../skills/wallet';
-import type { Transport } from '@mangrove-ai/sdk';
+import type { Transport } from '@mangrove-ai/markets';
 
 function mockTransport(): Transport {
   return {

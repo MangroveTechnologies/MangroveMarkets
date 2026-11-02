@@ -1,8 +1,16 @@
-# mangrovemarkets
+# MangroveMarkets Python SDK (`mangrovemarkets`)
 
 [![PyPI Downloads](https://static.pepy.tech/badge/mangrovemarkets)](https://pepy.tech/projects/mangrovemarkets)
 
 Python SDK for MangroveMarkets -- DEX aggregation, wallet management, and portfolio analytics for agents.
+
+This is the **Markets** client. For MangroveAI strategy/backtesting APIs, use
+[`mangroveai` 2.1.0](https://pypi.org/project/mangroveai/2.1.0/) from the
+[separate MangroveAI SDK repo](https://github.com/MangroveTechnologies/MangroveAI-SDK).
+Markets TypeScript moves to `@mangrove-ai/markets` 0.4.0. The historical
+`@mangrove-ai/sdk` 0.x artifacts are Markets, while the new 1.0.0 SDK under that
+name is MangroveAI. Verify the exact npm name/version in the registry before installing either
+new identity. See the [npm migration guide](https://github.com/MangroveTechnologies/MangroveMarkets/blob/main/docs/npm-product-migration.md).
 
 ## Supported workflow matrix
 
@@ -17,7 +25,7 @@ risk management uses live market and account conditions and is owned by Mangrove
 the SDK and calling agent do not implement that policy. Order outcomes can be
 ambiguous after a timeout, so CEX requests are not automatically retried. Inspect
 connection and order state before deciding whether to submit another request.
-See the [full capability and artifact matrix](../../docs/markets-sdk-capability-matrix.md).
+See the [full capability and artifact matrix](https://github.com/MangroveTechnologies/MangroveMarkets/blob/main/docs/markets-sdk-capability-matrix.md).
 
 ### Kraken OAuth lifecycle
 
@@ -45,8 +53,11 @@ with MangroveMarkets(
 
 ## Installation
 
+Published on PyPI: **1.1.1**, including the full tool-response API and Kraken
+OAuth client described here. Registry checkpoint: November 1, 2026 (America/Chicago).
+
 ```bash
-pip install mangrovemarkets
+pip install mangrovemarkets==1.1.1
 ```
 
 > The package imports as `mangrove_markets` (e.g. `from mangrove_markets import MangroveMarkets`).
@@ -81,7 +92,11 @@ print(f"Total portfolio: ${value.total_value_usd:,.2f}")
 client.close()
 ```
 
-The client also works as a context manager (and picks up `MANGROVE_API_KEY` / `MANGROVE_BASE_URL` from the environment):
+The client also works as a context manager and can read `MANGROVE_API_KEY` /
+`MANGROVE_BASE_URL` from the environment. Markets expects an origin, without
+`/api/v1`; the SDK appends that path. MangroveAI's Python client also reads
+`MANGROVE_BASE_URL` but expects its versioned `/api/v1` API base. When using both,
+pass distinct explicit `base_url` arguments as shown in the [product selector](https://github.com/MangroveTechnologies/MangroveMarkets/blob/main/README.md#using-both-python-products).
 
 ```python
 with MangroveMarkets() as client:
@@ -202,7 +217,7 @@ This SDK wraps the MangroveMarkets MCP Server REST API. For full tool documentat
 
 MIT
 
-## Complete tool responses (unreleased)
+## Complete tool responses (published in 1.1.1)
 
 Use `client.call_tool_result(name, arguments)` for content, structured data, tool
 error flags, metadata and HTTP response headers. Existing service methods retain
@@ -210,4 +225,4 @@ successful return types. Full results require the server's opt-in `mcp-v1` forma
 unsupported format errors must not cause automatic replay.
 
 Install the distribution `mangrovemarkets`; import from `mangrove_markets`.
-See [the response contract and migration notes](../../docs/t17-client-results.md).
+See [the response contract and migration notes](https://github.com/MangroveTechnologies/MangroveMarkets/blob/main/docs/t17-client-results.md).

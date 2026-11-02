@@ -4,7 +4,7 @@ import type { Signer } from './signer';
  * Configuration for creating a MangroveClient instance.
  */
 export interface MangroveConfig {
-  /** MCP server URL (e.g. 'https://mangrovemarkets.com/mcp' or 'https://mangrovemarkets.com'). */
+  /** Deployment-owner-confirmed Markets REST origin (e.g. 'https://markets-api.example') or MCP endpoint ('https://markets-api.example/mcp'). */
   url: string;
   /** Optional Signer for transaction signing. Required for swap() operations. */
   signer?: Signer;

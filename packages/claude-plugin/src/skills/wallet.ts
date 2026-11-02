@@ -1,5 +1,5 @@
-import { LocalWalletCustodyRequiredError } from '@mangrove-ai/sdk';
-import type { Transport } from '@mangrove-ai/sdk';
+import { LocalWalletCustodyRequiredError } from '@mangrove-ai/markets';
+import type { Transport } from '@mangrove-ai/markets';
 
 export interface WalletInfoParams { action: 'info'; chain: string; }
 export interface WalletCreateParams { action: 'create'; chain: string; chain_id?: number; network?: string; }

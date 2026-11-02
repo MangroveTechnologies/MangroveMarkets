@@ -1,4 +1,4 @@
-import { LocalWalletCustodyRequiredError } from '@mangrove-ai/sdk';
+import { LocalWalletCustodyRequiredError } from '@mangrove-ai/markets';
 
 /**
  * Create wallet tool handlers delegating to the MangroveClient's wallet service.

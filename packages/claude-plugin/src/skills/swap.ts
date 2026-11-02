@@ -1,4 +1,4 @@
-import type { MangroveClient, BillingMode, Quote, SwapResult, TransactionStatus } from '@mangrove-ai/sdk';
+import type { MangroveClient, BillingMode, Quote, SwapResult, TransactionStatus } from '@mangrove-ai/markets';
 
 export interface SwapQuoteParams {
   action: 'quote';
