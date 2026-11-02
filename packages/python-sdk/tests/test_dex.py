@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 
 from mangrove_markets._services.dex import DexService
 from mangrove_markets._transport._auth import NoAuth
@@ -28,6 +29,49 @@ def _make_service() -> tuple[MockTransport, DexService]:
     mock = MockTransport()
     transport = ServiceTransport(mock, "http://test/api/v1", NoAuth())
     return mock, DexService(transport)
+
+
+@pytest.mark.parametrize("status", ["confirmed", "failed", "pending"])
+@pytest.mark.parametrize("venue_id", [None, "1inch"])
+def test_transaction_receipt_survives_typed_transport(status: str, venue_id: str | None) -> None:
+    receipt = None if status == "pending" else {
+        "transactionHash": "0x" + "1" * 64,
+        "from": "0x" + "a" * 40, "to": "0x" + "b" * 40,
+        "status": "0x1" if status == "confirmed" else "0x0",
+        "gasUsed": "0x249f0", "effectiveGasPrice": "0x3b9aca00",
+        "blockNumber": "0x3039", "blockHash": "0x" + "c" * 64,
+        "l1Fee": "0x1234",
+        "logs": [{"address": "0x" + "d" * 40, "topics": ["0x" + "e" * 64],
+                  "data": "0x1234", "logIndex": "0x0", "removed": False}],
+    }
+    body = {"tx_hash": "0x" + "1" * 64, "chain_family": "evm", "chain_id": 8453,
+            "status": status, "raw": receipt}
+    mock, service = _make_service()
+    mock.add_response("POST", "/tools/dex_tx_status", json=body)
+    result = service.tx_status(body["tx_hash"], 8453, venue_id)
+    assert result.raw == receipt
+    assert result.model_dump()["raw"] == receipt
+    assert "raw" in TransactionStatus.model_fields
+    assert mock.requests[0].json == {
+        "tx_hash": body["tx_hash"], "chain_id": 8453,
+        **({"venue_id": venue_id} if venue_id else {}),
+    }
+
+
+def test_pending_receipt_defaults_to_none() -> None:
+    result = TransactionStatus(tx_hash="0xpending", chain_family="evm", status="pending")
+    assert result.raw is None
+    assert result.model_dump()["raw"] is None
+
+
+@pytest.mark.parametrize("malformed", ["not-a-receipt", ["not", "a", "receipt"]])
+def test_malformed_receipt_is_rejected_by_typed_result(malformed: object) -> None:
+    mock, service = _make_service()
+    mock.add_response("POST", "/tools/dex_tx_status", json={
+        "tx_hash": "0xmalformed", "chain_family": "evm", "status": "confirmed", "raw": malformed,
+    })
+    with pytest.raises(ValidationError):
+        service.tx_status("0xmalformed", 8453)
 
 
 class TestSupportedVenues:
