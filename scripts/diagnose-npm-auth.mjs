@@ -7,6 +7,7 @@ import { pathToFileURL } from 'node:url';
 const REPO = 'MangroveTechnologies/MangroveMarkets';
 const BRANCH = 'codex/markets-npm-auth-diagnostics';
 const REGISTRY = 'https://registry.npmjs.org';
+export const STATUS_PATH = '/-/package/@mangrove-ai%2fmarkets/version/0.4.0/status';
 const fail = () => { throw new Error('Read-only npm diagnosis stopped safely.'); };
 export function guard(env, run) {
   if (env.GITHUB_REPOSITORY !== REPO || env.GITHUB_EVENT_NAME !== 'workflow_dispatch' ||
@@ -44,7 +45,6 @@ export function tokenSummary(payload, token) {
   }
   if (Array.isArray(selected.cidr_whitelist)) result.has_ip_restrictions = selected.cidr_whitelist.length > 0;
   result.granular_scope_metadata_exposed = Array.isArray(selected.scopes);
-  if (Array.isArray(selected.scopes)) result.includes_mangrove_scope = selected.scopes.includes('@mangrove-ai');
   return result;
 }
 export function packageSummary(body) {
@@ -55,10 +55,15 @@ export function packageSummary(body) {
   }
   return result;
 }
+export function lifecycleSummary(body) {
+  if (body?.packageName !== '@mangrove-ai/markets' || body.version !== '0.4.0' ||
+      !['published', 'validating', 'staged', 'blocked', 'deleted'].includes(body.status)) fail();
+  return { package: body.packageName, version: body.version, status: body.status };
+}
 export function readOnlyRegistry(token, fetchApi = globalThis.fetch) {
   if (!token) fail();
   return async (path) => {
-    if (!/^\/-\/(whoami|org\/mangrove-ai\/(user|package)|user\/[a-z0-9][a-z0-9._-]{0,213}\/package|npm\/v1\/tokens)$/.test(path)) fail();
+    if (path !== STATUS_PATH && !/^\/-\/(whoami|org\/mangrove-ai\/(user|package)|user\/[a-z0-9][a-z0-9._-]{0,213}\/package|npm\/v1\/tokens)$/.test(path)) fail();
     const response = await fetchApi(REGISTRY + path, { method: 'GET', redirect: 'error',
       signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json', Authorization: `Bearer ${token}` } });
     if (response.status !== 200) return { status: response.status };
@@ -113,6 +118,9 @@ async function main() {
   const tokens = await npm('/-/npm/v1/tokens');
   report.current_token_metadata = { status: tokens.status, ...tokenSummary(tokens.body, credentials.token),
     note: 'Only uniquely matching redacted metadata is reported. Incomplete metadata/redaction never proves complete granular bypass/scope rights.' };
+  const lifecycle = await npm(STATUS_PATH);
+  report.package_version_lifecycle = { http_status: lifecycle.status,
+    ...(lifecycle.status === 200 ? lifecycleSummary(lifecycle.body) : {}) };
   console.log(JSON.stringify(report));
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

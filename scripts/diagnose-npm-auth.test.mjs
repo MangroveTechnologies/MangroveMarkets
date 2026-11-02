@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { credentialSummary, tokenSummary, packageSummary, readOnlyRegistry, guard } from './diagnose-npm-auth.mjs';
+import { credentialSummary, tokenSummary, packageSummary, readOnlyRegistry, guard, lifecycleSummary, STATUS_PATH } from './diagnose-npm-auth.mjs';
 const token = 'npm_SYNTHETIC_CREDENTIAL_CANARY_12345';
 const env = { NODE_AUTH_TOKEN: token, RUNNER_TEMP: '/fixture', GITHUB_REPOSITORY: 'MangroveTechnologies/MangroveMarkets',
   GITHUB_EVENT_NAME: 'workflow_dispatch', GITHUB_REF: 'refs/heads/codex/markets-npm-auth-diagnostics',
@@ -33,7 +33,7 @@ test('token metadata is projected onto fixed booleans without token,key,CIDR or 
   assert.equal(result.readonly, false);
   assert.equal(result.bypass_2fa, true);
   assert.equal(result.has_ip_restrictions, true);
-  assert.equal(result.includes_mangrove_scope, true);
+  assert.equal(result.includes_mangrove_scope, undefined);
   const printed = JSON.stringify(result);
   for (const canary of [token, token.slice(0, 13), 'SECRET_KEY_CANARY', '192.0.2.0/24']) assert.ok(!printed.includes(canary));
 });
@@ -91,4 +91,24 @@ test('stream cancellation bounds registry metadata before unbounded allocation',
   }) }));
   await assert.rejects(read('/-/npm/v1/tokens'));
   assert.equal(cancelled, true);
+});
+
+test('lifecycle endpoint accepts only the exact Markets version and fixed status enums', () => {
+  for (const status of ['published', 'validating', 'staged', 'blocked', 'deleted']) {
+    const result = lifecycleSummary({ packageName: '@mangrove-ai/markets', version: '0.4.0', status, secret: token });
+    assert.deepEqual(result, { package: '@mangrove-ai/markets', version: '0.4.0', status });
+    assert.ok(!JSON.stringify(result).includes(token));
+  }
+  for (const patch of [{ packageName: '@mangrove-ai/sdk' }, { version: '1.0.0' }, { status: token }]) {
+    assert.throws(() => lifecycleSummary({ packageName: '@mangrove-ai/markets', version: '0.4.0', status: 'published', ...patch }));
+  }
+});
+test('only the single exact lifecycle GET is added; neighboring versions and mutation paths stay denied', async () => {
+  const requests = [];
+  const read = readOnlyRegistry(token, async (url, options) => { requests.push({ url, options }); return { status: 403 }; });
+  assert.deepEqual(await read(STATUS_PATH), { status: 403 });
+  assert.equal(requests[0].options.method, 'GET');
+  for (const path of [STATUS_PATH.replace('0.4.0', '0.5.0'), STATUS_PATH.replace('markets', 'sdk'),
+    STATUS_PATH.replace('/status', '/approve'), '/-/stage/package/@mangrove-ai%2fmarkets']) await assert.rejects(read(path));
+  assert.equal(requests.length, 1);
 });
