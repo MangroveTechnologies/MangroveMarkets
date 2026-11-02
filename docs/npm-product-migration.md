@@ -48,14 +48,14 @@ construction. See the [capability matrix](markets-sdk-capability-matrix.md).
 
 ## Current patch publication and recovery order
 
-The initial product migration is historical: Markets PR67 published the new
+The initial product migration is historical: [Markets PR67](https://github.com/MangroveTechnologies/MangroveMarkets/pull/67) published the new
 Markets identity at 0.4.0, followed by AI 1.x under `@mangrove-ai/sdk`. That
 completed first-release sequence is not repeated for each patch.
 
 1. Review [PR69](https://github.com/MangroveTechnologies/MangroveMarkets/pull/69)
    and require its actual current-head CI, real built archive license checks and
    offline release-CLI checks. Source builds alone do not prove publication.
-2. Human merge of PR69 changes `packages/sdk/package.json` to 0.4.1 and therefore
+2. Human merge of [PR69](https://github.com/MangroveTechnologies/MangroveMarkets/pull/69) changes `packages/sdk/package.json` to 0.4.1 and therefore
    automatically starts the existing [Publish SDK workflow](../.github/workflows/publish.yaml)
    on main. This is a package release, not a docs-only merge. Native release
    events remain inert; no feature-branch publication is accepted.
@@ -94,13 +94,14 @@ repeat an ambiguous write. The already published 0.4.0 artifact does not need to
 be uploaded again to ship this repair.
 
 Package publication does not deploy the server, verify a venue or establish
-funded acceptance. Infrastructure and frontend-publication holds remain separate.
+funded acceptance. Cloud/domain/venue migration and frontend publication remain held. Terraform
+adoption is a separate unfinished workstream.
 
 ## Historical first-release deprecation plan
 
 The first AI release owned the three exact historical-version notices after
 Markets 0.4.0 was verified. That migration is complete. This Markets workflow
-never deprecates packages, and PR69 requires no new deprecation. The historical
+never deprecates packages, and [PR69](https://github.com/MangroveTechnologies/MangroveMarkets/pull/69) requires no new deprecation. The historical
 command text below is retained as a record, not a current execution plan. The
 [AI release controller](https://github.com/MangroveTechnologies/MangroveAI-SDK/blob/main/scripts/complete_typescript_release.mjs)
 is authoritative for the current exact notice and skips already matching notices.
@@ -123,7 +124,7 @@ For an authorized future notice change, read each exact old version's `deprecate
 field and confirm AI 1.x has no such field. Do not substitute a package-wide command,
 a wildcard range or a default-tag check for those version-specific checks.
 
-Migration of infrastructure, held frontend review, deployment and funded live
-acceptance remain separate. Preparing this source PR performs no publication, tag, deprecation, deployment
+Cloud/domain/venue migration and frontend publication remain held. Service
+deployment and funded live acceptance remain separate. Preparing this source PR performs no publication, tag, deprecation, deployment
 or cloud permission change. Human merge starts the normal native publisher as
 described above.
