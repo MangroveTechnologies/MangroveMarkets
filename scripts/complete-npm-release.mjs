@@ -55,17 +55,31 @@ export async function download(response) {
   return Buffer.concat(chunks);
 }
 
-export async function verifyPublished(metadata, source, evidence, fetchVersion = globalThis.fetch) {
+export async function verifyPublished(metadata, source, evidence, fetchVersion = globalThis.fetch,
+  { acceptedUpload = false, now = () => performance.now(), wait = (ms) => new Promise((done) => setTimeout(done, ms)) } = {}) {
   const url = `https://registry.npmjs.org/${encodeURIComponent(PACKAGE_NAME)}/${metadata.version}`;
-  const response = await fetchVersion(url, { redirect: 'error', signal: AbortSignal.timeout(15000) });
-  if (response.status !== 200) fail();
-  const published = await response.json();
+  // An accepted npm upload can remain invisible while registry processing finishes.
+  // Only this read-after-write 404 is retryable; preflight and all other errors stop.
+  const deadline = now() + 10 * 60 * 1000;
+  const readVisible = async (address, timeout) => {
+    for (;;) {
+      const remaining = acceptedUpload ? deadline - now() : timeout;
+      if (remaining <= 0) fail();
+      const response = await fetchVersion(address, { method: 'GET', redirect: 'error',
+        signal: AbortSignal.timeout(Math.max(1, Math.ceil(Math.min(timeout, remaining)))) });
+      if (response.status === 200) return response;
+      if (response.status !== 404 || !acceptedUpload || now() >= deadline) fail();
+      if (typeof response.body?.cancel === 'function') await response.body.cancel();
+      await wait(Math.min(30000, deadline - now()));
+    }
+  };
+  const published = await (await readVisible(url, 15000)).json();
   const tarball = `https://registry.npmjs.org/@mangrove-ai/markets/-/markets-${metadata.version}.tgz`;
   if (published?.name !== PACKAGE_NAME || published.version !== metadata.version ||
       published.gitHead !== source || published.repository?.url !== `git+${REPOSITORY_URL}.git` ||
       published.repository?.directory !== 'packages/sdk' || published.dist?.integrity !== evidence.integrity ||
       published.dist?.tarball !== tarball) fail();
-  const bytes = await download(await fetchVersion(tarball, { redirect: 'error', signal: AbortSignal.timeout(30000) }));
+  const bytes = await download(await readVisible(tarball, 30000));
   if (integrity(bytes) !== evidence.integrity || createHash('sha256').update(bytes).digest('hex') !== evidence.sha256) fail();
   return { package: PACKAGE_NAME, version: metadata.version, source, tarball, ...evidence };
 }
@@ -155,7 +169,8 @@ async function main() {
   const filename = `mangrove-ai-markets-${metadata.version}.tgz`;
   const bytes = readFileSync(resolve(process.env.RUNNER_TEMP, filename));
   const evidence = packEvidence(pack, bytes, basename(filename), metadata.version);
-  const verified = await verifyPublished(metadata, context.source, evidence);
+  const verified = await verifyPublished(metadata, context.source, evidence, globalThis.fetch,
+    { acceptedUpload: process.argv[4] === 'true' });
   // Repeat exact current-main ancestry immediately before any version-object write.
   const finalMain = (await github('GET', '/commits/main')).data;
   const finalCompare = finalMain?.sha === head ? null

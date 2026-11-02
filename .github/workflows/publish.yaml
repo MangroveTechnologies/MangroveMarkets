@@ -71,11 +71,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
       - if: steps.check.outputs.exists == 'false'
+        id: upload
         run: npm publish --ignore-scripts --provenance --access public --registry=https://registry.npmjs.org --tag=latest
         working-directory: packages/sdk
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Verify registry archive and complete the exact tagged release
-        run: node scripts/complete-npm-release.mjs complete "$RUNNER_TEMP/markets-pack.json"
+        run: node scripts/complete-npm-release.mjs complete "$RUNNER_TEMP/markets-pack.json" "${{ steps.upload.outcome == 'success' && steps.check.outputs.exists == 'false' }}"
         env:
           GH_TOKEN: ${{ github.token }}

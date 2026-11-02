@@ -228,3 +228,86 @@ test('manual feature refs and spoofed source fail; advanced main permits only ve
   assert.throws(() => validateContext(manualEnv, source, true, true, manualRun, { sha: 'c'.repeat(40) }, metadata, true,
     { ...proof, merge_base_commit: { sha: 'd'.repeat(40) } }));
 });
+
+
+test('only a just-accepted native upload waits through temporary registry processing404s', async () => {
+  let calls = 0, sleeps = 0, clock = 0;
+  const fetchVersion = async (url) => {
+    if (url === tarball) return { status: 200, body: Readable.from([bytes]) };
+    return ++calls <= 2 ? { status: 404 } : { status: 200, json: async () => published };
+  };
+  const result = await verifyPublished(metadata, source, evidence, fetchVersion,
+    { acceptedUpload: true, now: () => clock, wait: async (ms) => { sleeps++; clock += ms; } });
+  assert.deepEqual(result, verified);
+  assert.equal(calls, 3);
+  assert.equal(sleeps, 2);
+  assert.equal(clock, 60000);
+});
+test('never-visible accepted upload stops at the finite ten-minute deadline with no writes', async () => {
+  let calls = 0, clock = 0;
+  await assert.rejects(verifyPublished(metadata, source, evidence, async () => { calls++; return { status: 404 }; },
+    { acceptedUpload: true, now: () => clock, wait: async (ms) => { clock += ms; } }));
+  assert.equal(clock, 600000);
+  assert.equal(calls, 20);
+});
+test('unaccepted404 and preflight-style reads do not wait or turn into upload retries', async () => {
+  let calls = 0, sleeps = 0;
+  await assert.rejects(verifyPublished(metadata, source, evidence, async () => { calls++; return { status: 404 }; },
+    { wait: async () => { sleeps++; } }));
+  assert.equal(calls, 1);
+  assert.equal(sleeps, 0);
+});
+for (const status of [401, 403, 429, 500]) {
+  test(`accepted upload does not retry HTTP${status}`, async () => {
+    let calls = 0, sleeps = 0;
+    await assert.rejects(verifyPublished(metadata, source, evidence, async () => { calls++; return { status }; },
+      { acceptedUpload: true, wait: async () => { sleeps++; } }));
+    assert.equal(calls, 1);
+    assert.equal(sleeps, 0);
+  });
+}
+test('accepted upload does not retry network failures or conflicting metadata after processing', async () => {
+  let sleeps = 0, calls = 0, clock = 0;
+  await assert.rejects(verifyPublished(metadata, source, evidence, async () => { calls++; throw new Error('network'); },
+    { acceptedUpload: true, wait: async () => { sleeps++; } }));
+  assert.equal(calls, 1);
+  assert.equal(sleeps, 0);
+  calls = 0;
+  await assert.rejects(verifyPublished(metadata, source, evidence, async () => ++calls === 1
+    ? { status: 404 } : { status: 200, json: async () => ({ ...published, gitHead: 'f'.repeat(40) }) },
+  { acceptedUpload: true, now: () => clock, wait: async (ms) => { sleeps++; clock += ms; } }));
+  assert.equal(calls, 2);
+  assert.equal(sleeps, 1);
+});
+
+test('accepted upload shares one visibility deadline across metadata and staggered tarball processing', async () => {
+  let metadataCalls = 0, tarballCalls = 0, clock = 0;
+  const result = await verifyPublished(metadata, source, evidence, async (url, options) => {
+    assert.equal(options.method, 'GET');
+    if (url === tarball) return ++tarballCalls === 1 ? { status: 404 } : { status: 200, body: Readable.from([bytes]) };
+    return ++metadataCalls === 1 ? { status: 404 } : { status: 200, json: async () => published };
+  }, { acceptedUpload: true, now: () => clock, wait: async (ms) => { clock += ms; } });
+  assert.deepEqual(result, verified);
+  assert.equal(metadataCalls, 2);
+  assert.equal(tarballCalls, 2);
+  assert.equal(clock, 60000);
+});
+test('tarball404 cannot start a second visibility budget after metadata consumes the deadline', async () => {
+  let metadataCalls = 0, tarballCalls = 0, clock = 0;
+  await assert.rejects(verifyPublished(metadata, source, evidence, async (url) => {
+    if (url === tarball) { tarballCalls++; return { status: 404 }; }
+    return ++metadataCalls < 20 ? { status: 404 } : { status: 200, json: async () => published };
+  }, { acceptedUpload: true, now: () => clock, wait: async (ms) => { clock += ms; } }));
+  assert.equal(clock, 600000);
+  assert.equal(tarballCalls, 1);
+});
+
+test('processing404 stream is cancelled before waiting and requesting again', async () => {
+  let calls = 0, cancelled = false, clock = 0;
+  await verifyPublished(metadata, source, evidence, async (url) => {
+    if (url === tarball) return { status: 200, body: Readable.from([bytes]) };
+    return ++calls === 1 ? { status: 404, body: { cancel: async () => { cancelled = true; } } }
+      : { status: 200, json: async () => published };
+  }, { acceptedUpload: true, now: () => clock, wait: async (ms) => { assert.equal(cancelled, true); clock += ms; } });
+  assert.equal(cancelled, true);
+});

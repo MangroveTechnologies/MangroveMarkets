@@ -70,6 +70,13 @@ construction. See the [capability matrix](markets-sdk-capability-matrix.md).
    SHA512 integrity and SHA256, then creates or verifies the annotated
    `typescript-sdk-v0.4.0` tag and published GitHub release. The tag dereferences
    the exact source commit; the release records the verified npm URL and hashes.
+   An accepted upload can be temporarily invisible while npm processes a new
+   package. Only when that run's upload step actually succeeded does completion
+   wait for metadata and tarball HTTP 404 visibility under one deadline, using GET requests every 30 seconds for at most
+   ten minutes. Authentication, throttling, network errors and conflicting metadata
+   still stop immediately; no upload is retried. Ordinary preflight 404 remains an
+   immediate absence result. A processing timeout preserves the accepted-upload
+   distinction and requires registry reconciliation before any manual retry.
    It does not replace the repository's Python latest-release marker.
    Only after that succeeds may the separate AI repository's reviewed official
    workflow publish `@mangrove-ai/sdk` 1.0.0 and move that name's `latest` tag.
